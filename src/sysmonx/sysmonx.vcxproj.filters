@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="configmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="localhelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="servicemanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sysmonx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="executionflows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="eventsmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reportmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rulesmanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reporters\report_channel_debug_events.cpp">
+      <Filter>Reporters</Filter>
+    </ClCompile>
+    <ClCompile Include="reporters\report_channel_etw.cpp">
+      <Filter>Reporters</Filter>
+    </ClCompile>
+    <ClCompile Include="reporters\report_channel_eventlog.cpp">
+      <Filter>Reporters</Filter>
+    </ClCompile>
+    <ClCompile Include="reporters\report_channel_logfile.cpp">
+      <Filter>Reporters</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\event_collector_dummy.cpp">
+      <Filter>EventCollectors</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\event_collector_etw.cpp">
+      <Filter>EventCollectors</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_kernel_process_create.cpp">
+      <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_sysmon_events.cpp">
+      <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\etwcollectorcallbacks\callbacks_manager.cpp">
+      <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
+    </ClCompile>
+    <ClCompile Include="matchingengine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="matchers\filter_property_processor.cpp">
+      <Filter>Matchers</Filter>
+    </ClCompile>
+    <ClCompile Include="matchers\match_event_base.cpp">
+      <Filter>Matchers</Filter>
+    </ClCompile>
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_powershell_events.cpp">
+      <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\configmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\localhelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\servicemanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\localdefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="executionflows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reportmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventsmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rulesmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="localtypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="interfaces.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reporters\report_channel_debug_events.h">
+      <Filter>Reporters</Filter>
+    </ClInclude>
+    <ClInclude Include="reporters\report_channel_etw.h">
+      <Filter>Reporters</Filter>
+    </ClInclude>
+    <ClInclude Include="reporters\report_channel_eventlog.h">
+      <Filter>Reporters</Filter>
+    </ClInclude>
+    <ClInclude Include="reporters\report_channel_logfile.h">
+      <Filter>Reporters</Filter>
+    </ClInclude>
+    <ClInclude Include="collectors\event_collector_dummy.h">
+      <Filter>EventCollectors</Filter>
+    </ClInclude>
+    <ClInclude Include="collectors\event_collector_etw.h">
+      <Filter>EventCollectors</Filter>
+    </ClInclude>
+    <ClInclude Include="matchingengine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="securityevents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="matchers\filter_property_processor.h">
+      <Filter>Matchers</Filter>
+    </ClInclude>
+    <ClInclude Include="matchers\match_event_base.h">
+      <Filter>Matchers</Filter>
+    </ClInclude>
+    <ClInclude Include="matchers\match_event_sysmon_create_process.h">
+      <Filter>Matchers\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="matchers\match_event_sysmox_powershell.h">
+      <Filter>Matchers\Events</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{7e9a3541-c131-44a4-b5e0-7d4f2be124ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{997a00db-f0c6-4355-9d4c-6035de35e40d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scanners">
+      <UniqueIdentifier>{3daedb9c-c6c5-4e17-957d-9467a23f25bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reporters">
+      <UniqueIdentifier>{d5c28690-4516-401e-aefa-746decddc132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventCollectors">
+      <UniqueIdentifier>{ccbe409e-792e-433d-ad77-38187a09659b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventCollectors\ETWCollectorCallbacks">
+      <UniqueIdentifier>{7d8a7f14-9cd3-4c5c-a04f-1dd5d56d2dff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matchers">
+      <UniqueIdentifier>{55c79517-b13d-4a3e-9e29-a4caaf8c9247}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Matchers\Events">
+      <UniqueIdentifier>{b7101155-47a0-48aa-9961-c06bba24f7f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

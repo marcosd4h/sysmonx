@@ -1,0 +1,260 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="collectors\etwcollectorcallbacks\callbacks_manager.cpp" />
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_kernel_process_create.cpp" />
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_powershell_events.cpp" />
+    <ClCompile Include="collectors\etwcollectorcallbacks\callback_sysmon_events.cpp" />
+    <ClCompile Include="collectors\event_collector_dummy.cpp" />
+    <ClCompile Include="collectors\event_collector_etw.cpp" />
+    <ClCompile Include="configmanager.cpp" />
+    <ClCompile Include="eventsmanager.cpp" />
+    <ClCompile Include="executionflows.cpp" />
+    <ClCompile Include="localhelpers.cpp" />
+    <ClCompile Include="matchers\filter_property_processor.cpp" />
+    <ClCompile Include="matchers\match_event_base.cpp" />
+    <ClCompile Include="matchingengine.cpp" />
+    <ClCompile Include="reporters\report_channel_debug_events.cpp" />
+    <ClCompile Include="reporters\report_channel_etw.cpp" />
+    <ClCompile Include="reporters\report_channel_eventlog.cpp" />
+    <ClCompile Include="reporters\report_channel_logfile.cpp" />
+    <ClCompile Include="reportmanager.cpp" />
+    <ClCompile Include="rulesmanager.cpp" />
+    <ClCompile Include="sysmonx.cpp" />
+    <ClCompile Include="servicemanager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="collectors\event_collector_dummy.h" />
+    <ClInclude Include="collectors\event_collector_etw.h" />
+    <ClInclude Include="eventsmanager.h" />
+    <ClInclude Include="include\common.h" />
+    <ClInclude Include="include\configmanager.h" />
+    <ClInclude Include="include\localdefs.h" />
+    <ClInclude Include="include\localhelpers.h" />
+    <ClInclude Include="include\servicemanager.h" />
+    <ClInclude Include="executionflows.h" />
+    <ClInclude Include="matchers\filter_property_processor.h" />
+    <ClInclude Include="matchers\match_event_base.h" />
+    <ClInclude Include="matchers\match_event_sysmon_create_process.h" />
+    <ClInclude Include="matchers\match_event_sysmox_powershell.h" />
+    <ClInclude Include="matchingengine.h" />
+    <ClInclude Include="interfaces.h" />
+    <ClInclude Include="localtypes.h" />
+    <ClInclude Include="reporters\report_channel_debug_events.h" />
+    <ClInclude Include="reporters\report_channel_etw.h" />
+    <ClInclude Include="reporters\report_channel_eventlog.h" />
+    <ClInclude Include="reporters\report_channel_logfile.h" />
+    <ClInclude Include="reportmanager.h" />
+    <ClInclude Include="rulesmanager.h" />
+    <ClInclude Include="securityevents.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{08579D1B-A2DF-4FC0-9A56-8B8B5B473295}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>sysmonx</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>SysmonX</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <!-- <Command>rmdir /q /s "$(SolutionDir)\build\int"</Command>-->
+      <Message>Cleaning intermediate files</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)build\x32\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\int\sysmonx\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)misc;$(SolutionDir)external\single_header;$(SolutionDir)external\krabs;$(SolutionDir)external\sqlite_modern_cpp;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\Blackbone\src;$(SolutionDir)src\common\LibCommon;$(SolutionDir)external\pugixml\src;$(SolutionDir)src\sysmonx\;$(SolutionDir)src\sysmonx\include;$(SolutionDir)src\sysmonx\processors;$(SolutionDir)src\sysmonx\events;$(SolutionDir)src\sysmonx\reporters;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(OutDir);$(LibraryPath);$(SolutionDir)external\boost\bins\x32;</LibraryPath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)build\x64\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\int\sysmonx\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)misc;$(SolutionDir)external\single_header;$(SolutionDir)external\krabs;$(SolutionDir)external\sqlite_modern_cpp;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\Blackbone\src;$(SolutionDir)src\common\LibCommon;$(SolutionDir)external\pugixml\src;$(SolutionDir)src\sysmonx\;$(SolutionDir)src\sysmonx\include;$(SolutionDir)src\sysmonx\processors;$(SolutionDir)src\sysmonx\events;$(SolutionDir)src\sysmonx\reporters;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(OutDir);$(LibraryPath);$(SolutionDir)external\boost\bins\x64;</LibraryPath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\x32\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\int\sysmonx\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)misc;$(SolutionDir)external\single_header;$(SolutionDir)external\krabs;$(SolutionDir)external\sqlite_modern_cpp;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\Blackbone\src;$(SolutionDir)src\common\LibCommon;$(SolutionDir)external\pugixml\src;$(SolutionDir)src\sysmonx\;$(SolutionDir)src\sysmonx\include;$(SolutionDir)src\sysmonx\processors;$(SolutionDir)src\sysmonx\events;$(SolutionDir)src\sysmonx\reporters;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(OutDir);$(LibraryPath);$(SolutionDir)external\boost\bins\x32;</LibraryPath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)build\x64\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)build\int\sysmonx\$(Configuration)\</IntDir>
+    <IncludePath>$(SolutionDir)external;$(SolutionDir)misc;$(SolutionDir)external\single_header;$(SolutionDir)external\krabs;$(SolutionDir)external\sqlite_modern_cpp;$(SolutionDir)external\spdlog\include;$(SolutionDir)external\Blackbone\src;$(SolutionDir)src\common\LibCommon;$(SolutionDir)external\pugixml\src;$(SolutionDir)src\sysmonx\;$(SolutionDir)src\sysmonx\include;$(SolutionDir)src\sysmonx\processors;$(SolutionDir)src\sysmonx\events;$(SolutionDir)src\sysmonx\reporters;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>$(OutDir);$(LibraryPath);$(SolutionDir)external\boost\bins\x64;</LibraryPath>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)misc\sysmonx.res;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Crypt32.lib;Wintrust.lib;BlackBone.lib;LibCommon.lib;SqliteModernCPP.lib;dbghelp.lib;KrabsETW.lib;PugiXML.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)build\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)misc\sysmonx.res;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Crypt32.lib;Wintrust.lib;BlackBone.lib;LibCommon.lib;SqliteModernCPP.lib;dbghelp.lib;KrabsETW.lib;PugiXML.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)build\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)misc\sysmonx.res;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Crypt32.lib;Wintrust.lib;BlackBone.lib;LibCommon.lib;SqliteModernCPP.lib;dbghelp.lib;KrabsETW.lib;PugiXML.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)build\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)misc\sysmonx.res;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Crypt32.lib;Wintrust.lib;BlackBone.lib;LibCommon.lib;SqliteModernCPP.lib;dbghelp.lib;KrabsETW.lib;PugiXML.lib;wininet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir)</AdditionalLibraryDirectories>
+    </Link>
+    <BuildLog>
+      <Path>$(SolutionDir)build\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
