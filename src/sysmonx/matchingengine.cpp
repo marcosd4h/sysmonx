@@ -46,6 +46,11 @@ void PerformProcessHollowingScan(SysmonXTypes::EventObject &data)
 			}
 		}
 	}
+	else
+	{
+		data->ScannerResult.append(L" module_not_hollowed ");
+	}
+
 }
 
 
@@ -122,7 +127,7 @@ bool MatchingEngine::EventPostProcessor(SysmonXTypes::EventObject &data)
 
 	if (m_config.IsInitialized())
 	{
-		if ((data->EventID == EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS))
+		if (data->EventID == EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS)
 		{
 			PerformProcessHollowingScan(data);
 		}

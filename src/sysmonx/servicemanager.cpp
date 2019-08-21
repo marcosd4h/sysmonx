@@ -254,7 +254,7 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 		/*
 		while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
 		{
-			Sleep(1000);
+			Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
 		}
 		*/
 		
@@ -266,24 +266,25 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 				//Checking periodically if we need to stop
 				while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
 				{
-					logger.TraceUp("CollectorService::WorkerThread() - Processing requested to be stopped. About to Disable processing");
-					if (SysmonXServiceFlows::DisableServiceProcessing())
-					{
-						logger.TraceUp("CollectorService::WorkerThread() - Processing is stopped. Quitting service now");
-					}
-					else
-					{
-						logger.TraceDown("CollectorService::WorkerThread() - There was a problem stopping service processing");
-					}
-
-					Sleep(500);
+					Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
 				}
+
+				logger.TraceUp("CollectorService::WorkerThread() - Processing requested to be stopped. About to Disable processing");
+				if (SysmonXServiceFlows::DisableServiceProcessing())
+				{
+					logger.TraceUp("CollectorService::WorkerThread() - Processing is stopped. Quitting service now");
+				}
+				else
+				{
+					logger.TraceDown("CollectorService::WorkerThread() - There was a problem stopping service processing");
+				}
+
+				ret = ERROR_SUCCESS;
 			}
 			else
 			{
 				logger.TraceDown("CollectorService::WorkerThread() - There was a problem enabling service processing");
 				SysmonXServiceFlows::DisableServiceProcessing();
-				Sleep(500);
 				ret = ERROR_NO_WORK_DONE;
 			}
 		}
@@ -297,6 +298,8 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 	{
 		ret = ERROR_BAD_ENVIRONMENT;
 	}
+
+	Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
 
 	return ret;
 }

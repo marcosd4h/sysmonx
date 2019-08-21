@@ -100,13 +100,13 @@ int wmain(int argc, wchar_t *argv[])
 		return EXIT_FAILURE;
 	}
 
-	logger.Info("Welcome to SysmonX Version: {}", SysmonXDefs::SYSMONX_VERSION.c_str());
+	logger.Info("Welcome to SysmonX Version: {}", SysmonXDefs::SYSMONX_VERSION);
 
 	//Same binary supports two running modes (mgmt app mode and service mode)
 	//Checking if main thread needs to run as a service 
 	if (config.IsServiceMode())
 	{
-		/*
+		
 		//====================== MJO REMOVE THIS!! ======================//
 		if (config.WereStandaloneActionsRequested())
 		{
@@ -114,14 +114,14 @@ int wmain(int argc, wchar_t *argv[])
 			collectorService.RunFakeLogic();
 			return EXIT_FAILURE;
 		}
-		*/
-		
+				
 		//Running as a service
 		if (!SysmonXAppFlows::RunCollectionService())
 		{
 			logger.Error("There was a problem running collector service.");
 			return EXIT_FAILURE;
-		}		
+		}
+		
 	}
 	else
 	{

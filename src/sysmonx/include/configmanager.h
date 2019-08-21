@@ -114,7 +114,7 @@ private:
 		m_wasVerbosityRequested(false), m_wasReportOptionsRequested(false), m_wasNewConfigFileRequested (false),
 		m_hashAlgorithmToUse(HashAlgorithm::HASH_ALGORITHM_SHA1), m_backendInstallerVector(BackendInstallVector::BACKEND_INSTALLER_WEB),
 		m_loggingMgmtApp(LoggerMode::LOGGER_CONSOLE), m_loggingCollectionService(LoggerMode::LOGGER_NA),
-		m_loggingVerbosity(LoggerVerbose::LOGGER_TRACE), m_nrWorkerOrchThreads(CommonDefs::DEFAULT_NR_WORKING_THREADS)
+		m_loggingVerbosity(LoggerVerbose::LOGGER_TRACE), m_nrWorkerOrchThreads(SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS)
 	{
 		m_processesToTrackOnLoadingModules.clear();
 		m_processesToTrackOnNetworkConnections.clear();

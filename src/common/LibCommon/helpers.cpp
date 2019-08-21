@@ -91,6 +91,93 @@ namespace TraceHelpers
 		}
 	}
 
+	void Logger::TraceUp(const wchar_t *buffer, ...)
+	{
+		if (buffer)
+		{
+			wchar_t formattedBuff[CommonDefs::MAX_BUFFER_SIZE] = { 0 };
+			va_list varadic;
+			va_start(varadic, buffer);
+			_vsnwprintf_s(formattedBuff, (CommonDefs::MAX_BUFFER_SIZE - 1), CommonDefs::MAX_BUFFER_SIZE, buffer, varadic);
+			va_end(varadic);
+
+			std::wstring outputBuff;
+			outputBuff.append(CommonDefs::WUPMARK);
+			//outputBuff.append(CommonDefs::WDEFAULT_SEP);
+			outputBuff.append(CommonDefs::WSEPARATOR);
+			outputBuff.append(formattedBuff);
+			outputBuff.append(CommonDefs::WENDLINE);
+
+			OutputDebugStringW(outputBuff.c_str());
+		}
+	}
+
+	void Logger::TraceDown(const wchar_t *buffer, ...)
+	{
+		if (buffer)
+		{
+			wchar_t formattedBuff[CommonDefs::MAX_BUFFER_SIZE] = { 0 };
+
+			va_list varadic;
+			va_start(varadic, buffer);
+			_vsnwprintf_s(formattedBuff, (CommonDefs::MAX_BUFFER_SIZE - 1), CommonDefs::MAX_BUFFER_SIZE, buffer, varadic);
+			va_end(varadic);
+
+			std::wstring outputBuff;
+			outputBuff.append(CommonDefs::WDOWNMARK);
+			//outputBuff.append(CommonDefs::WDEFAULT_SEP);
+			outputBuff.append(CommonDefs::WSEPARATOR);
+			outputBuff.append(formattedBuff);
+			outputBuff.append(CommonDefs::WENDLINE);
+
+			OutputDebugStringW(outputBuff.c_str());
+		}
+	}
+
+	void Logger::TraceConsoleUp(const wchar_t *buffer, ...)
+	{
+		if (buffer)
+		{
+			wchar_t formattedBuff[CommonDefs::MAX_BUFFER_SIZE] = { 0 };
+
+			va_list varadic;
+			va_start(varadic, buffer);
+			_vsnwprintf_s(formattedBuff, (CommonDefs::MAX_BUFFER_SIZE - 1), CommonDefs::MAX_BUFFER_SIZE, buffer, varadic);
+			va_end(varadic);
+
+			std::wcout << CommonDefs::WUPMARK << formattedBuff << CommonDefs::WENDLINE;
+		}
+	}
+
+	void Logger::TraceConsoleDown(const wchar_t *buffer, ...)
+	{
+		if (buffer)
+		{
+			wchar_t formattedBuff[CommonDefs::MAX_BUFFER_SIZE] = { 0 };
+
+			va_list varadic;
+			va_start(varadic, buffer);
+			_vsnwprintf_s(formattedBuff, (CommonDefs::MAX_BUFFER_SIZE - 1), CommonDefs::MAX_BUFFER_SIZE, buffer, varadic);
+			va_end(varadic);
+
+			std::wcerr << CommonDefs::WDOWNMARK << formattedBuff << CommonDefs::WENDLINE;
+		}
+	}
+
+	void Logger::TraceConsole(const wchar_t *buffer, ...)
+	{
+		if (buffer)
+		{
+			wchar_t formattedBuff[CommonDefs::MAX_BUFFER_SIZE] = { 0 };
+
+			va_list varadic;
+			va_start(varadic, buffer);
+			_vsnwprintf_s(formattedBuff, (CommonDefs::MAX_BUFFER_SIZE - 1), CommonDefs::MAX_BUFFER_SIZE, buffer, varadic);
+			va_end(varadic);
+
+			std::wcout << formattedBuff << CommonDefs::WENDLINE;
+		}
+	}
 
 	bool Logger::Initialize(const CommonTypes::LoggerContainer &modes, std::string logfile)
 	{
@@ -1913,7 +2000,7 @@ namespace GeneralHelpers
 		return ret;
 	}
 
-	bool RunProcess(const std::wstring &process, const std::wstring &cmdlineArguments, CommonTypes::StringsContainer &processOutput, DWORD &exitCode)
+	bool RunProcess(const std::wstring &process, const std::wstring &cmdlineArguments, CommonTypes::StringsContainer &processOutput, DWORD &exitCode, const bool createWindowMode)
 	{
 		bool ret = false;
 		DWORD flags = 0;
@@ -1925,6 +2012,9 @@ namespace GeneralHelpers
 		securityAttributes.nLength = sizeof(securityAttributes);
 		securityAttributes.bInheritHandle = TRUE;
 		securityAttributes.lpSecurityDescriptor = NULL;
+		STARTUPINFO startupInfo = { 0 };
+		PROCESS_INFORMATION processInfo = { 0 };
+		DWORD procesCreateFlags = 0;
 
 		if (CreatePipe(&stdOutRead, &stdOutWrite, &securityAttributes, BUFFERSIZE))
 		{
@@ -1940,19 +2030,16 @@ namespace GeneralHelpers
 			return ret;
 		}
 
-		STARTUPINFO startupInfo = { 0 };
 		startupInfo.cb = sizeof(startupInfo);
 		startupInfo.hStdOutput = stdOutWrite;
-		startupInfo.dwFlags |= STARTF_USESTDHANDLES;
-		startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
 		startupInfo.wShowWindow = SW_HIDE;
-
-		PROCESS_INFORMATION processInfo = { 0 };
-
-		DWORD procesCreateFlags = 0;
-		procesCreateFlags |= CREATE_NO_WINDOW;
-		//procesCreateFlags |= CREATE_NEW_CONSOLE;
-
+		if (!createWindowMode)
+		{			
+			startupInfo.dwFlags |= STARTF_USESTDHANDLES;			
+			startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
+			procesCreateFlags |= CREATE_NO_WINDOW;
+		}
+			
 		std::wstring workingCMDLine;
 		workingCMDLine.append(process);
 		workingCMDLine.append(L" ");
@@ -1972,6 +2059,9 @@ namespace GeneralHelpers
 			&startupInfo,
 			&processInfo))
 		{
+			// Successfully created the process.  Waiting for it to finish.
+			WaitForSingleObject(processInfo.hProcess, INFINITE);
+
 			//Forcing some idle time before peeking into pipes
 			Sleep(500);
 			char buffer[BUFFERSIZE] = { 0 };
@@ -1982,6 +2072,9 @@ namespace GeneralHelpers
 			while ((workingExitCode == STILL_ACTIVE) && (iterations < MAX_ITERATIONS))
 			{
 				DWORD bytesOnPipe = 0;
+
+				GetExitCodeProcess(processInfo.hProcess, &workingExitCode);
+				
 				if (PeekNamedPipe(stdOutRead, nullptr, 0, nullptr, &bytesOnPipe, nullptr))
 				{
 					if (bytesOnPipe > 0)
@@ -2001,36 +2094,32 @@ namespace GeneralHelpers
 										if (!workITstr.empty())
 										{
 											processOutput.push_back(workITstr);
-										}										
+										}									
 									}
+
+									ret = true;
 								}
 								else
 								{
 									processOutput.push_back(workStr);
 								}								
 							}
-
 						}
-
-						GetExitCodeProcess(processInfo.hProcess, &workingExitCode);
 					}
 					else
 					{
-						GetExitCodeProcess(processInfo.hProcess, &workingExitCode);
 						break;
 					}
 				}
 				else
-				{
-					GetExitCodeProcess(processInfo.hProcess, &workingExitCode);
+				{					
 					break;
 				}
 
 				iterations++;
 			}
 
-			exitCode = workingExitCode;
-			ret = true;
+			exitCode = workingExitCode;			
 		}
 		else
 		{
@@ -2470,7 +2559,6 @@ namespace GeneralHelpers
 	}
 }
 
-
 namespace RegistryHelpers
 {
 	bool OpenKey(const HKEY &hRootKey, const std::wstring &regSubKey, HKEY &hKey)
@@ -2806,7 +2894,6 @@ namespace RegistryHelpers
 		return ret;
 	}
 }
-
 
 namespace ServiceHelpers
 {
@@ -3182,7 +3269,6 @@ namespace ServiceHelpers
 		return ret;
 	}
 }
-
 
 namespace KrabsETWHelper
 {

@@ -53,6 +53,7 @@ bool RulesManager::Initialize()
 
 		//Adding SysmonX Condition Filters
 		m_validSysmonXOnlyConditionFilters.push_back(L"regex_match");
+		m_validSysmonXOnlyConditionFilters.push_back(L"is");
 		m_validSysmonXOnlyConditionFilters.push_back(L"regex_search");
 
 		//Adding Trace Backend Supported Events Properties
@@ -369,8 +370,6 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 				for (pugi::xml_node eventInRuleGroup : event)
 				{
 					std::string workEventName(eventInRuleGroup.name());
-
-					//std::string WStrToStr(const std::wstring& wstr)
 
 					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)) ||
 						IsSysmonXOnlyEventNameValid(GeneralHelpers::StrToWStr(workEventName)))

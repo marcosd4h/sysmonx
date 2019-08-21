@@ -74,7 +74,6 @@
     <OutDir>$(SolutionDir)build\x32\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\int\sqlite\$(Configuration)\</IntDir>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)\external\sqlite_modern_cpp;$(IncludePath)</IncludePath>
   </PropertyGroup>
@@ -83,7 +82,6 @@
     <OutDir>$(SolutionDir)build\x64\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)build\int\sqlite\$(Configuration)\</IntDir>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
-    <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <IncludePath>$(SolutionDir)\external\sqlite_modern_cpp;$(IncludePath)</IncludePath>
   </PropertyGroup>

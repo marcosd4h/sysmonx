@@ -1,7 +1,10 @@
 #pragma once
 
-//WSDK
+//Internal defines
 #define NOMINMAX
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+
+//WSDK
 #include <algorithm>
 #include <string>
 #include <sstream>

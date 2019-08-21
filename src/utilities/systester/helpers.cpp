@@ -423,31 +423,6 @@ bool SystesterHelpers::GetProcessCmdline(const HANDLE hProc, const PVOID procPEB
 	return ret;
 }
 
-std::wstring SystesterHelpers::StrToWStr(const std::string& str)
-{
-	size_t strCount = str.length();
-	int bytesToAllocate = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)strCount, NULL, 0);
-
-	std::wstring ret(bytesToAllocate, 0);
-	int wideCharsCount = MultiByteToWideChar(CP_UTF8, 0, &str[0], (int)strCount, &ret[0], bytesToAllocate);
-
-	//TODO: add check for wideCharsCount == strCount
-	return ret;
-}
-
-std::string SystesterHelpers::WStrToStr(const std::wstring& wstr)
-{
-	size_t strCount = wstr.length();
-	int bytesToAllocate = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)strCount, NULL, 0, NULL, NULL);
-
-	std::string ret(bytesToAllocate, 0);
-	int w = WideCharToMultiByte(CP_UTF8, 0, &wstr[0], (int)strCount, &ret[0], bytesToAllocate, NULL, NULL);
-
-	//TODO: add check for wideCharsCount == strCount
-	return ret;
-}
-
-
 bool OpenKey(const HKEY hRootKey, const std::wstring &regSubKey, HKEY &hKey)
 {
 	bool ret = false;

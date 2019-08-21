@@ -37,7 +37,4 @@ namespace SystesterHelpers
 	bool GetNTHeaders32(const PVOID execBuffer, IMAGE_NT_HEADERS32 &execNTHeader);
 	bool GetNTHeaders64(const PVOID execBuffer, IMAGE_NT_HEADERS64 &execNTHeader);
 	bool GetProcessCmdline(const HANDLE hProc, const PVOID procPEBAddr, std::wstring &cmdline);
-
-	std::wstring StrToWStr(const std::string& str);
-	std::string  WStrToStr(const std::wstring& wstr);
 }

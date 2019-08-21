@@ -9,9 +9,13 @@ namespace CommonDefs
 	static const std::string DOWNMARK = "[-] ";
 	static const std::string SEPARATOR = " - ";
 	static const std::string DEFAULT_SEP = "";
-	static const std::string ENDLINE = "\n";
+	static const std::string ENDLINE = "\n";	
+	static const std::wstring WUPMARK = L"[+] ";
+	static const std::wstring WDOWNMARK = L"[-] ";
+	static const std::wstring WSEPARATOR = L" - ";
+	static const std::wstring WDEFAULT_SEP = L"";
+	static const std::wstring WENDLINE = L"\n";
 	static const std::wstring DEFAULT_VALUE = L"";
-	static const UINT32 DEFAULT_NR_WORKING_THREADS = 2;
 	static const DWORD SYSTEM_MIN_VALID_PID = 5; // System processes are found below this
 	static const size_t DEFAULT_PAGE_SIZE = 4096;
 	static const UINT32 RANDOM_STRING_LENGTH = 12;

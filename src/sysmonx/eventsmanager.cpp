@@ -51,15 +51,15 @@ bool EventsManager::StartEventsCollection()
 			std::shared_ptr<EventCollectorBase> &collectorBase = it->second;
 			if (collectorBase)
 			{
-				m_logger.Trace("About to start collection on collector {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+				m_logger.Trace(L"About to start collection on collector {}", collectorBase->GetCollectorDescription());
 
 				if (collectorBase->StartEventsCollection())
 				{
-					m_logger.Trace("Collection was succesfully started at collector {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+					m_logger.Trace(L"Collection was succesfully started at collector {}", collectorBase->GetCollectorDescription());
 				}
 				else
 				{
-					m_logger.Trace("There was a problem starting events collection at {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+					m_logger.Trace(L"There was a problem starting events collection at {}", collectorBase->GetCollectorDescription());
 				}
 			}
 		}
@@ -83,15 +83,15 @@ bool EventsManager::StopEventsCollection()
 			std::shared_ptr<EventCollectorBase> &collectorBase = it->second;
 			if (collectorBase)
 			{
-				m_logger.Trace("About to stop collection on collector {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+				m_logger.Trace(L"About to stop collection on collector {}",collectorBase->GetCollectorDescription());
 
 				if (collectorBase->StopEventsCollection())
 				{
-					m_logger.Trace("Collection was succesfully stopped at collector {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+					m_logger.Trace(L"Collection was succesfully stopped at collector {}", collectorBase->GetCollectorDescription());
 				}
 				else
 				{
-					m_logger.Trace("There was a problem stopping events collection at {}", GeneralHelpers::WStrToStr(collectorBase->GetCollectorDescription()));
+					m_logger.Trace(L"There was a problem stopping events collection at {}", collectorBase->GetCollectorDescription());
 				}
 			}
 		}

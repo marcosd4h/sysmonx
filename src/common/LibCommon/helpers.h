@@ -68,7 +68,7 @@ namespace GeneralHelpers
 	bool GetNewSecureSysmonXDirectory(std::wstring &newSecureDirectory);
 	bool GetTemporaryFileName(const std::wstring &tempDirectory, const std::wstring &tempFileExtension, std::wstring &tempFileName, unsigned int lengthRandomDir = CommonDefs::RANDOM_STRING_LENGTH);
 	bool ConvertStringToHexRepresentation(const std::string &input, std::string &output);
-	bool RunProcess(const std::wstring &process, const std::wstring &cmdlineArguments, CommonTypes::StringsContainer &processOutput, DWORD &exitCode);
+	bool RunProcess(const std::wstring &process, const std::wstring &cmdlineArguments, CommonTypes::StringsContainer &processOutput, DWORD &exitCode, const bool createWindowMode = false);
 	bool GetCurrentProcessFullPath(std::wstring &currentProcesFullPath);
 	bool FileCopy(const std::wstring &originFile, const std::wstring &destFile, bool overwrite = true);
 	bool GetFileNameWithoutExtension(const std::wstring &filename, std::wstring &baseFileNameWoExtension);
@@ -204,57 +204,113 @@ namespace TraceHelpers
 
 		void SetLevel(CommonTypes::LoggerVerbose level);
 
+		//Char Interface
 		template<typename... Args>
-		inline void Error(const std::string &fmt, const Args &... args)
+		inline void Error(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->error(fmt.c_str(), args...);
+				m_logger->error(fmt, args...);
 			}
 		}
 
 		template<typename... Args>
-		inline void Warn(const std::string &fmt, const Args &... args)
+		inline void Warn(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->warn(fmt.c_str(), args...);
+				m_logger->warn(fmt, args...);
 			}
 		}
 
 		template<typename... Args>
-		inline void Info(const std::string &fmt, const Args &... args)
+		inline void Info(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->info(fmt.c_str(), args...);
+				m_logger->info(fmt, args...);
 			}
 		}
 
 		template<typename... Args>
-		inline void Debug(const std::string &fmt, const Args &... args)
+		inline void Debug(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->debug(fmt.c_str(), args...);
+				m_logger->debug(fmt, args...);
 			}
 		}
 
 		template<typename... Args>
-		inline void Trace(const std::string &fmt, const Args &... args)
+		inline void Trace(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->trace(fmt.c_str(), args...);
+				m_logger->trace(fmt, args...);
 			}
 		}
 
 		template<typename... Args>
-		inline void Critical(const std::string &fmt, const Args &... args)
+		inline void Critical(const char *fmt, const Args &... args)
 		{
-			if (m_initialized && m_logger && !fmt.empty())
+			if (m_initialized && m_logger && fmt)
 			{
-				m_logger->critical(fmt.c_str(), args...);
+				m_logger->critical(fmt, args...);
+			}
+		}
+
+		//Wide-char Interface
+		template<typename... Args>
+		inline void Error(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->error(fmt, args...);
+			}
+		}
+
+		template<typename... Args>
+		inline void Warn(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->warn(fmt, args...);
+			}
+		}
+
+		template<typename... Args>
+		inline void Info(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->info(fmt, args...);
+			}
+		}
+
+		template<typename... Args>
+		inline void Debug(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->debug(fmt, args...);
+			}
+		}
+
+		template<typename... Args>
+		inline void Trace(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->trace(fmt, args...);
+			}
+		}
+
+		template<typename... Args>
+		inline void Critical(const wchar_t *fmt, const Args &... args)
+		{
+			if (m_initialized && m_logger && fmt)
+			{
+				m_logger->critical(fmt, args...);
 			}
 		}
 
@@ -264,5 +320,11 @@ namespace TraceHelpers
 		void TraceConsoleUp(const char *buffer, ...);
 		void TraceConsoleDown(const char *buffer, ...);
 		void TraceConsole(const char *buffer, ...);
+
+		void TraceUp(const wchar_t *buffer, ...);
+		void TraceDown(const wchar_t *buffer, ...);
+		void TraceConsoleUp(const wchar_t *buffer, ...);
+		void TraceConsoleDown(const wchar_t *buffer, ...);
+		void TraceConsole(const wchar_t *buffer, ...);
 	};
 }

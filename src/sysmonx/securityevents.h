@@ -250,7 +250,14 @@ namespace SysmonXTypes
 			EventCollectorTechID(EventCollectorTechID::EVENT_COLLECTOR_TECH_NA),
 			EventCollectorVectorID(EventCollectorVectorID::EVENT_SUBTYPE_NA),
 			EventVersion(SysmonXDefs::CURRENT_EVENT_VERSION),
-			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) {}
+			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) 
+		{
+			memset(&ProcessGuid, 0, sizeof(TargetProcessGuid));
+			memset(&LogonGuid, 0, sizeof(LogonGuid));
+			memset(&ParentProcessGuid, 0, sizeof(ParentProcessGuid));
+			memset(&SourceProcessGuid, 0, sizeof(SourceProcessGuid));
+			memset(&TargetProcessGuid, 0, sizeof(TargetProcessGuid));
+		}
 
 
 		//EventID
@@ -259,7 +266,14 @@ namespace SysmonXTypes
 			EventCollectorTechID(EventCollectorTechID::EVENT_COLLECTOR_TECH_NA),
 			EventCollectorVectorID(EventCollectorVectorID::EVENT_SUBTYPE_NA),
 			EventVersion(SysmonXDefs::CURRENT_EVENT_VERSION),
-			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) {}
+			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) 		
+		{
+			memset(&ProcessGuid, 0, sizeof(TargetProcessGuid));
+			memset(&LogonGuid, 0, sizeof(LogonGuid));
+			memset(&ParentProcessGuid, 0, sizeof(ParentProcessGuid));
+			memset(&SourceProcessGuid, 0, sizeof(SourceProcessGuid));
+			memset(&TargetProcessGuid, 0, sizeof(TargetProcessGuid));		
+		}
 
 
 		//EventID and TechID
@@ -268,7 +282,14 @@ namespace SysmonXTypes
 			EventCollectorTechID(techID),
 			EventCollectorVectorID(EventCollectorVectorID::EVENT_SUBTYPE_NA),
 			EventVersion(SysmonXDefs::CURRENT_EVENT_VERSION),
-			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) {}
+			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP)
+		{
+			memset(&ProcessGuid, 0, sizeof(TargetProcessGuid));
+			memset(&LogonGuid, 0, sizeof(LogonGuid));
+			memset(&ParentProcessGuid, 0, sizeof(ParentProcessGuid));
+			memset(&SourceProcessGuid, 0, sizeof(SourceProcessGuid));
+			memset(&TargetProcessGuid, 0, sizeof(TargetProcessGuid));
+		}
 
 
 		//EventID, TechID and VectorID
@@ -277,7 +298,14 @@ namespace SysmonXTypes
 			EventCollectorTechID(techID),
 			EventCollectorVectorID(vectorID),
 			EventVersion(SysmonXDefs::CURRENT_EVENT_VERSION),
-			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP) {}
+			EventCreationTimestamp(SysmonXDefs::INVALID_TIMESTAMP)
+		{
+			memset(&ProcessGuid, 0, sizeof(TargetProcessGuid));
+			memset(&LogonGuid, 0, sizeof(LogonGuid));
+			memset(&ParentProcessGuid, 0, sizeof(ParentProcessGuid));
+			memset(&SourceProcessGuid, 0, sizeof(SourceProcessGuid));
+			memset(&TargetProcessGuid, 0, sizeof(TargetProcessGuid));
+		}
 	};
 	typedef std::shared_ptr<EventData> EventObject;
 

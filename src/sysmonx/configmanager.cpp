@@ -43,7 +43,7 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				m_wasInstallRequested = true;
 
 				//checking if EULA accept was requested
-				if (cmdArgs.WasOptionRequested(L"-accepteula"))
+				if (cmdArgs.WasOptionRequestedInsensitive(L"-accepteula"))
 				{
 					m_wasInstallAcceptEulaRequested = true;
 				}
@@ -158,7 +158,7 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 						}
 						else
 						{
-							logger.TraceConsoleDown(" The given file cannot be found.");
+							logger.TraceConsoleDown(" The given configuration file cannot be found.");
 							return ret;
 						}
 					}
@@ -713,43 +713,6 @@ bool ConfigManager::GenerateDefaultConfigFile(std::wstring &newConfigFile)
 
 	std::wstring workingConfigFile;
 
-	const std::wstring DEFAULT_CONFIG_FILE_CONTENT =
-		L"<Sysmon schemaversion=\"4.1\">\n"
-		L"   <!-- Capture all hashes -->\n"
-		L"   <HashAlgorithms>*</HashAlgorithms>\n"
-		L"   <CheckRevocation/>\n"
-		L"   <EventFiltering>\n"
-		L"      <!-- Event ID 1 == Process Creation. -->\n"
-		L"      <ProcessCreate onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 2 == File Creation Time. -->\n"
-		L"      <FileCreateTime onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 3 == Network Connection. -->\n"
-		L"      <NetworkConnect onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 5 == Process Terminated. -->\n"
-		L"      <ProcessTerminate onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 6 == Driver Loaded. -->\n"
-		L"      <DriverLoad onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 7 == Image Loaded. -->\n"
-		L"      <ImageLoad onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 8 == CreateRemoteThread. -->\n"
-		L"      <CreateRemoteThread onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 9 == RawAccessRead. -->\n"
-		L"      <RawAccessRead onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 10 == ProcessAccess. -->\n"
-		L"      <ProcessAccess onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 11 == FileCreate. -->\n"
-		L"      <FileCreate onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 12,13,14 == RegObject added/deleted, RegValue Set, RegObject Renamed. -->\n"
-		L"      <RegistryEvent onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 15 == FileStream Created. -->\n"
-		L"      <FileCreateStreamHash onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 17,18 == PipeEvent. Log Named pipe created & Named pipe connected -->\n"
-		L"      <PipeEvent onmatch=\"exclude\"/>\n"
-		L"      <!-- Event ID 19,20,21, == WmiEvent. Log all WmiEventFilter, WmiEventConsumer, WmiEventConsumerToFilter activity-->\n"
-		L"      <WmiEvent onmatch=\"exclude\"/>\n"
-		L"  </EventFiltering>\n"
-		L"</Sysmon>";
-
 	try
 	{
 		if (GeneralHelpers::IsValidDirectory(m_workingDirectory))
@@ -761,7 +724,7 @@ bool ConfigManager::GenerateDefaultConfigFile(std::wstring &newConfigFile)
 
 			std::wofstream configFile;
 			configFile.open(workingConfigFile);
-			configFile << DEFAULT_CONFIG_FILE_CONTENT.c_str();
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_CONTENT.c_str();
 			configFile.close();
 
 			newConfigFile.assign(workingConfigFile);
@@ -1105,7 +1068,7 @@ bool ConfigManager::SyncRuntimeConfigData()
 			//number of worker threads
 			if (!WasNumberOfWorkerThreadsRequested())
 			{
-				m_nrWorkerOrchThreads = CommonDefs::DEFAULT_NR_WORKING_THREADS;
+				m_nrWorkerOrchThreads = SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS;
 			}
 
 			//verbosity
@@ -1352,7 +1315,7 @@ const ReportChannelID ConfigManager::GetReportChannelID(const std::wstring &repo
 		}
 		else
 		{
-			TraceHelpers::Logger::Instance().Error("ConfigManager::GetReportChannel() - Given channel {} is not supported", GeneralHelpers::WStrToStr(reportChannel));
+			TraceHelpers::Logger::Instance().Error(L"ConfigManager::GetReportChannel() - Given channel {} is not supported", reportChannel);
 		}
 	}
 
