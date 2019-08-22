@@ -117,7 +117,7 @@ struct file {
   size_t size() {
     LARGE_INTEGER filesize;
     GetFileSizeEx(f_, &filesize);
-    return filesize.QuadPart;
+    return (size_t) filesize.QuadPart;
   }
 
   buffer content() {
@@ -1356,7 +1356,7 @@ struct buf {
     if (alignment != 0 && alignment != 1 && buf_.size() != 0) {
       auto unaligned_ptr = static_cast<void*>(addr(curr_offset_));
       auto space = std::numeric_limits<std::size_t>::max();
-      auto const aligned_ptr =
+      auto const aligned_ptr = 
           std::align(alignment, size, unaligned_ptr, space);
       auto const new_offset = static_cast<offset_t>(
           aligned_ptr ? static_cast<uint8_t*>(aligned_ptr) - base() : 0);

@@ -991,7 +991,7 @@ namespace GeneralHelpers
 
 		if (!source.empty())
 		{
-			for (auto it = 0; it < source.size(); it++)
+			for (unsigned int it = 0; it < source.size(); it++)
 			{
 				ret.push_back(source[it]);
 			}
@@ -1006,7 +1006,7 @@ namespace GeneralHelpers
 
 		if (!source.empty())
 		{
-			for (auto it = 0; it < source.size(); it++)
+			for (unsigned int it = 0; it < source.size(); it++)
 			{
 				ret.push_back(source[it]);
 			}
@@ -1143,7 +1143,7 @@ namespace GeneralHelpers
 
 		if (!source.empty())
 		{
-			for (auto it = 0; it < source.size(); it++)
+			for (unsigned int it = 0; it < source.size(); it++)
 			{
 				ret.push_back(source[it]);
 			}
