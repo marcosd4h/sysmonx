@@ -39,12 +39,12 @@ bool EventCollectorETW::SetupCallbackPowershellEventsHandler()
 					newEvent->EventCreationTimestamp = schema.timestamp();
 					newEvent->EventETWProviderPID = currentPID;
 					newEvent->EventETWProviderName.assign(ETWProvidersName::POWERSHELL_PROVIDER_NAME);
-					newEvent->ProcessID = currentPID;
+					newEvent->ProcessId = currentPID;
 
 					//Filling up event-specific data
 					if (!(parser.try_parse<std::wstring>(L"ScriptBlockText", newEvent->FreeText)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackPowershellEventsHandler() - There was a problem parsing property {} at Event ID {}", "FreeText", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackPowershellEventsHandler - There was a problem parsing property {} at Event ID {}", "FreeText", currentEventID);
 					}
 					
 					m_eventsProcessor.DispatchEvent(newEvent);
@@ -52,7 +52,7 @@ bool EventCollectorETW::SetupCallbackPowershellEventsHandler()
 			}
 			catch (...)
 			{
-				m_logger.Error("EventCollectorETW::SetupCallbackPowershellEventsHandler() - There was a problem parsing Event ID {}", currentEventID);
+				m_logger.Error("EventCollectorETW::SetupCallbackPowershellEventsHandler - There was a problem parsing Event ID {}", currentEventID);
 			}
 		});
 

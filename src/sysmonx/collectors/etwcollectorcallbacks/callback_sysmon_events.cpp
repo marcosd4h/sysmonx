@@ -41,104 +41,104 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 					newEvent->EventETWProviderName.assign(ETWProvidersName::SYSMON_PROVIDER_NAME);
 
 					//Filling up event-specific data
-					if (!(parser.try_parse<EventUINT32>(L"ProcessId", newEvent->ProcessID)))
+					if (!(parser.try_parse<EventUINT32>(L"ProcessId", newEvent->ProcessId)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"RuleName", newEvent->RuleName)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "RuleName", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "RuleName", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"UtcTime", newEvent->UtcTime)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "UtcTime", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "UtcTime", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"CommandLine", newEvent->CommandLine)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "CommandLine", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "CommandLine", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"FileVersion", newEvent->FileVersion)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "FileVersion", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "FileVersion", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Image", newEvent->Image)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "Image", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Image", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Description", newEvent->Description)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "Description", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Description", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Product", newEvent->Product)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "Product", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Product", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Company", newEvent->Company)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "Company", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Company", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"OriginalFileName", newEvent->OriginalFileName)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "OriginalFileName", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "OriginalFileName", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"CommandLine", newEvent->CommandLine)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "CommandLine", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "CommandLine", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"CurrentDirectory", newEvent->CurrentDirectory)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "CurrentDirectory", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "CurrentDirectory", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"User", newEvent->User)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "User", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "User", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"IntegrityLevel", newEvent->IntegrityLevel)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "IntegrityLevel", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "IntegrityLevel", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Hashes", newEvent->Hashes)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "Hashes", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Hashes", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"ParentImage", newEvent->ParentImage)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
 					}
 
 					if (!(parser.try_parse<EventUINT32>(L"ParentProcessId", newEvent->ParentProcessId)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ParentProcessId", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentProcessId", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"ParentCommandLine", newEvent->ParentCommandLine)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ParentCommandLine", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentCommandLine", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"ParentImage", newEvent->ParentImage)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
 					}
 
 					if (!(parser.try_parse<EventUINT32>(L"TerminalSessionId", newEvent->TerminalSessionId)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "TerminalSessionId", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "TerminalSessionId", currentEventID);
 					}
 
 					m_eventsProcessor.DispatchEvent(newEvent);
@@ -146,7 +146,7 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 			}
 			catch (...)
 			{
-				m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing Event ID {}", currentEventID);
+				m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing Event ID {}", currentEventID);
 			}
 		});
 

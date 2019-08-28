@@ -23,12 +23,6 @@ namespace SysmonXHelpers
 	bool GetPEBAddress(const HANDLE &processHandle, PVOID &baseaddr);
 	bool GetProcessCommandLine(blackbone::Process &targetProc, std::wstring &cmdline);	
 
-	//Event Related Helpers
-	SysmonXTypes::EventID GetEventIDBasedOnName(const SysmonXTypes::EventIDName &eventName);
-	SysmonXTypes::EventPropertyID GetEventPropertyIDBasedOnName(const SysmonXTypes::EventPropertyName &propertyName);
-	SysmonXTypes::EventFilterOperation GetEventFilterOperationBasedOnName(const SysmonXTypes::EventConditionFilterName &conditionName);
-	const SysmonXTypes::MATCHING_TYPE_STRING &GetMatchingDataFromEvent(const SysmonXTypes::EventObject &eventData, const SysmonXTypes::EventPropertyID &eventID);
-
 	class ThreadCallstackWalker
 	{
 	public:

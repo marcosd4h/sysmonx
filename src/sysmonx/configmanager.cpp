@@ -41,15 +41,23 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 			if (cmdArgs.WasOptionRequested(L"-i"))
 			{
 				m_wasInstallRequested = true;
-
-				//checking if EULA accept was requested
-				if (cmdArgs.WasOptionRequestedInsensitive(L"-accepteula"))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-i", workingValue))
 				{
-					m_wasInstallAcceptEulaRequested = true;
+					//Parsing configuration value
+					if (!workingValue.empty())
+					{
+						if (!ParseConfigurationFile(workingValue))
+						{
+							logger.TraceConsoleDown("There was a problem parsing the given configuration file.");
+							return ret;
+						}
+					}
 				}
 				else
 				{
-					m_wasInstallAcceptEulaRequested = false;
+					logger.TraceConsoleDown("There was a problem parsing the -i option. Check if the input is valid");
+					return ret;
 				}
 			}
 			else
@@ -57,21 +65,38 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				m_wasInstallRequested = false;
 			}
 
+			//checking if EULA accept was requested
+			if (cmdArgs.WasOptionRequestedInsensitive(L"-accepteula"))
+			{
+				m_wasInstallAcceptEulaRequested = true;
+			}
+			else
+			{
+				m_wasInstallAcceptEulaRequested = false;
+			}
+
 			//Parsing boolean values: -u. Uninstall Request
 			if (cmdArgs.WasOptionRequested(L"-u"))
 			{
 				m_wasUninstallRequested = true;
 
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-u");
-				
-				//fuzzy matching of force request
-				if (GeneralHelpers::StrContainsPatternInsensitive(workingValue, L"force"))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-u", workingValue))
 				{
-					m_wasUninstallForceRequested = true;
+					//fuzzy matching of force request
+					if (GeneralHelpers::StrContainsPatternInsensitive(workingValue, L"force"))
+					{
+						m_wasUninstallForceRequested = true;
+					}
+					else
+					{
+						m_wasUninstallForceRequested = false;
+					}
 				}
 				else
 				{
-					m_wasUninstallForceRequested = false;
+					logger.TraceConsoleDown("There was a problem parsing the -u option. Check if the input is valid");
+					return ret;
 				}
 			}
 			else
@@ -133,61 +158,60 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 			//Parsing string values: -c. Configuration file
 			if (cmdArgs.WasOptionRequested(L"-c"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-c");
-
-				//checking if value is not empty
-				if (!workingValue.empty() && ValidateConfigurationFile(workingValue))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-c", workingValue))
 				{
-					m_wasNewConfigFileRequested = true;
-					m_configFileSyntaxOK = true;
-					m_configurationFile.assign(workingValue);
+					if (!ParseConfigurationFile(workingValue))
+					{
+						logger.TraceConsoleDown("There was a problem parsing the given configuration file.");
+						return ret;
+					}
 				}
 				else
 				{
-					std::wstring currentDirectoryWorkingFile;
-					if (GeneralHelpers::GetCurrentProcessModuleDirectory(currentDirectoryWorkingFile))
-					{
-						if (currentDirectoryWorkingFile.back() != '\\') currentDirectoryWorkingFile.push_back('\\');
-
-						currentDirectoryWorkingFile.append(workingValue);
-						if (!currentDirectoryWorkingFile.empty() && ValidateConfigurationFile(currentDirectoryWorkingFile))
-						{
-							m_wasNewConfigFileRequested = true;
-							m_configFileSyntaxOK = true;
-							m_configurationFile.assign(workingValue);
-						}
-						else
-						{
-							logger.TraceConsoleDown(" The given configuration file cannot be found.");
-							return ret;
-						}
-					}
+					logger.TraceConsoleDown("There was a problem parsing the -c option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -d. Trace backend driver name
 			if (cmdArgs.WasOptionRequested(L"-d"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-d");
-
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-d", workingValue))
 				{
-					m_traceBackendName.assign(workingValue);
+					//checking if value is not empty
+					if (!workingValue.empty())
+					{
+						m_traceBackendDriverName.assign(workingValue);
 
-					GenerateTraceBackendNames(m_traceBackendName, m_backend32ServiceName, m_backend64ServiceName);
+						GenerateTraceBackendNames(m_traceBackendDriverName, m_backend32ServiceName, m_backend64ServiceName);
+					}
 				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -d option. Check if the input is valid");
+					return ret;
+				}
+
 			}
 
-			//Parsing string values: -z. Trace backend driver name
+			//Parsing string values: -z. Collection sevice name
 			if (cmdArgs.WasOptionRequested(L"-z"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-z");
-
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-z", workingValue))
 				{
-					m_collectionServiceName.assign(workingValue);
+					//checking if value is not empty
+					if (!workingValue.empty())
+					{
+						m_collectionServiceName.assign(workingValue);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -z option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -198,25 +222,37 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				std::wstring workingValue2;
 
 				//checking if value is not empty
-				if (cmdArgs.GetTwoOptionValue(L"-t", workingValue1, workingValue2))
+				if (cmdArgs.GetTwoOptionValue(L"-t", workingValue1, workingValue2, CmdArgsParser::CaseMode::CASE_MODE_INSENSITIVE))
 				{
 					if (!workingValue1.empty()) m_backendInstallerVector = GetBackendLocation(workingValue1);
 					if (!workingValue2.empty()) m_installLocation.assign(workingValue2);
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -t option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -p. Proxy Details
 			if (cmdArgs.WasOptionRequested(L"-p"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-p");
-
-				//checking if value is not empty
-				if (!workingValue.empty())
-				{				
-					if (GetParsedProxyConfData(workingValue, m_proxyConfData))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-p", workingValue))
+				{
+					//checking if value is not empty
+					if (!workingValue.empty())
 					{
-						m_proxyRawData.assign(workingValue);
+						if (GetParsedProxyConfData(workingValue, m_proxyConfData))
+						{
+							m_proxyRawData.assign(workingValue);
+						}
 					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -p option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -227,10 +263,15 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				std::wstring workingValue2;
 				m_wasCollectionLoggingRequested = true;
 				//checking if value is not empty
-				if (cmdArgs.GetTwoOptionValue(L"-e", workingValue1, workingValue2))
+				if (cmdArgs.GetTwoOptionValue(L"-e", workingValue1, workingValue2, CmdArgsParser::CaseMode::CASE_MODE_INSENSITIVE))
 				{
 					if(!workingValue1.empty()) m_loggingCollectionService = GetLoggerMode(workingValue1);
 					if(!workingValue2.empty()) m_collectionServiceLogfile.assign(workingValue2);
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -e option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -241,22 +282,35 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				std::wstring workingValue2;
 
 				//checking if value is not empty
-				if (cmdArgs.GetTwoOptionValue(L"-f", workingValue1, workingValue2))
+				if (cmdArgs.GetTwoOptionValue(L"-f", workingValue1, workingValue2, CmdArgsParser::CaseMode::CASE_MODE_INSENSITIVE))
 				{
 					if (!workingValue1.empty()) m_loggingMgmtApp = GetLoggerMode(workingValue1);
 					if (!workingValue2.empty()) m_consoleLogfile.assign(workingValue2);
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -f option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -v. Verbosity Mode
 			if (cmdArgs.WasOptionRequested(L"-v"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-v");
-				m_wasVerbosityRequested = true;
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-v", workingValue))
 				{
-					m_loggingVerbosity = GetVerbosityMode(workingValue);
+					m_wasVerbosityRequested = true;
+					//checking if value is not empty
+					if (!workingValue.empty())
+					{
+						m_loggingVerbosity = GetVerbosityMode(workingValue);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -v option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -267,46 +321,75 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				std::wstring workingValue2;
 				m_wasReportOptionsRequested = true;
 				//checking if value is not empty
-				if (cmdArgs.GetTwoOptionValue(L"-o", workingValue1, workingValue2))
+				if (cmdArgs.GetTwoOptionValue(L"-o", workingValue1, workingValue2, CmdArgsParser::CaseMode::CASE_MODE_INSENSITIVE))
 				{					
 					if (!workingValue1.empty()) m_reportOutputList = GetReportList(workingValue1);
 					if (!workingValue2.empty()) m_reportLogfile.assign(workingValue2);
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -o option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -g. Worker Threads
 			if (cmdArgs.WasOptionRequested(L"-g"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-g");
-				m_wasNumberOfWorkersRequested = true;
-				//checking if value is not empty
-				if (!workingValue.empty() && GeneralHelpers::IsNumber(workingValue))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-g", workingValue))
 				{
-					m_nrWorkerOrchThreads = std::stoi(workingValue);
+					m_wasNumberOfWorkersRequested = true;
+					//checking if value is not empty
+					if (!workingValue.empty() && GeneralHelpers::IsNumber(workingValue))
+					{
+						m_nrWorkerOrchThreads = std::stoi(workingValue);
+					}
 				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -g option. Check if the input is valid");
+					return ret;
+				}
+
 			}
 
 			//Parsing string values: -w. Working Directory
 			if (cmdArgs.WasOptionRequested(L"-w"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-w");
-
-				//checking if value is not empty
-				if (!workingValue.empty() && GeneralHelpers::IsValidDirectory(m_workingDirectory))
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-w", workingValue))
 				{
-					m_workingDirectory.assign(workingValue);
+					//checking if value is not empty
+					if (!workingValue.empty() && GeneralHelpers::IsValidDirectory(m_workingDirectory))
+					{
+						m_workingDirectory.assign(workingValue);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -w option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -h. Working hash
 			if (cmdArgs.WasOptionRequested(L"-h"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-h");
-
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-h", workingValue))
 				{
-					m_hashAlgorithmToUse = GetHashAlgorithm(workingValue);
+					//checking if string contains valid hash algorithms		
+					if (!workingValue.empty() && GeneralHelpers::TrimSpaces(workingValue) && IsValidHashAlgorithm(workingValue))
+					{
+						m_hashAlgorithmToUse = workingValue;
+						GeneralHelpers::TrimSpaces(m_hashAlgorithmToUse);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -h option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -314,24 +397,42 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 			//Parsing string values: -l. Log loading modules
 			if (cmdArgs.WasOptionRequested(L"-l"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-l");
+				m_wasLogOfLoadingModulesRequested = true;
 
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-l", workingValue))
 				{
-					m_processesToTrackOnLoadingModules = GetProcessList(workingValue);
+					//checking if value is not empty
+					if (!workingValue.empty())
+					{
+						m_processesToTrackOnLoadingModules = GetProcessList(workingValue);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -l option. Check if the input is valid");
+					return ret;
 				}
 			}
 
 			//Parsing string values: -n. Log processes on network connections
 			if (cmdArgs.WasOptionRequested(L"-n"))
 			{
-				std::wstring workingValue = cmdArgs.GetOptionValue(L"-n");
+				m_wasLogOfNetworkConnectionsRequested = true;
 
-				//checking if value is not empty
-				if (!workingValue.empty())
+				std::wstring workingValue;
+				if (cmdArgs.GetOptionValue(L"-n", workingValue))
 				{
-					m_processesToTrackOnNetworkConnections = GetProcessList(workingValue);
+					//checking if value is not empty
+					if (!workingValue.empty())
+					{
+						m_processesToTrackOnNetworkConnections = GetProcessList(workingValue);
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("There was a problem parsing the -n option. Check if the input is valid");
+					return ret;
 				}
 			}
 
@@ -536,36 +637,56 @@ const ProcessesList ConfigManager::GetProcessList(const std::wstring &processesL
 	return ret;
 }
 
-const HashAlgorithm ConfigManager::GetHashAlgorithm(const std::wstring &selectedHash)
+const HashAlgorithmsContainer ConfigManager::GetHashAlgorithmsVector(const std::wstring &selectedHashAlgorithms)
 {
 	HashAlgorithm ret = HashAlgorithm::HASH_ALGORITHM_NA;
+	std::wstring workString(selectedHashAlgorithms);
+	HashAlgorithmsContainer container;
 
-	if (!selectedHash.empty())
+	if (!workString.empty() && GeneralHelpers::TrimSpaces(workString))
 	{
-		if (GeneralHelpers::StrCompareInsensitive(L"imphash", selectedHash))
+		CommonTypes::WStringsContainer tokensVector;
+		if ((GeneralHelpers::GetVectorByToken(workString, L'|', tokensVector)) && (tokensVector.size() > 0))
 		{
-			ret = HashAlgorithm::HASH_ALGORITHM_IMPHASH;
+			for (auto it = tokensVector.begin(); it != tokensVector.end(); ++it)
+			{
+				const std::wstring &targeHashToUse(*it);
+
+				if (GeneralHelpers::StrCompareInsensitive(L"imphash", targeHashToUse))
+				{
+					container.push_back(HashAlgorithm::HASH_ALGORITHM_IMPHASH);
+				}
+				else if (GeneralHelpers::StrCompareInsensitive(L"md5", targeHashToUse))
+				{
+					container.push_back(HashAlgorithm::HASH_ALGORITHM_MD5);
+				}
+				else if (GeneralHelpers::StrCompareInsensitive(L"sha1", targeHashToUse))
+				{
+					container.push_back(HashAlgorithm::HASH_ALGORITHM_SHA1);
+				}
+				else if (GeneralHelpers::StrCompareInsensitive(L"sha256", targeHashToUse))
+				{
+					container.push_back(HashAlgorithm::HASH_ALGORITHM_SHA256);
+				}
+				else if (GeneralHelpers::StrCompareInsensitive(L"*", targeHashToUse))
+				{
+					container.clear();
+					container.push_back(HashAlgorithm::HASH_ALGORITHM_ALL);
+					break;
+				}
+			}
+
 		}
-		else if (GeneralHelpers::StrCompareInsensitive(L"md5", selectedHash))
+
+		if (container.empty())
 		{
-			ret = HashAlgorithm::HASH_ALGORITHM_MD5;
+			// "There was a problem with given hash type parsing. Defaulting it to SHA1"
+			container.push_back(HashAlgorithm::HASH_ALGORITHM_SHA1);
 		}
-		else if (GeneralHelpers::StrCompareInsensitive(L"sha1", selectedHash))
-		{
-			ret = HashAlgorithm::HASH_ALGORITHM_SHA1;
-		}
-		else if (GeneralHelpers::StrCompareInsensitive(L"sha256", selectedHash))
-		{
-			ret = HashAlgorithm::HASH_ALGORITHM_SHA256;
-		}
-		else
-		{
-			TraceHelpers::Logger::Instance().TraceConsoleDown("There was a problem with given hash type parsing. Defaulting it to SHA1");
-			ret = HashAlgorithm::HASH_ALGORITHM_SHA1;
-		}
+
 	}
 
-	return ret;
+	return container;
 }
 
 
@@ -578,7 +699,7 @@ bool ConfigManager::IsSystemDataAvailable()
 	return ret;
 }
 
-bool ConfigManager::ValidateConfigurationFile(std::wstring &configFilename)
+bool ConfigManager::ValidateConfigurationFile(const std::wstring &configFilename)
 {
 	bool ret = false;
 
@@ -590,7 +711,43 @@ bool ConfigManager::ValidateConfigurationFile(std::wstring &configFilename)
 	return ret;
 }
 
-bool ConfigManager::IsValidHashAlgorithm(const unsigned int &hashAlgorithm)
+bool ConfigManager::IsValidHashAlgorithm(const std::wstring &selectedHashAlgorithms)
+{
+	bool ret = false;
+
+	std::wstring workString(selectedHashAlgorithms);
+	HashAlgorithmsContainer container;
+
+	if (!workString.empty() && GeneralHelpers::TrimSpaces(workString))
+	{
+		CommonTypes::WStringsContainer tokensVector;
+		if ((GeneralHelpers::GetVectorByToken(workString, L'|', tokensVector)) && (tokensVector.size() > 0))
+		{
+			for (auto it = tokensVector.begin(); it != tokensVector.end(); ++it)
+			{
+				const std::wstring &targeHashToUse(*it);
+
+				if (GeneralHelpers::StrCompareInsensitive(L"imphash", targeHashToUse) || 
+					GeneralHelpers::StrCompareInsensitive(L"md5", targeHashToUse) || 
+					GeneralHelpers::StrCompareInsensitive(L"sha1", targeHashToUse) || 
+					GeneralHelpers::StrCompareInsensitive(L"sha256", targeHashToUse) || 
+					GeneralHelpers::StrCompareInsensitive(L"*", targeHashToUse))
+				{
+					ret = true;
+				}
+				else
+				{
+					ret = false;
+					break;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool ConfigManager::IsValidHashAlgorithmRange(const unsigned int &hashAlgorithm)
 {
 	bool ret = false;
 
@@ -707,7 +864,7 @@ bool ConfigManager::IsNewWorkingDirectory()
 }
 
 //TODO: check security of new file
-bool ConfigManager::GenerateDefaultConfigFile(std::wstring &newConfigFile)
+bool ConfigManager::GenerateBackendConfigFile(std::wstring &backendConfigFile)
 {
 	bool ret = false;
 
@@ -717,18 +874,31 @@ bool ConfigManager::GenerateDefaultConfigFile(std::wstring &newConfigFile)
 	{
 		if (GeneralHelpers::IsValidDirectory(m_workingDirectory))
 		{
-			if (m_workingDirectory.back() != L'\\') m_workingDirectory.push_back(L'\\');
+			GeneralHelpers::AddPathTrailCharsIfNeeded(m_workingDirectory);
 
 			workingConfigFile.assign(m_workingDirectory);
 			workingConfigFile.append(SysmonXDefs::DEFAULT_CONFIG_FILE);
 
+			//Now populating content
 			std::wofstream configFile;
 			configFile.open(workingConfigFile);
-			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_CONTENT.c_str();
+
+			//Config Header
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_HEADER.c_str();
+
+			//Adding Config Specific values
+			configFile << GetHashAlgorithmsConfiguration().c_str();
+			configFile << GetRevocationConfiguration().c_str();
+
+			//Adding Default Filtering
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_FILTERING.c_str();
+
+			//Adding Tail
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
+
+			//Closing and saving content
 			configFile.close();
-
-			newConfigFile.assign(workingConfigFile);
-
+			backendConfigFile.assign(workingConfigFile);
 			ret = true;
 		}
 	}
@@ -740,6 +910,100 @@ bool ConfigManager::GenerateDefaultConfigFile(std::wstring &newConfigFile)
 	return ret;
 }
 
+
+//TODO: check security of new file
+bool ConfigManager::GenerateCollectionServiceConfigFile(std::wstring &collectionServiceConfigFile)
+{
+	bool ret = false;
+
+	std::wstring workingConfigFile;
+
+	try
+	{
+		if (GeneralHelpers::IsValidDirectory(m_workingDirectory))
+		{
+			GeneralHelpers::AddPathTrailCharsIfNeeded(m_workingDirectory);
+
+			workingConfigFile.assign(m_workingDirectory);
+			workingConfigFile.append(SysmonXDefs::DEFAULT_CONFIG_FILE);
+
+			//Now populating content
+			std::wofstream configFile;
+			configFile.open(workingConfigFile);
+
+			//Config Header
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_HEADER.c_str();
+
+			//Adding Config Specific values
+			configFile << GetHashAlgorithmsConfiguration().c_str();
+			configFile << GetRevocationConfiguration().c_str();
+
+			//Adding Tail
+			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
+
+			//Closing and saving content
+			configFile.close();
+			collectionServiceConfigFile.assign(workingConfigFile);
+			ret = true;
+		}
+	}
+	catch (...)
+	{
+		ret = false;
+	}
+
+	return ret;
+}
+
+bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
+{
+	bool ret = false;
+	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
+
+	//checking if value is not empty
+	if (!configFile.empty() && GeneralHelpers::IsValidFile(configFile))
+	{
+		if (!ValidateConfigurationFile(configFile))
+		{
+			logger.TraceConsoleDown(" The given configuration file contains invalid syntax.");
+			return ret;
+		}
+
+		m_wasNewConfigFileRequested = true;
+		m_configFileSyntaxOK = true;
+		m_configurationFile.assign(configFile);
+	}
+	else
+	{
+		//checking at current directory for file name
+		std::wstring currentDirectoryWorkingFile;
+		if (GeneralHelpers::GetCurrentProcessModuleDirectory(currentDirectoryWorkingFile))
+		{
+			GeneralHelpers::AddPathTrailCharsIfNeeded(currentDirectoryWorkingFile);
+
+			currentDirectoryWorkingFile.append(configFile);
+			if (!currentDirectoryWorkingFile.empty() && GeneralHelpers::IsValidFile(currentDirectoryWorkingFile))
+			{
+				if (!ValidateConfigurationFile(currentDirectoryWorkingFile))
+				{
+					logger.TraceConsoleDown(" The given configuration file contains invalid syntax.");
+					return ret;
+				}
+
+				m_wasNewConfigFileRequested = true;
+				m_configFileSyntaxOK = true;
+				m_configurationFile.assign(currentDirectoryWorkingFile);
+			}
+			else
+			{
+				logger.TraceConsoleDown(" The given configuration file cannot be found.");
+				return ret;
+			}
+		}
+	}
+
+	return ret;
+}
 
 bool ConfigManager::SyncRuntimeConfigData()
 {
@@ -775,7 +1039,7 @@ bool ConfigManager::SyncRuntimeConfigData()
 			GeneralHelpers::DPAPIDecrypt(encryptedConfDataBytes, SysmonXDefs::DEFAULT_SYSMONX_ENTROPY, decryptedConfDataBytes) &&
 			!decryptedConfDataBytes.empty())
 		{
-			//-------- Going into not-first run scenario --------//
+			//-------- Going into non-first run scenario --------//
 			SysmonXTypes::ConfigSerializedData *workingSerializedPtr = cista::offset::deserialize<SysmonXTypes::ConfigSerializedData>(decryptedConfDataBytes);
 
 			if (workingSerializedPtr)
@@ -842,7 +1106,6 @@ bool ConfigManager::SyncRuntimeConfigData()
 					workingSerializedPtr->WorkingDirectory = GeneralHelpers::GetSerializedVector(m_workingDirectory);
 				}
 
-
 				//Configuration File
 				if (!WasNewConfigFileProvided())
 				{
@@ -853,30 +1116,14 @@ bool ConfigManager::SyncRuntimeConfigData()
 					workingSerializedPtr->ConfigFile = GeneralHelpers::GetSerializedVector(m_configurationFile);
 				}
 
-				//checking config files
-				std::wstring newConfigFile;
-				if (!GeneralHelpers::IsValidFile(m_configurationFile))
-				{
-					if (GenerateDefaultConfigFile(newConfigFile) &&
-						GeneralHelpers::IsValidFile(newConfigFile))
-					{
-						m_configurationFile = newConfigFile;
-					}
-					else
-					{
-						//cannot run without config file
-						return ret;
-					}
-				}
-
 				//Hash Algorithm to use				
-				if (IsValidHashAlgorithm(workingSerializedPtr->HashAlgorithmToUse))
+				if (IsValidHashAlgorithm(GeneralHelpers::GetSerializedWString(workingSerializedPtr->HashAlgorithmToUse)))
 				{
-					m_hashAlgorithmToUse = (HashAlgorithm) workingSerializedPtr->HashAlgorithmToUse;
+					m_hashAlgorithmToUse.assign(GeneralHelpers::GetSerializedWString(workingSerializedPtr->HashAlgorithmToUse));
 				}
 				else
 				{
-					m_hashAlgorithmToUse = HashAlgorithm::HASH_ALGORITHM_SHA1;
+					m_hashAlgorithmToUse.assign(SysmonXDefs::SYSMON_DEFAULT_HASH_ALGORITHM);
 				}
 
 				//Process to Track on Loading Modules
@@ -918,7 +1165,40 @@ bool ConfigManager::SyncRuntimeConfigData()
 				{
 					m_wasSignatureRevocationCheckRequested = workingSerializedPtr->ShouldCheckSignatureRevocation;
 				}
-				
+
+				//Logging of Loading Modules requested				
+				if (WasLogOfLoadingModulesRequested())
+				{
+					workingSerializedPtr->OptionsFlags |= (SysmonBackendOptionFlags::SYSMON_OPTIONS_IMAGE_LOADING_ENABLED);
+				}
+				else
+				{
+					if (workingSerializedPtr->OptionsFlags & SysmonBackendOptionFlags::SYSMON_OPTIONS_IMAGE_LOADING_ENABLED)
+					{
+						m_wasLogOfLoadingModulesRequested = true;
+					}
+					else
+					{
+						m_wasLogOfLoadingModulesRequested = false;
+					}
+				}
+
+				if (WasLogOfNetworkConnectionsRequested())
+				{
+					workingSerializedPtr->OptionsFlags |= (SysmonBackendOptionFlags::SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED);
+				}
+				else
+				{
+					if (workingSerializedPtr->OptionsFlags & SysmonBackendOptionFlags::SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED)
+					{
+						m_wasLogOfNetworkConnectionsRequested = true;
+					}
+					else
+					{
+						m_wasLogOfNetworkConnectionsRequested = false;
+					}
+				}
+
 				//Worker Threads requested
 				if (WasNumberOfWorkerThreadsRequested())
 				{
@@ -995,9 +1275,9 @@ bool ConfigManager::SyncRuntimeConfigData()
 			//trace backend name
 			if (!IsTraceBackendDriverNameAvailable())
 			{
-				m_traceBackendName = SysmonXDefs::BACKEND_NAME;
+				m_traceBackendDriverName = SysmonXDefs::BACKEND_NAME;
 			}
-			GenerateTraceBackendNames(m_traceBackendName, m_backend32ServiceName, m_backend64ServiceName);
+			GenerateTraceBackendNames(m_traceBackendDriverName, m_backend32ServiceName, m_backend64ServiceName);
 
 			//trace backend image file 32 bits
 			if (!IsBackend32ServiceNameAvailable())
@@ -1041,7 +1321,7 @@ bool ConfigManager::SyncRuntimeConfigData()
 			std::wstring newConfigFile;
 			if (!IsConfigurationFileAvailable())
 			{
-				if (GenerateDefaultConfigFile(newConfigFile) &&
+				if (GenerateCollectionServiceConfigFile(newConfigFile) &&
 					GeneralHelpers::IsValidFile(newConfigFile))
 				{
 					m_configurationFile = newConfigFile;
@@ -1060,9 +1340,9 @@ bool ConfigManager::SyncRuntimeConfigData()
 			}
 
 			//hash algorithm to use
-			if (GetHashAlgorithmToUse() == HashAlgorithm::HASH_ALGORITHM_NA)
+			if (m_hashAlgorithmToUse.empty())
 			{
-				m_hashAlgorithmToUse = HashAlgorithm::HASH_ALGORITHM_SHA1;
+				m_hashAlgorithmToUse.assign(SysmonXDefs::SYSMON_DEFAULT_HASH_ALGORITHM);
 			}
 
 			//number of worker threads
@@ -1082,7 +1362,14 @@ bool ConfigManager::SyncRuntimeConfigData()
 			{
 				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_EVENTLOG);
 				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS);
-			}			
+			}
+
+			//Adding default report channel in case list is empty
+			if (!WasReportOptionsRequested() || m_reportOutputList.empty())
+			{
+				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_EVENTLOG);
+				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS);
+			}
 
 			//Config couldn't not be parsed or it was not available. Either the case, overwritting it now
 			workingRegistryConfigData.Backend32BitsName = GeneralHelpers::GetSerializedVector(m_backend32ServiceName);
@@ -1095,10 +1382,30 @@ bool ConfigManager::SyncRuntimeConfigData()
 			workingRegistryConfigData.WorkingDirectory = GeneralHelpers::GetSerializedVector(m_workingDirectory);
 			workingRegistryConfigData.PreviousWorkingDirectory = GeneralHelpers::GetSerializedVector(m_workingDirectory);
 			workingRegistryConfigData.CollectionServiceLogfile = GeneralHelpers::GetSerializedVector(m_collectionServiceLogfile);
-			workingRegistryConfigData.HashAlgorithmToUse = m_hashAlgorithmToUse;
+			workingRegistryConfigData.HashAlgorithmToUse = GeneralHelpers::GetSerializedVector(m_hashAlgorithmToUse);
 			workingRegistryConfigData.ShouldCheckSignatureRevocation = m_wasSignatureRevocationCheckRequested;
 			workingRegistryConfigData.CollectionServiceLoggingVerbosity = m_loggingVerbosity;
 			workingRegistryConfigData.Version = SysmonXDefs::SYSMONX_SERIALIZED_CONFIG_VERSION;
+
+			//track of loading modules flag
+			if (m_wasLogOfLoadingModulesRequested)
+			{
+				workingRegistryConfigData.OptionsFlags |= SysmonBackendOptionFlags::SYSMON_OPTIONS_IMAGE_LOADING_ENABLED;
+			}
+			else
+			{
+				workingRegistryConfigData.OptionsFlags &= (~(SysmonBackendOptionFlags::SYSMON_OPTIONS_IMAGE_LOADING_ENABLED));
+			}
+
+			//track of network connection processes flag
+			if (m_wasLogOfNetworkConnectionsRequested)
+			{
+				workingRegistryConfigData.OptionsFlags |= SysmonBackendOptionFlags::SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED;
+			}
+			else
+			{
+				workingRegistryConfigData.OptionsFlags &= (~(SysmonBackendOptionFlags::SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED));
+			}
 
 			//track of loading modules
 			if (!m_processesToTrackOnLoadingModules.empty())
@@ -1196,7 +1503,7 @@ bool ConfigManager::GetBackendFiles(std::wstring &backend32BitsFile, std::wstrin
 		!m_backend64ServiceName.empty())
 	{
 		std::wstring workingDir(m_workingDirectory);
-		if (workingDir.back() != L'\\') workingDir.push_back(L'\\');
+		GeneralHelpers::AddPathTrailCharsIfNeeded(workingDir);
 
 		backend32BitsFile.clear();
 		backend64BitsFile.clear();
@@ -1224,7 +1531,8 @@ bool ConfigManager::GetFullPathConfigFile(std::wstring &configFile)
 	{
 		std::wstring workingDir(m_workingDirectory);
 		std::wstring workingConfigFile;
-		if (workingDir.back() != L'\\') workingDir.push_back(L'\\');
+
+		GeneralHelpers::AddPathTrailCharsIfNeeded(workingDir);
 
 		workingConfigFile.append(workingDir);
 		workingConfigFile.append(m_configurationFile);
@@ -1247,20 +1555,17 @@ bool ConfigManager::GetFullPathBackendConfigFile(std::wstring &configFile)
 	{
 		std::wstring workingDir(m_workingDirectory);
 		std::wstring workingConfigFile;
-		if (workingDir.back() != L'\\') workingDir.push_back(L'\\');
 
-		std::wstring baseFileName;
-		if (GeneralHelpers::GetBaseFileName(m_configurationFile, baseFileName))
+		GeneralHelpers::AddPathTrailCharsIfNeeded(workingDir);
+
+		workingConfigFile.append(workingDir);
+		workingConfigFile.append(L"\\");
+		workingConfigFile.append(SysmonXDefs::DEFAULT_BACKEND_CONFIG_FILE_NAME);
+
+		if (!workingConfigFile.empty())
 		{
-			workingConfigFile.append(workingDir);
-			workingConfigFile.append(L"trace_backend_");
-			workingConfigFile.append(baseFileName);
-
-			if (!workingConfigFile.empty())
-			{
-				configFile.assign(workingConfigFile);
-				ret = true;
-			}
+			configFile.assign(workingConfigFile);
+			ret = true;
 		}
 	}
 
@@ -1275,7 +1580,9 @@ bool ConfigManager::GetFullPathCollectionServiceFile(std::wstring &collectionSer
 	{
 		collectionServiceFile.clear();
 		std::wstring workingFile(GetSysmonXWorkingDirectory());
-		if (workingFile.back() != L'\\') workingFile.push_back(L'\\');
+
+		GeneralHelpers::AddPathTrailCharsIfNeeded(workingFile);
+
 		workingFile.append(GetCollectionServiceName());
 		workingFile.append(L".exe");
 
@@ -1315,9 +1622,39 @@ const ReportChannelID ConfigManager::GetReportChannelID(const std::wstring &repo
 		}
 		else
 		{
-			TraceHelpers::Logger::Instance().Error(L"ConfigManager::GetReportChannel() - Given channel {} is not supported", reportChannel);
+			TraceHelpers::Logger::Instance().Error(L"ConfigManager::GetReportChannel - Given channel {} is not supported", reportChannel);
 		}
 	}
 
+	return ret;
+}
+
+std::wstring ConfigManager::GetHashAlgorithmsConfiguration()
+{
+	std::wstring ret;
+
+	if (!m_hashAlgorithmToUse.empty())
+	{
+		ret.append(L"   <HashAlgorithms>");
+		ret.append(m_hashAlgorithmToUse);
+		ret.append(L"</HashAlgorithms>\n");
+	}
+	else
+	{
+		ret.append(L"   <HashAlgorithms>*</HashAlgorithms>\n");
+	}
+
+	return ret;
+}
+
+std::wstring ConfigManager::GetRevocationConfiguration()
+{
+	std::wstring ret;
+
+	if (m_wasSignatureRevocationCheckRequested)
+	{
+		ret.append(L"   <CheckRevocation/>\n");
+	}
+	
 	return ret;
 }

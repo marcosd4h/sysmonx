@@ -30,21 +30,21 @@ bool EventCollectorETW::InitializeProvidersCallbacks()
 		//Setting up sysmon events provider
 		if (!SetupCallbackSysmonEventsHandler())
 		{
-			m_logger.Error("EventCollectorETW::InitializeProvidersCallbacks() - There was a problem setting up callback for sysmon provider");
+			m_logger.Error("EventCollectorETW::InitializeProvidersCallbacks - There was a problem setting up callback for sysmon provider");
 			return ret;
 		}
 
 		//Setting up Kernel Callback Process provider
 		if (!SetupCallbackKernelProcessCreateHandler())
 		{
-			m_logger.Trace("EventCollectorETW::InitializeProvidersCallbacks() - There was a problem setting up callback for kernel create process");
+			m_logger.Trace("EventCollectorETW::InitializeProvidersCallbacks - There was a problem setting up callback for kernel create process");
 			return ret;
 		}
 
 		//Setting up ETW Powershell provider
 		if (!SetupCallbackPowershellEventsHandler())
 		{
-			m_logger.Trace("EventCollectorETW::InitializeProvidersCallbacks() - There was a problem setting up callback for powershell events handler");
+			m_logger.Trace("EventCollectorETW::InitializeProvidersCallbacks - There was a problem setting up callback for powershell events handler");
 			return ret;
 		}
 
@@ -58,7 +58,7 @@ bool EventCollectorETW::InitETWCollectors()
 {
 	bool ret = false;
 
-	m_logger.Trace("InitETWCollectors() - About to execute EventCollectorETW::InitETWCollectors()");
+	m_logger.Trace("InitETWCollectors - About to execute EventCollectorETW::InitETWCollectors()");
 	if (IsInitialized())
 	{
 		//Initializing different callbacks
@@ -92,7 +92,7 @@ bool EventCollectorETW::InitETWCollectors()
 		}
 		else
 		{
-			m_logger.Trace("InitETWCollectors() - There was a problem initializing providers callbacks()");
+			m_logger.Trace("InitETWCollectors - There was a problem initializing providers callbacks()");
 		}
 	}
 

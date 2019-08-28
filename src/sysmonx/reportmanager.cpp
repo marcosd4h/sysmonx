@@ -6,7 +6,7 @@ bool ReportManager::Initialize()
 
 	bool ret = true;
 
-	m_logger.Trace("ReportManager::Initialize() - About to initialize report channels");
+	m_logger.Trace("ReportManager::Initialize - About to initialize report channels");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{
@@ -36,42 +36,42 @@ bool ReportManager::Initialize()
 			//Debug events report channel
 			if (reportChannelDebugEvents->Initialize() && AddNewReporter(SysmonXTypes::ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS, reportChannelDebugEvents))
 			{
-				m_logger.Trace("ReportManager::Initialize() - Debug Events report channel was succesfully added");
+				m_logger.Trace("ReportManager::Initialize - Debug Events report channel was succesfully added");
 			}
 			else
 			{
-				m_logger.Error("ReportManager::Initialize() - There was a problem adding Debug Events report channel");
+				m_logger.Error("ReportManager::Initialize - There was a problem adding Debug Events report channel");
 			}
 
 			//ETW report channel
 			if (reportChannelETW->Initialize() && AddNewReporter(SysmonXTypes::ReportChannelID::REPORT_CHANNEL_ETW, reportChannelETW))
 			{
 
-				m_logger.Trace("ReportManager::Initialize() - ETW report channel was succesfully added");
+				m_logger.Trace("ReportManager::Initialize - ETW report channel was succesfully added");
 			}
 			else
 			{
-				m_logger.Error("ReportManager::Initialize() - There was a problem adding ETW report channel");
+				m_logger.Error("ReportManager::Initialize - There was a problem adding ETW report channel");
 			}
 
 			//Logfile report channel
 			if (reportChannelLogfile->Initialize() && AddNewReporter(SysmonXTypes::ReportChannelID::REPORT_CHANNEL_LOGFILE, reportChannelLogfile))
 			{
-				m_logger.Trace("ReportManager::Initialize() - Logfile report channel was succesfully added");
+				m_logger.Trace("ReportManager::Initialize - Logfile report channel was succesfully added");
 			}
 			else
 			{
-				m_logger.Error("ReportManager::Initialize() - There was a problem adding Logfile report channel");
+				m_logger.Error("ReportManager::Initialize - There was a problem adding Logfile report channel");
 			}
 			
 			//Eventlog report channel
 			if ( reportChannelEventLog->Initialize() && AddNewReporter(SysmonXTypes::ReportChannelID::REPORT_CHANNEL_EVENTLOG, reportChannelEventLog))
 			{
-				m_logger.Trace("ReportManager::Initialize() - Eventlog report channel was succesfully added");
+				m_logger.Trace("ReportManager::Initialize - Eventlog report channel was succesfully added");
 			}
 			else
 			{
-				m_logger.Error("ReportManager::Initialize() - There was a problem adding Eventlog report channel");
+				m_logger.Error("ReportManager::Initialize - There was a problem adding Eventlog report channel");
 			}
 
 			m_isInitialized = true;
@@ -134,7 +134,7 @@ void ReportManager::SerializedReportHandler(const SysmonXTypes::ReportObject &ne
 	}
 	catch (...)
 	{
-		m_logger.Trace("ReportManager::NewReportHandler() - There was a problem handling new report request");
+		m_logger.Trace("ReportManager::NewReportHandler - There was a problem handling new report request");
 	}
 }
 
@@ -145,7 +145,7 @@ bool ReportManager::SetTargetReportChannels(const SysmonXTypes::ReportOutputList
 
 	if (!reportList.empty())
 	{
-		m_logger.Trace("ReportManager::SetTargetReportChannels() - About to set target report channels");
+		m_logger.Trace("ReportManager::SetTargetReportChannels - About to set target report channels");
 
 		m_targetConfigurationReporters.assign(reportList.begin(), reportList.end());
 

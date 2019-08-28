@@ -4,7 +4,7 @@ bool ReportChannelDebugEvents::Initialize()
 {
 	bool ret = false;
 
-	m_logger.Trace("ReportChannelDebugEvents::Initialize() - About to initialize Debug Events Report Channel processor");
+	m_logger.Trace("ReportChannelDebugEvents::Initialize - About to initialize Debug Events Report Channel processor");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{		
@@ -30,7 +30,7 @@ bool ReportChannelDebugEvents::SendReportFinding(const SysmonXTypes::ReportObjec
 		std::wstring dataToReport;
 
 		dataToReport.append(L"TEST_SYSMONX_EVENT");
-		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessID)); dataToReport.append(L"\n");
+		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessId)); dataToReport.append(L"\n");
 		dataToReport.append(L"CommandLine "); dataToReport.append(reportData->Event->CommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"Image "); dataToReport.append(reportData->Event->Image);  dataToReport.append(L"\n");
 		dataToReport.append(L"ParentProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ParentProcessId)); dataToReport.append(L"\n");
@@ -39,7 +39,7 @@ bool ReportChannelDebugEvents::SendReportFinding(const SysmonXTypes::ReportObjec
 
 		OutputDebugStringW(dataToReport.c_str());
 
-		m_logger.Trace("ReportChannelDebugEvents::SendReportFinding() - About to process a new event for Debug Events channel");
+		m_logger.Trace("ReportChannelDebugEvents::SendReportFinding - About to process a new event for Debug Events channel");
 
 		ret = true;
 	}

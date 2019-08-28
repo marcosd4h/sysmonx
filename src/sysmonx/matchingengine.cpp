@@ -8,7 +8,7 @@ void PerformProcessHollowingScan(SysmonXTypes::EventObject &data)
 	blackbone::pe::PEImage mainModuleMemory;
 	blackbone::pe::PEImage mainModuleDisk;
 	WindowsTypes::BytePTR buffer = nullptr;
-	DWORD processIDtoInspect = data->ProcessID;
+	DWORD processIDtoInspect = data->ProcessId;
 
 	//Grabbing main module from memory and disk
 	if (WindowsHelpers::GetBBProcessFromPID(processIDtoInspect, process) &&
@@ -59,7 +59,7 @@ bool MatchingEngine::Initialize()
 	boost::lock_guard<boost::mutex> lk(m_mutex);
 	bool ret = true;
 
-	m_logger.Trace("MatchingEngine::Initialize() - About to initialize correlation engine channels");
+	m_logger.Trace("MatchingEngine::Initialize - About to initialize correlation engine channels");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{	
@@ -70,21 +70,21 @@ bool MatchingEngine::Initialize()
 		if (matchEventProcessCreate->Initialize() && 
 			AddNewMatcher(SysmonXTypes::EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS, matchEventProcessCreate))
 		{
-			m_logger.Trace("MatchingEngine::Initialize() - Process create matcher was succesfully added");
+			m_logger.Trace("MatchingEngine::Initialize - Process create matcher was succesfully added");
 		}
 		else
 		{
-			m_logger.Error("MatchingEngine::Initialize() - There was a problem adding Process Create matcher");
+			m_logger.Error("MatchingEngine::Initialize - There was a problem adding Process Create matcher");
 		}
 
 		if (matchEventPowershell->Initialize() &&
 			AddNewMatcher(SysmonXTypes::EventID::SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND, matchEventPowershell))
 		{
-			m_logger.Trace("MatchingEngine::Initialize() - Powershell event matching was succesfully added");
+			m_logger.Trace("MatchingEngine::Initialize - Powershell event matching was succesfully added");
 		}
 		else
 		{
-			m_logger.Error("MatchingEngine::Initialize() - There was a problem adding Powershell event matcher");
+			m_logger.Error("MatchingEngine::Initialize - There was a problem adding Powershell event matcher");
 		}
 
 		m_isInitialized = true;
@@ -161,7 +161,11 @@ bool MatchingEngine::AddNewEventFilterCondition(
 	boost::lock_guard<boost::mutex> lk(m_mutex);
 	bool ret = false;
 
-	if (!m_matchers.empty() && !propertyName.empty() && !data.empty())
+	if (!m_matchers.empty() && 
+		!propertyName.empty() && 
+		!data.empty() && 
+		(evalGroup != EventFilterEvalGroup::EVENT_FILTER_EVAL_NA) &&
+		(operation != EventFilterOperation::EVENT_FILTER_OPERATION_NA))
 	{
 		MatchEventContainer::iterator matcherIT = m_matchers.find(eventID);
 		if (matcherIT != m_matchers.end())

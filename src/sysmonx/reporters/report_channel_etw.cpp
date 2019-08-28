@@ -4,7 +4,7 @@ bool ReportChannelETW::Initialize()
 {
 	bool ret = false;
 
-	m_logger.Trace("ReportChannelETW::Initialize() - About to initialize ETW report channel processor");
+	m_logger.Trace("ReportChannelETW::Initialize - About to initialize ETW report channel processor");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{
@@ -25,7 +25,7 @@ bool ReportChannelETW::SendReportFinding(const SysmonXTypes::ReportObject &repor
 
 	if (IsInitialized() && reportData)
 	{
-		m_logger.Trace("ReportChannelETW::SendReportFinding() - About to process a new event for ETW channel");
+		m_logger.Trace("ReportChannelETW::SendReportFinding - About to process a new event for ETW channel");
 
 		ret = true;
 	}

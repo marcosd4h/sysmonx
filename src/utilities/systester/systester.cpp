@@ -40,8 +40,10 @@ int wmain(int argc, wchar_t *argv[])
 		return 1;
 	}
 
-	const std::wstring &codeToInject = inputCmds.GetOptionValue(L"-s");
-	if (codeToInject.empty() || 
+	std::wstring codeToInject;
+	
+	inputCmds.GetOptionValue(L"-s", codeToInject);
+	if (codeToInject.empty() ||
 		!SystesterHelpers::IsValidFile(codeToInject) || 
 		!SystesterHelpers::GetFullPathToFile(codeToInject, fullPathToFileToInject))
 	{
@@ -50,7 +52,8 @@ int wmain(int argc, wchar_t *argv[])
 		return 1;
 	}
 
-	const std::wstring &targetToInject = inputCmds.GetOptionValue(L"-t");
+	std::wstring targetToInject;
+	inputCmds.GetOptionValue(L"-t", targetToInject);
 	if (targetToInject.empty())
 	{
 		std::wcerr << L"[-] Target PID/Process was not provided" << std::endl;
@@ -58,7 +61,8 @@ int wmain(int argc, wchar_t *argv[])
 		return 1;
 	}
 
-	const std::wstring &targetMode = inputCmds.GetOptionValue(L"-m");
+	std::wstring targetMode;
+	inputCmds.GetOptionValue(L"-m", targetMode);
 	if (targetMode.empty())
 	{
 		std::wcerr << L"[-] Target mode was not provided" << std::endl;

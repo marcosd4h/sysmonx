@@ -127,6 +127,7 @@ namespace GeneralHelpers
 	void StrToUppercase(std::string &str);
 	void StrToLowercase(std::wstring &str);
 	void StrToLowercase(std::string &str);
+	void AddPathTrailCharsIfNeeded(std::wstring &dir);
 	const time_t GetEpochTimestamp();
 }
 

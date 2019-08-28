@@ -4,7 +4,7 @@ bool EventsManager::Initialize()
 {
 	bool ret = true;
 
-	m_logger.Trace("EventsManager::Initialize() - About to initialize event collectors");
+	m_logger.Trace("EventsManager::Initialize - About to initialize event collectors");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{
@@ -16,11 +16,11 @@ bool EventsManager::Initialize()
 		//ETW event collection
 		if (eventCollectionETW->Initialize() && AddNewCollector(SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW, eventCollectionETW))
 		{
-			m_logger.Trace("EventsManager::Initialize() - ETW technology event collection was succesfully added");
+			m_logger.Trace("EventsManager::Initialize - ETW technology event collection was succesfully added");
 		}
 		else
 		{
-			m_logger.Error("EventsManager::Initialize() - There was a problem adding ETW event collection technology");
+			m_logger.Error("EventsManager::Initialize - There was a problem adding ETW event collection technology");
 		}
 
 		if (AreCollectorsReady())

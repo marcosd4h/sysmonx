@@ -28,6 +28,7 @@ namespace CommonTypes
 		HASH_ALGORITHM_SHA256,
 		HASH_ALGORITHM_MD5,
 		HASH_ALGORITHM_IMPHASH,
+		HASH_ALGORITHM_ALL,
 		HASH_ALGORITHM_NA
 	};
 
@@ -46,6 +47,7 @@ namespace CommonTypes
 	typedef std::vector<unsigned int> UIntContainer;
 	typedef std::vector<BYTE> ByteContainer;
 	typedef std::vector<LoggerMode> LoggerContainer;
+	typedef std::vector<unsigned int> HashAlgorithmsContainer;
 	typedef StringsContainer ProcessesList;
 	typedef cista::offset::vector<char> SerializedCharVector;
 	typedef cista::offset::vector<wchar_t> SerializedWCharVector;

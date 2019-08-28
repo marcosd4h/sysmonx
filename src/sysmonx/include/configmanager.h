@@ -25,6 +25,8 @@ public:
 	bool IsNewBackend32Instance();
 	bool IsNewBackend64Instance();
 	bool IsNewWorkingDirectory();
+	bool GenerateBackendConfigFile(std::wstring &configFile);
+	bool GenerateCollectionServiceConfigFile(std::wstring &configFile);
 
 	//Boolean Configuration Helpers
 	bool IsInitialized() { return m_isInitialized; }
@@ -35,6 +37,8 @@ public:
 	bool WasUninstallRequested() { return m_wasUninstallRequested; }
 	bool WasForceUninstallRequested() { return m_wasUninstallForceRequested; }
 	bool WasSignatureRevocationRequested() { return m_wasSignatureRevocationCheckRequested; }
+	bool WasLogOfLoadingModulesRequested() { return m_wasLogOfLoadingModulesRequested; }
+	bool WasLogOfNetworkConnectionsRequested() { return m_wasLogOfNetworkConnectionsRequested; }
 	bool WasDumpOfSchemaRequested() { return m_wasDumpOfSchemaDefinitionsRequested; }
 	bool WasInstallManifestRequested() { return m_wasInstallEventsManifestRequested; }
 	bool WasConfigurationDumpRequested() { return m_wasPrintCurrentConfigurationRequested; }
@@ -46,7 +50,7 @@ public:
 	bool WasNewConfigFileProvided() { return m_wasNewConfigFileRequested; }
 	bool WereStandaloneActionsRequested() { return (m_wasNewConfigFileRequested || m_wasPrintCurrentConfigurationRequested || m_wasDumpOfSchemaDefinitionsRequested || m_wasInstallEventsManifestRequested); }
 	bool IsConfigurationFileAvailable() { return !m_configurationFile.empty(); }
-	bool IsTraceBackendDriverNameAvailable() { return !m_traceBackendName.empty(); }
+	bool IsTraceBackendDriverNameAvailable() { return !m_traceBackendDriverName.empty(); }
 	bool IsBackend32ServiceNameAvailable() { return !m_backend32ServiceName.empty(); }
 	bool IsBackend64ServiceNameAvailable() { return !m_backend64ServiceName.empty(); }
 	bool IsCollectionServiceNameAvailable() { return !m_collectionServiceName.empty(); }
@@ -60,7 +64,6 @@ public:
 	bool IsWorkingDirectoryAvailable() { return !m_workingDirectory.empty(); }
 
 	//Data Configuration Helpers
-	const HashAlgorithm& GetHashAlgorithmToUse() { return m_hashAlgorithmToUse; }
 	const ProcessesList& GetProcessesToTrackLoadingModulesList() { return m_processesToTrackOnLoadingModules; }
 	const ProcessesList& GetProcessesToTrackNetworkConnections() { return m_processesToTrackOnNetworkConnections; }
 	const BackendInstallVector& GetBackendInstallerVector() { return m_backendInstallerVector; }
@@ -72,6 +75,7 @@ public:
 	const ProxyConfData& GetProxyConfData() { return m_proxyConfData; }
 
 	//String Configuration Helpers
+	const std::wstring& GetHashAlgorithmToUse() { return m_hashAlgorithmToUse; }
 	const std::wstring& GetConfigurationFile() { return m_configurationFile; }
 	const std::wstring& GetBackend32ServiceName() { return m_backend32ServiceName; }
 	const std::wstring& GetBackend64ServiceName() { return m_backend64ServiceName; }
@@ -92,27 +96,32 @@ private:
 	//Private Helpers
 	bool SyncRuntimeConfigData();
 	bool IsSystemDataAvailable();
-	bool ValidateConfigurationFile(std::wstring &configFilename);
-	bool IsValidHashAlgorithm(const unsigned int &hashAlgorithm);
+	bool ValidateConfigurationFile(const std::wstring &configFilename);
+	bool IsValidHashAlgorithm(const std::wstring &selectedHashAlgorithms);
+	bool IsValidHashAlgorithmRange(const unsigned int &hashAlgorithm);
 	bool GenerateTraceBackendNames(const std::wstring &traceBackendName, std::wstring &traceBackend32BitsName, std::wstring &traceBackend64BitsName);
 	bool GetParsedProxyConfData(const std::wstring &proxyStr, ProxyConfData &proxyData);
-	bool GenerateDefaultConfigFile(std::wstring &newConfigFile);
+	bool ParseConfigurationFile(const std::wstring &configFile);
 	const BackendInstallVector GetBackendLocation(const std::wstring &backend);
 	const LoggerContainer GetLoggerMode(const std::wstring &loggerMode);
 	const LoggerVerbose GetVerbosityMode(const std::wstring &verbosityMode);
-	const HashAlgorithm GetHashAlgorithm(const std::wstring &selectedHash);
+	const HashAlgorithmsContainer GetHashAlgorithmsVector(const std::wstring &selectedHashAlgorithms);	
 	const ReportOutputList GetReportList(const std::wstring &reportList);
 	const ProcessesList GetProcessList(const std::wstring &processesList);
 	const ReportChannelID GetReportChannelID(const std::wstring &reportChannel);
+	std::wstring GetHashAlgorithmsConfiguration();
+	std::wstring GetRevocationConfiguration();
 
 	//Lifecycle management
 	ConfigManager() : m_isInitialized(false), m_isServiceMode(false), m_isServiceDataAvailable(false), 
 		m_wasInstallRequested(false), m_wasInstallAcceptEulaRequested(false), m_wasUninstallRequested(false), 
-		m_wasUninstallForceRequested(false), m_wasSignatureRevocationCheckRequested(false), m_wasDumpOfSchemaDefinitionsRequested(false),
-		m_wasInstallEventsManifestRequested(false), m_wasPrintCurrentConfigurationRequested(false), m_wasHelpRequested(false), 
+		m_wasUninstallForceRequested(false), m_wasSignatureRevocationCheckRequested(false),
+		m_wasLogOfLoadingModulesRequested(false), m_wasLogOfNetworkConnectionsRequested(false),
+		m_wasDumpOfSchemaDefinitionsRequested(false), m_wasInstallEventsManifestRequested(false), 
+		m_wasPrintCurrentConfigurationRequested(false), m_wasHelpRequested(false), 
 		m_configFileSyntaxOK(false), m_wasNumberOfWorkersRequested(false), m_wasCollectionLoggingRequested(false), 
 		m_wasVerbosityRequested(false), m_wasReportOptionsRequested(false), m_wasNewConfigFileRequested (false),
-		m_hashAlgorithmToUse(HashAlgorithm::HASH_ALGORITHM_SHA1), m_backendInstallerVector(BackendInstallVector::BACKEND_INSTALLER_WEB),
+		m_hashAlgorithmToUse(SysmonXDefs::SYSMON_DEFAULT_HASH_ALGORITHM), m_backendInstallerVector(BackendInstallVector::BACKEND_INSTALLER_WEB),
 		m_loggingMgmtApp(LoggerMode::LOGGER_CONSOLE), m_loggingCollectionService(LoggerMode::LOGGER_NA),
 		m_loggingVerbosity(LoggerVerbose::LOGGER_TRACE), m_nrWorkerOrchThreads(SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS)
 	{
@@ -138,6 +147,8 @@ private:
 	bool m_wasUninstallRequested;
 	bool m_wasUninstallForceRequested;
 	bool m_wasSignatureRevocationCheckRequested;
+	bool m_wasLogOfLoadingModulesRequested;
+	bool m_wasLogOfNetworkConnectionsRequested;
 	bool m_wasDumpOfSchemaDefinitionsRequested;
 	bool m_wasInstallEventsManifestRequested;
 	bool m_wasPrintCurrentConfigurationRequested;
@@ -148,7 +159,7 @@ private:
 	bool m_wasVerbosityRequested;
 	bool m_wasReportOptionsRequested;
 	bool m_wasNewConfigFileRequested;
-	HashAlgorithm m_hashAlgorithmToUse;
+	std::wstring m_hashAlgorithmToUse;
 	ProcessesList m_processesToTrackOnLoadingModules;
 	ProcessesList m_processesToTrackOnNetworkConnections;
 	BackendInstallVector m_backendInstallerVector;
@@ -159,7 +170,7 @@ private:
 	UINT32 m_nrWorkerOrchThreads;
 	ProxyConfData m_proxyConfData;
 	std::wstring m_configurationFile;
-	std::wstring m_traceBackendName;
+	std::wstring m_traceBackendDriverName;
 	std::wstring m_backend32ServiceName;
 	std::wstring m_backend64ServiceName;
 	std::wstring m_previousBackend32ServiceName;

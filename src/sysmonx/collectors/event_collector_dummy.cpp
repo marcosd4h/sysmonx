@@ -7,7 +7,7 @@ bool EventCollectorSample::Initialize()
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 	ConfigManager &config = ConfigManager::Instance();
 
-	logger.Trace("EventCollectorSample::Initialize() - About to initialize Event Collector Sample Technology");
+	logger.Trace("EventCollectorSample::Initialize - About to initialize Event Collector Sample Technology");
 
 	if (config.IsInitialized() && !IsInitialized())
 	{
@@ -36,7 +36,7 @@ bool EventCollectorSample::UpdatePolicy(const SysmonXTypes::RulesContainer &repo
 	if (IsInitialized())
 	{
 		m_isEnabled = false;
-		logger.Trace("EventCollectorSample::UpdatePolicy() - About to update Sample Event collection policy");
+		logger.Trace("EventCollectorSample::UpdatePolicy - About to update Sample Event collection policy");
 
 		ret = true;
 	}
@@ -53,7 +53,7 @@ bool EventCollectorSample::StartEventsCollection()
 
 	if (IsInitialized())
 	{
-		logger.Trace("EventCollectorSample::StartEventsCollection() - About to start Sample event collection");
+		logger.Trace("EventCollectorSample::StartEventsCollection - About to start Sample event collection");
 
 		//Waiting running thread to finish
 		if (m_isEnabled)
@@ -81,7 +81,7 @@ bool EventCollectorSample::StopEventsCollection()
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 	ConfigManager &config = ConfigManager::Instance();
 
-	logger.Trace("EventCollectorSample::StopEventsCollection() - About to stop Sample event collection");
+	logger.Trace("EventCollectorSample::StopEventsCollection - About to stop Sample event collection");
 
 	if (IsInitialized())
 	{

@@ -52,9 +52,9 @@ bool EventCollectorETW::SetupCallbackKernelProcessCreateHandler()
 					newEvent->EventETWProviderName.assign(ETW_PROVIDER_NAME);
 
 					//Filling up event-specific data
-					if (!(parser.try_parse<EventUINT32>(L"ProcessId", newEvent->ProcessID)))
+					if (!(parser.try_parse<EventUINT32>(L"ProcessId", newEvent->ProcessId)))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
 					}
 
 					m_eventsProcessor.DispatchEvent(newEvent);
@@ -63,7 +63,7 @@ bool EventCollectorETW::SetupCallbackKernelProcessCreateHandler()
 			}
 			catch (...)
 			{
-				m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler() - There was a problem parsing Event ID {}", record.EventHeader.EventDescriptor.Id);
+				m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing Event ID {}", record.EventHeader.EventDescriptor.Id);
 			}
 		});
 

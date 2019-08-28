@@ -11,21 +11,21 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized() )
 		{	
-			logger.Info("RunCollectionService() - About to start collection service");
+			logger.Info("RunCollectionService - About to start collection service");
 
 			if (CollectorService::Instance().RunService())
 			{
-				logger.Info("RunCollectionService() - Collection service was properly started");
+				logger.Info("RunCollectionService - Collection service was properly started");
 				ret = true;
 			}
 			else
 			{
-				logger.Error("RunCollectionService() - There was a problem running collector service");
+				logger.Error("RunCollectionService - There was a problem running collector service");
 			}			
 		}
 		else
 		{
-			logger.Error("RunCollectionService() - Configuration was not initialized");
+			logger.Error("RunCollectionService - Configuration was not initialized");
 		}
 
 		return ret;
@@ -41,10 +41,10 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("InstallCollectionService() - About to install Collection Service");
+			logger.Info("InstallCollectionService - About to install Collection Service");
 
 			//Getting configuration data
-			logger.Trace("InstallCollectionService() - Gathering running config");			
+			logger.Trace("InstallCollectionService - Gathering running config");			
 			
 			//Asumming Sysmon as Driver Trace Backend for the moment
 			const CommonTypes::TraceBackendType &traceBackendType = CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON; 			
@@ -60,78 +60,89 @@ namespace SysmonXAppFlows
 			//Only sysmon is supported backend at the moment
 			if (traceBackendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{				
-				logger.Trace("InstallCollectionService() - Stopping previous instances");
+				logger.Trace("InstallCollectionService - Stopping previous instances");
+				//TODO: mjo - add an argument to force uninstall. This should not be a default action
 				if (!InternalActions::UninstallPreviousInstances(traceBackendType))
 				{
-					logger.Error("InstallCollectionService() - There was a problem stopping previous instances of collection and trace backend services");
+					logger.Error("InstallCollectionService - There was a problem stopping previous instances of collection and trace backend services");
 					return ret;
 				}
 
+				//TODO: mjo - check if a check for latest trace backend (downloaded sysmon version) can be added here	
 				if (traceBackendInstallVector == CommonTypes::BackendInstallVector::BACKEND_INSTALLER_FILES)
 				{
-					logger.Trace("InstallCollectionService() - About to extract sysmon as extended trace backend from filesystem location");
+					logger.Trace("InstallCollectionService - About to extract sysmon as extended trace backend from filesystem location");
 					if (!InternalActions::ValidateFileAndExtract(traceBackendFileLocation, workingDirectory))
 					{
-						logger.Error("InstallCollectionService() - There was a problem installing sysmon from given location");
+						logger.Error("InstallCollectionService - There was a problem installing sysmon from given location");
 						return ret;
 					}
 				}
 				else if (traceBackendInstallVector == CommonTypes::BackendInstallVector::BACKEND_INSTALLER_WEB)
 				{
-					logger.Trace("InstallCollectionService() - About to download and extract sysmon as extended trace backend");
+					logger.Trace("InstallCollectionService - About to download and extract sysmon as extended trace backend");
 					if (!InternalActions::DownloadAndExtract(SysmonXDefs::SYSMON_DEFAULT_HOST, SysmonXDefs::SYSMON_DEFAULT_URI, proxyData, workingDirectory))
 					{
-						logger.Error("InstallCollectionService() - There was a problem dowloading sysmon");
+						logger.Error("InstallCollectionService - There was a problem dowloading sysmon");
 						return ret;
 					}
 				}
 				else
 				{
-					logger.Error("InstallCollectionService() - The given install vector is not valid");
+					logger.Error("InstallCollectionService - The given install vector is not valid");
 					return ret;
 				}
-
-				logger.Trace("InstallCollectionService() - Sysmon was downloaded and extracted, now setting it up");
+							
+				logger.Trace("InstallCollectionService - Sysmon was downloaded and extracted, now setting it up");
 				if (!InternalActions::SetupTraceBackend(traceBackendType, workingDirectory, target32BitsBackend, target64BitsBackend))
 				{
-					logger.Error("InstallCollectionService() - There was a problem setting up sysmon files");
+					logger.Error("InstallCollectionService - There was a problem setting up sysmon files");
 					return ret;
 				}
 
-				logger.Trace("InstallCollectionService() - About to install sysmon");
+				logger.Trace("InstallCollectionService - About to install sysmon");
 				if (!InternalActions::InstallTraceBackend(traceBackendType, target32BitsBackend, target64BitsBackend))
 				{
-					logger.Error("InstallCollectionService() - There was a problem installing sysmon");
+					logger.Error("InstallCollectionService - There was a problem installing sysmon");
 					return ret;
 				}
 
-				logger.Trace("InstallCollectionService() - About to setup collection Service");
-				if (!InternalActions::SetupCollectionService(targetCollectionService))
+				logger.Trace("InstallCollectionService - Now checking current state of collection service");
+				if (InternalActions::IsNewCollectionServiceInstallRequired())
 				{
-					InternalActions::UninstallPreviousInstances(traceBackendType);
-					logger.Error("InstallCollectionService() - There was a problem setting up collection service");
-					return ret;
+					logger.Trace("InstallCollectionService - About to setup collection Service");
+					if (!InternalActions::SetupCollectionService(targetCollectionService))
+					{
+						InternalActions::UninstallPreviousInstances(traceBackendType);
+						logger.Error("InstallCollectionService - There was a problem setting up collection service");
+						return ret;
+					}
+
+					logger.Trace("InstallCollectionService - About to install collection Service");
+					if (!InternalActions::InstallHelperCollectionService(targetCollectionService))
+					{
+						InternalActions::UninstallPreviousInstances(traceBackendType);
+						logger.Error("InstallCollectionService - There was a problem installing collection service");
+						return ret;
+					}
+
+					logger.Info("InstallCollectionService - Collection service was successfully installed.");
 				}
-	
-				logger.Trace("InstallCollectionService() - About to install collection Service");
-				if (!InternalActions::InstallCollectionServiceHelper(targetCollectionService))
+				else
 				{
-					InternalActions::UninstallPreviousInstances(traceBackendType);
-					logger.Error("InstallCollectionService() - There was a problem installing collection service");
-					return ret;
+					logger.Info("InstallCollectionService - Collection service was already installed.");
 				}
 
-				logger.Info("InstallCollectionService() - Collection service was successfully installed.");
 				ret = true;
 			}
 			else
 			{
-				logger.Error("InstallCollectionService() - Backend type is not supported");
+				logger.Error("InstallCollectionService - Backend type is not supported");
 			}			
 		}
 		else
 		{
-			logger.Error("InstallCollectionService() - Configuration was not initialized");
+			logger.Error("InstallCollectionService - Configuration was not initialized");
 		}
 
 		return ret;
@@ -147,7 +158,7 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("UninstallCollectionService() - About to uninstall Collection Service");
+			logger.Info("UninstallCollectionService - About to uninstall Collection Service");
 
 			//Asumming Sysmon as Driver Trace Backend for the moment
 			const CommonTypes::TraceBackendType &traceBackendType = CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON;
@@ -159,27 +170,27 @@ namespace SysmonXAppFlows
 			//Only sysmon is supported backend at the moment
 			if (traceBackendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("UninstallCollectionService() - About to stop and uninstall backend service");
+				logger.Trace("UninstallCollectionService - About to stop and uninstall backend service");
 
 				//uninstalling target backend
 				if (InternalActions::UninstallPreviousInstances(traceBackendType))
 				{
-					logger.Info("UninstallCollectionService() - Collection and Backend Services were properly uninstalled");
+					logger.Info("UninstallCollectionService - Collection and Backend Services were properly uninstalled");
 					ret = true;
 				}
 				else
 				{
-					logger.Error("UninstallCollectionService() - There was an error uninstalling collection and backend services");
+					logger.Error("UninstallCollectionService - There was an error uninstalling collection and backend services");
 				}
 			}
 			else
 			{
-				logger.Trace("UninstallCollectionService() - Backend type is not supported");
+				logger.Trace("UninstallCollectionService - Backend type is not supported");
 			}			
 		}
 		else
 		{
-			logger.Error("UninstallCollectionService() - Configuration was not initialized");
+			logger.Error("UninstallCollectionService - Configuration was not initialized");
 		}
 
 		return ret;
@@ -195,23 +206,23 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("RefreshCollectionServiceDataConfiguration() - About to make the service to refresh its configuration");
+			logger.Info("RefreshCollectionServiceDataConfiguration - About to make the service to refresh its configuration");
 
 			//Configuration is already updated on the registry, so only thing needed is around 
 			//restarting collection service so new data is picked up
 			if (ServiceHelpers::RestartTargetService(config.GetCollectionServiceName()))
 			{
-				logger.Info("RefreshCollectionServiceDataConfiguration() - Collection service was restarted and new config was picked up");
+				logger.Info("RefreshCollectionServiceDataConfiguration - Collection service was restarted and new config was picked up");
 				ret = true;
 			}
 			else
 			{
-				logger.Trace("RefreshCollectionServiceDataConfiguration() - There was a problem restarting collector service for config update");
+				logger.Trace("RefreshCollectionServiceDataConfiguration - There was a problem restarting collector service for config update");
 			}
 		}
 		else
 		{
-			logger.Error("RefreshCollectionServiceDataConfiguration() - Configuration was not initialized");
+			logger.Error("RefreshCollectionServiceDataConfiguration - Configuration was not initialized");
 		}
 
 		return ret;
@@ -226,77 +237,77 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("SetupWorkEnvironment() - About to setup the current work environment");
+			logger.Info("SetupWorkEnvironment - About to setup the current work environment");
 
 			//Checking Working Directory configuration data
 			if (GeneralHelpers::IsValidDirectory(config.GetSysmonXWorkingDirectory()))
 			{
-				logger.Trace(L"SetupWorkEnvironment() - Working directory set to {}", config.GetSysmonXWorkingDirectory());
+				logger.Trace(L"SetupWorkEnvironment - Working directory set to {}", config.GetSysmonXWorkingDirectory());
 			}
 			else
 			{
-				logger.Error(L"SetupWorkEnvironment() - There was a problem accessing working directory at {}", config.GetSysmonXWorkingDirectory());
+				logger.Error(L"SetupWorkEnvironment - There was a problem accessing working directory at {}", config.GetSysmonXWorkingDirectory());
 				return ret;
 			}
 
 			//Updating logging data
 			if (InternalActions::UpdateLoggingData())
 			{
-				logger.Trace("SetupWorkEnvironment() - Logger data was updated");				
+				logger.Trace("SetupWorkEnvironment - Logger data was updated");				
 			}
 			else
 			{
-				logger.Error("SetupWorkEnvironment() - There was a problem updating logging data");
+				logger.Error("SetupWorkEnvironment - There was a problem updating logging data");
 				return ret;
 			}
 
 			//Not doing any of this on uninstall scenario
-			if (!config.WasUninstallRequested())
+			if (!(config.WasUninstallRequested() && config.WasInstallRequested()))
 			{
 				//Validate configuration file
-				logger.Trace("SetupWorkEnvironment() - About to validate configuration file");
+				logger.Trace("SetupWorkEnvironment - About to validate configuration file");
 				if (InternalActions::ValidateConfigFileSyntax())
 				{
-					logger.Trace("SetupWorkEnvironment() - Given configuration file syntax is valid");
+					logger.Trace("SetupWorkEnvironment - Given configuration file syntax is valid");
 				}
 				else
 				{
-					logger.Error("SetupWorkEnvironment() - There was a problem with given configuration file syntax");
+					logger.Error("SetupWorkEnvironment - There was a problem with given configuration file syntax");
 					return ret;
 				}
 
 				//Setup work locations
-				logger.Trace("SetupWorkEnvironment() - About to setup work locations");
-				if (InternalActions::SetupWorkBinaries())
+				logger.Trace("SetupWorkEnvironment - About to setup work locations");
+				if (InternalActions::AreWorkBinariesInSync())
 				{
-					logger.Trace("SetupWorkEnvironment() - Work locations were properly setup");
+					logger.Trace("SetupWorkEnvironment - Work locations were properly setup");
 				}
 				else
 				{
-					logger.Error("SetupWorkEnvironment() - There was a problem setting up work locations");
+					logger.Error("SetupWorkEnvironment - There was a problem setting up work locations");
 					return ret;
 				}
 
 				//Hardening SysmonX security
-				logger.Trace("SetupWorkEnvironment() - About to harden SysmonX security");
+				logger.Trace("SetupWorkEnvironment - About to harden SysmonX security");
 				if (InternalActions::HardenSysmonXSecurity())
 				{
-					logger.Trace("SetupWorkEnvironment() - SysmonX security was hardened");
+					logger.Trace("SetupWorkEnvironment - SysmonX security was hardened");
 				}
 				else
 				{
-					logger.Error("SetupWorkEnvironment() - There was a problem hardening sysmonx security");
+					logger.Error("SetupWorkEnvironment - There was a problem hardening sysmonx security");
 					return ret;
 				}
 			}
 
-			logger.Info("SetupWorkEnvironment() - Work environment was properly setup");
+			logger.Info("SetupWorkEnvironment - Work environment was properly setup");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("SetupWorkEnvironment() - Configuration was not initialized");
+			logger.Error("SetupWorkEnvironment - Configuration was not initialized");
 		}
 
 		return ret;
@@ -318,8 +329,10 @@ namespace SysmonXAppFlows
 		{
 			logger.Info("About to dump working configuration");
 			logger.Info(" Version: {}", configData->Version);
-			logger.Info(" HashAlgorithmToUse: {}", configData->HashAlgorithmToUse);
+			logger.Info(" HashAlgorithmToUse: {}", GeneralHelpers::GetSerializedString(configData->HashAlgorithmToUse));
 			logger.Info(" ShouldCheckSignatureRevocation: {}", configData->ShouldCheckSignatureRevocation);
+			logger.Info(" ShouldLogLoadingModules: {}", configData->OptionsFlags & SysmonBackendOptionFlags::SYSMON_OPTIONS_IMAGE_LOADING_ENABLED);
+			logger.Info(" ShouldLogNetworkConnections: {}", configData->OptionsFlags & SysmonBackendOptionFlags::SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED);
 			logger.Info(" WorkerThreads: {}", configData->WorkerThreads);
 			logger.Info(" CollectionServiceLoggingVerbosity: {}", configData->CollectionServiceLoggingVerbosity);
 
@@ -363,7 +376,7 @@ namespace SysmonXAppFlows
 		}
 		else
 		{
-			logger.Error("DumpConfigurationData() - Configuration was not initialized or config data could not be read from registry");
+			logger.Error("DumpConfigurationData - Configuration was not initialized or config data could not be read from registry");
 		}
 
 		return ret;
@@ -379,15 +392,15 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("DumpSchemaData() - About to dump current schema.");
+			logger.Info("DumpSchemaData - About to dump current schema.");
 
-			logger.Info("DumpSchemaData() - Schema dumping finished");
+			logger.Info("DumpSchemaData - Schema dumping finished");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("DumpSchemaData() - Configuration was not initialized");
+			logger.Error("DumpSchemaData - Configuration was not initialized");
 		}
 
 		return ret;
@@ -402,15 +415,15 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
-			logger.Info("InstallCollectionServiceManifests() - About to initialize collection service manifest.");
+			logger.Info("InstallCollectionServiceManifests - About to initialize collection service manifest.");
 
-			logger.Info("InstallCollectionServiceManifests() - Collection service manifest were properly initialized");
+			logger.Info("InstallCollectionServiceManifests - Collection service manifest were properly initialized");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("InstallCollectionServiceManifests() - Configuration was not initialized");
+			logger.Error("InstallCollectionServiceManifests - Configuration was not initialized");
 		}
 
 		return ret;
@@ -423,14 +436,13 @@ namespace SysmonXAppFlows
 		ConfigManager &config = ConfigManager::Instance();
 
 		if (config.IsInitialized() &&
-			RulesManager::Instance().Initialize() &&
 			SysmonXServiceFlows::InternalActions::UpdateSysmonXConfiguration(CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON, true))
 		{			
 			ret = true;
 		}
 		else
 		{
-			logger.Error("UpdateConfiguration() - Configuration was not initialized");
+			logger.Error("UpdateConfiguration - Configuration was not initialized");
 		}
 
 		return ret;
@@ -488,12 +500,12 @@ namespace SysmonXAppFlows::InternalActions
 			}
 			else
 			{
-				logger.Error("UpdateLoggingData() - There was a problem initializing logging configuration");
+				logger.Error("UpdateLoggingData - There was a problem initializing logging configuration");
 			}
 		}
 		else
 		{
-			logger.Error("UpdateLoggingData() - Configuration was not initialized");
+			logger.Error("UpdateLoggingData - Configuration was not initialized");
 		}
 
 		return ret;
@@ -513,13 +525,13 @@ namespace SysmonXAppFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("ValidateConfigFileSyntax() - Configuration was not initialized");
+			logger.Error("ValidateConfigFileSyntax - Configuration was not initialized");
 		}
 
 		return ret;
 	}
 
-	bool SetupWorkBinaries()
+	bool AreWorkBinariesInSync()
 	{
 		bool ret = false;
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
@@ -527,17 +539,17 @@ namespace SysmonXAppFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace("SetupWorkBinaries() - About to ensure we are running with syncronized binaries");
+			logger.Trace("AreWorkBinariesInSync - About to ensure we are running with syncronized binaries");
 
 			//Checking binaries logic. Nothing to do if we are running as a service
 			if (config.IsServiceMode())
 			{
-				logger.Trace("SetupWorkBinaries() - We are running as a service. Nothing to do here.");
+				logger.Trace("AreWorkBinariesInSync - We are running as a service. Nothing to do here.");
 				ret = true;
 			}
 			else
 			{
-				logger.Trace("SetupWorkBinaries() - We are running as a management app. Let's check that app binary and service binary are in sync.");
+				logger.Trace("AreWorkBinariesInSync - We are running as a management app. Let's check that app binary and service binary are in sync.");
 
 				std::wstring mgmtAppFileLocation;
 				std::wstring collectServiceFileLocation;
@@ -555,65 +567,74 @@ namespace SysmonXAppFlows::InternalActions
 							if (ServiceHelpers::IsServiceCreated(collectServiceName) &&
 								ServiceHelpers::IsSameServiceExecutablePath(collectServiceName, collectServiceFileLocation))
 							{
-								logger.Trace("SetupWorkBinaries() - Service is registered and both mgmt app and collection service binaries are in sync!");
+								logger.Trace("AreWorkBinariesInSync - Service is registered and both mgmt app and collection service binaries are in sync!");
 								ret = true;
 							}
 							else
 							{
-								logger.Trace("SetupWorkBinaries() - Service is not registered yet and both mgmt app and collection service binaries are in sync!");
+								logger.Trace("AreWorkBinariesInSync - Service is not registered yet and both mgmt app and collection service binaries are in sync!");
 								ret = true;
 							}
 						}
 						else
 						{
-							logger.Trace("SetupWorkBinaries() - Both mgmt app and collection service binaries are not in sync. Attempt syncing now.");
+							logger.Trace("AreWorkBinariesInSync - Both mgmt app and collection service binaries are not in sync. Attempt syncing now.");
 
 							if (!collectServiceName.empty() &&
 								ServiceHelpers::IsServiceCreated(collectServiceName) &&
 								ServiceHelpers::StopTargetService(collectServiceName))
 							{
-								logger.Trace("SetupWorkBinaries() - Collection Service was found and it was stopped.");
-							}
+								logger.Trace("AreWorkBinariesInSync - Collection Service was found and it stop request was performed. Giving it some time for clean teardown.");
+								Sleep(3000);
 
-							if (GeneralHelpers::RemoveFile(collectServiceFileLocation) &&
-								GeneralHelpers::FileCopy(mgmtAppFileLocation, collectServiceFileLocation))
-							{
-								//check service file registration if service 
-								if (ServiceHelpers::IsServiceCreated(collectServiceName) &&
-									ServiceHelpers::IsSameServiceExecutablePath(collectServiceName, collectServiceFileLocation))
+								if (GeneralHelpers::RemoveFile(collectServiceFileLocation) &&
+									GeneralHelpers::FileCopy(mgmtAppFileLocation, collectServiceFileLocation))
 								{
-									logger.Trace("SetupWorkBinaries() - Service check was done. Both mgmt app and collection service binaries are now in sync!");
-									ret = true;
+									//check service file registration if service 
+									if (ServiceHelpers::IsServiceCreated(collectServiceName) &&
+										ServiceHelpers::IsSameServiceExecutablePath(collectServiceName, collectServiceFileLocation) &&
+										ServiceHelpers::StartTargetService(collectServiceName))
+									{
+										logger.Trace("AreWorkBinariesInSync - Service check was done. Both mgmt app and collection service binaries are now in sync!");
+										ret = true;
+									}
+									else
+									{
+										logger.Trace("AreWorkBinariesInSync - Both mgmt app and collection service binaries are now in sync!");
+										ret = true;
+									}
 								}
 								else
 								{
-									logger.Trace("SetupWorkBinaries() - Both mgmt app and collection service binaries are now in sync!");
-									ret = true;
+									logger.Error("AreWorkBinariesInSync - There was a problem trying to sync collection service and mgmt app.");
+									return ret;
 								}
 							}
 							else
 							{
-								logger.Error("SetupWorkBinaries() - There was a problem trying to sync collection service and mgmt app.");
+								logger.Error("AreWorkBinariesInSync - There was a problem stopping previous instance of collection service.");
+								logger.Error("AreWorkBinariesInSync - Please try running -u command to uninstall the service before continuing.");
 								return ret;
 							}
+
 						}
 					}
 					else
 					{
-						logger.Trace("SetupWorkBinaries() - Collection service file doest not exist, so no need to sync.");
+						logger.Trace("AreWorkBinariesInSync - Collection service file doest not exist, so no need to sync.");
 						ret = true;
 					}
 				}
 				else
 				{
-					logger.Error("SetupWorkBinaries() - There was a problem getting location of collection service and mgmt app");
+					logger.Error("AreWorkBinariesInSync - There was a problem getting location of collection service and mgmt app");
 					return ret;
 				}
 			}
 		}
 		else
 		{
-			logger.Error("SetupWorkBinaries() - Configuration was not initialized");
+			logger.Error("AreWorkBinariesInSync - Configuration was not initialized");
 		}
 
 		return ret;
@@ -633,7 +654,7 @@ namespace SysmonXAppFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("HardenSysmonXSecurity() - Configuration was not initialized");
+			logger.Error("HardenSysmonXSecurity - Configuration was not initialized");
 		}
 
 		return ret;
@@ -654,7 +675,7 @@ namespace SysmonXAppFlows::InternalActions
 			!targetURLPath.empty() &&
 			!targetDirectory.empty())
 		{
-			logger.Trace(L"DownloadAndExtract() - About download {} - {} and extract it into {}", targetHost, targetURLPath, targetDirectory);
+			logger.Trace(L"DownloadAndExtract - About download {} - {} and extract it into {}", targetHost, targetURLPath, targetDirectory);
 
 			if (GeneralHelpers::IsValidDirectory(targetDirectory) &&
 				GeneralHelpers::GetTemporaryDirLocation(tempDirectory) &&
@@ -663,19 +684,19 @@ namespace SysmonXAppFlows::InternalActions
 				GeneralHelpers::GetTemporaryFileName(tempDirectory, TARGET_EXTENSION, tempFilename) &&
 				!tempFilename.empty())
 			{
-				logger.Trace(L"DownloadAndExtract() - Temp directory {} and Temp file {}", tempDirectory, tempFilename);
+				logger.Trace(L"DownloadAndExtract - Temp directory {} and Temp file {}", tempDirectory, tempFilename);
 
 				if (GeneralHelpers::DownloadFile(targetHost, targetURLPath, proxyData, tempFilename) &&
 					GeneralHelpers::IsValidFile(tempFilename) &&
 					GeneralHelpers::UnzipZIPFileToFolder(tempFilename, targetDirectory))
 				{
-					logger.Trace(L"DownloadAndExtract() - Temp directory {} and Temp file {}", tempDirectory, tempFilename);
+					logger.Trace(L"DownloadAndExtract - Temp directory {} and Temp file {}", tempDirectory, tempFilename);
 
 					ret = true;
 				}
 				else
 				{
-					logger.Error("DownloadAndExtract() - There was a problem downloading and unzipping the target url file");
+					logger.Error("DownloadAndExtract - There was a problem downloading and unzipping the target url file");
 				}
 
 				//Removing file temp resources
@@ -692,12 +713,12 @@ namespace SysmonXAppFlows::InternalActions
 			}
 			else
 			{
-				logger.Error("DownloadAndExtract() - There was a problem getting temp directory and temp file name");
+				logger.Error("DownloadAndExtract - There was a problem getting temp directory and temp file name");
 			}
 		}
 		else
 		{
-			logger.Error("DownloadAndExtract() - Configuration was not initialized or there was a problem with given arguments");
+			logger.Error("DownloadAndExtract - Configuration was not initialized or there was a problem with given arguments");
 		}
 		
 		return ret;
@@ -716,21 +737,21 @@ namespace SysmonXAppFlows::InternalActions
 			GeneralHelpers::IsValidFile(zipFile) &&
 			GeneralHelpers::IsValidDirectory(targetDirectory))
 		{
-			logger.Trace(L"ValidateFileAndExtract() - About extract {} into {}", zipFile, targetDirectory);
+			logger.Trace(L"ValidateFileAndExtract - About extract {} into {}", zipFile, targetDirectory);
 
 			if (GeneralHelpers::UnzipZIPFileToFolder(zipFile, targetDirectory))
 			{
-				logger.Trace("ValidateFileAndExtract() - Files were succesfully extracted");
+				logger.Trace("ValidateFileAndExtract - Files were succesfully extracted");
 				ret = true;
 			}
 			else
 			{
-				logger.Error("ValidateFileAndExtract() - There was a problem with given files");
+				logger.Error("ValidateFileAndExtract - There was a problem with given files");
 			}
 		}
 		else
 		{
-			logger.Error("ValidateFileAndExtract() - Configuration was not initialized or there was a problem with given arguments");
+			logger.Error("ValidateFileAndExtract - Configuration was not initialized or there was a problem with given arguments");
 		}
 
 		return ret;
@@ -751,16 +772,16 @@ namespace SysmonXAppFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace("UninstallPreviousInstances() - About to uninstall previous trace backends and collection service instances");
+			logger.Trace("UninstallPreviousInstances - About to uninstall previous trace backends and collection service instances");
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("UninstallPreviousInstances() - Custom trace backend not currently supported");
+				logger.Error("UninstallPreviousInstances - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("UninstallPreviousInstances() - Uninstalling sysmon backend");
+				logger.Trace("UninstallPreviousInstances - Uninstalling sysmon backend");
 
-				logger.Trace("UninstallPreviousInstances() - Checking Previous backend instance first");
+				logger.Trace("UninstallPreviousInstances - Checking Previous backend instance first");
 
 				//TODO: FIX WORKING DIRECTORY
 				if (GeneralHelpers::IsRunningAs64BitProcess())
@@ -790,9 +811,9 @@ namespace SysmonXAppFlows::InternalActions
 					GeneralHelpers::IsValidFile(targetArchBinaryBackend) &&
 					ServiceHelpers::IsServiceCreated(GeneralHelpers::GetFileNameWithoutExtension(GeneralHelpers::GetBaseFileName(targetArchBinaryBackend))))
 				{
-					logger.Trace(L"UninstallPreviousInstances() - Previous instance of Sysmon found at {}", targetArchBinaryBackend);
+					logger.Trace(L"UninstallPreviousInstances - Previous instance of Sysmon found at {}", targetArchBinaryBackend);
 
-					logger.Trace("UninstallPreviousInstances() - Uninstalling backend now");
+					logger.Trace("UninstallPreviousInstances - Uninstalling backend now");
 
 					//Running Sysmon Backend now
 					CommonTypes::StringsContainer processOutput;
@@ -800,14 +821,14 @@ namespace SysmonXAppFlows::InternalActions
 					std::wstring uninstallCommandLine(L" -nologo -u ");
 
 					//checking about adding force only for uninstall flow, otherwise forcing it
-					if (config.WasUninstallRequested())
+					if (config.WasForceUninstallRequested())
 					{
-						if (config.WasForceUninstallRequested()) uninstallCommandLine.append(L" force");
+						logger.Trace("Force uninstall was requested.");
 					}
-					else
-					{
-						uninstallCommandLine.append(L" force");
-					}
+
+					//Cheatting a little bit and always using force to uninstall sysmon trace backend
+					uninstallCommandLine.append(L" force");
+
 					if (GeneralHelpers::RunProcess(targetArchBinaryBackend, uninstallCommandLine, processOutput, exitCode) &&
 						!processOutput.empty())
 					{
@@ -815,7 +836,7 @@ namespace SysmonXAppFlows::InternalActions
 						for (auto it = processOutput.begin(); it != processOutput.end(); it++)
 						{
 							std::string line(*it);
-							logger.Trace("UninstallPreviousInstances() - {}", line.c_str());
+							logger.Trace("UninstallPreviousInstances - {}", line.c_str());
 						}
 					}
 
@@ -825,24 +846,24 @@ namespace SysmonXAppFlows::InternalActions
 					//Is backend service still there?
 					if (ServiceHelpers::IsServiceCreated(GeneralHelpers::GetFileNameWithoutExtension(GeneralHelpers::GetBaseFileName(targetArchBinaryBackend))))
 					{
-						logger.Error("UninstallPreviousInstances() - There was a problem uninstalling previous backend instance. Backend service is still there");
+						logger.Error("UninstallPreviousInstances - There was a problem uninstalling previous backend instance. Backend service is still there");
 						return ret;
 					}
 					
 					if (!GeneralHelpers::RemoveFile(targetArchBinaryBackend))
 					{
-						logger.Error("UninstallPreviousInstances() - There was a problem removing old backend instance file");
+						logger.Error("UninstallPreviousInstances - There was a problem removing old backend instance file");
 						return ret;
 					}
 				}
 				else
 				{
-					logger.Trace("UninstallPreviousInstances() - There was no previous backend instance found");
+					logger.Trace("UninstallPreviousInstances - There was no previous backend instance found");
 				}
 			}
 
 
-			logger.Trace("UninstallPreviousInstances() - Now checking previous collection service instance");
+			logger.Trace("UninstallPreviousInstances - Now checking previous collection service instance");
 
 			if (config.IsNewCollectionServiceInstance())
 			{
@@ -861,11 +882,11 @@ namespace SysmonXAppFlows::InternalActions
 					if (ServiceHelpers::StopTargetService(targetCollectionServiceName) &&
 						ServiceHelpers::DeleteService(targetCollectionServiceName))
 					{
-						logger.Trace("UninstallPreviousInstances() - Previous collection service instance was deleted");
+						logger.Trace("UninstallPreviousInstances - Previous collection service instance was deleted");
 					}
 					else
 					{
-						logger.Error("UninstallPreviousInstances() - There was a problem uninstalling previous collection service instance");
+						logger.Error("UninstallPreviousInstances - There was a problem uninstalling previous collection service instance");
 						return ret;
 					}
 
@@ -875,7 +896,7 @@ namespace SysmonXAppFlows::InternalActions
 					{
 						if (!GeneralHelpers::RemoveFile(workingServiceFile))
 						{
-							logger.Error("UninstallPreviousInstances() - There was a problem removing old collection service instance file");
+							logger.Error("UninstallPreviousInstances - There was a problem removing old collection service instance file");
 							return ret;
 						}
 					}
@@ -884,7 +905,7 @@ namespace SysmonXAppFlows::InternalActions
 			}
 			else
 			{
-				logger.Error("UninstallPreviousInstances() - There was no previous collection service instance found");
+				logger.Error("UninstallPreviousInstances - There was no previous collection service instance found");
 				return ret;
 			}
 
@@ -892,7 +913,7 @@ namespace SysmonXAppFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("UninstallPreviousInstances() - Configuration was not initialized or there was a problem with given arguments");
+			logger.Error("UninstallPreviousInstances - Configuration was not initialized or there was a problem with given arguments");
 		}
 
 		return ret;
@@ -906,24 +927,25 @@ namespace SysmonXAppFlows::InternalActions
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 		ConfigManager &config = ConfigManager::Instance();
 
-		logger.Trace("SetupTraceBackend() - About to setup trace backend files");
+		logger.Trace("SetupTraceBackend - About to setup trace backend files");
 		if (config.IsInitialized() &&
 			!targetDirectory.empty() &&
 			GeneralHelpers::IsValidDirectory(targetDirectory))
 		{
-			logger.Trace("SetupTraceBackend() - About to setup target backend");
+			logger.Trace("SetupTraceBackend - About to setup target backend");
 
 			std::wstring workingDirectory(targetDirectory);
-			if (workingDirectory.back() != L'\\') workingDirectory.push_back(L'\\');
+
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingDirectory);
 
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("SetupTraceBackend() - Custom trace backend not currently supported");
+				logger.Error("SetupTraceBackend - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("SetupTraceBackend() - Trace backend set to Sysmon.");
-				logger.Trace("SetupTraceBackend() - Checking if files are present.");
+				logger.Trace("SetupTraceBackend - Trace backend set to Sysmon.");
+				logger.Trace("SetupTraceBackend - Checking if files are present.");
 
 				std::wstring workingTraceBackend32Bits(workingDirectory);
 				std::wstring workingTraceBackend64Bits(workingDirectory);
@@ -936,7 +958,7 @@ namespace SysmonXAppFlows::InternalActions
 					GeneralHelpers::IsValidFile(workingTraceBackend32Bits) &&
 					GeneralHelpers::IsValidFile(workingTraceBackend64Bits))
 				{
-					logger.Trace("SetupTraceBackend() - Trace backend found, about to prepare it for usage.");
+					logger.Trace("SetupTraceBackend - Trace backend found, about to prepare it for usage.");
 
 					std::wstring configAlignedTraceBackend32Bits;
 					std::wstring configAlignedTraceBackend64Bits;
@@ -947,14 +969,14 @@ namespace SysmonXAppFlows::InternalActions
 						if ((workingTraceBackend32Bits != configAlignedTraceBackend32Bits) &&
 							!GeneralHelpers::RenameFile(workingTraceBackend32Bits, configAlignedTraceBackend32Bits))
 						{
-							logger.Error("SetupTraceBackend() - There was a problem setting up 32bits trace binaries.");
+							logger.Error("SetupTraceBackend - There was a problem setting up 32bits trace binaries.");
 							return ret;
 						}
 
 						if ((workingTraceBackend64Bits != configAlignedTraceBackend64Bits) &&
 							!GeneralHelpers::RenameFile(workingTraceBackend64Bits, configAlignedTraceBackend64Bits))
 						{
-							logger.Error("SetupTraceBackend() - There was a problem setting up 64bits trace binaries.");
+							logger.Error("SetupTraceBackend - There was a problem setting up 64bits trace binaries.");
 							return ret;
 						}
 
@@ -969,12 +991,12 @@ namespace SysmonXAppFlows::InternalActions
 			}
 			else
 			{
-				logger.Error("SetupTraceBackend() - Trace Backend not supported.");
+				logger.Error("SetupTraceBackend - Trace Backend not supported.");
 			}			
 		}
 		else
 		{
-			logger.Error("SetupTraceBackend() - Configuration was not initialized or there was a problem with given arguments");
+			logger.Error("SetupTraceBackend - Configuration was not initialized or there was a problem with given arguments");
 		}
 
 		return ret;
@@ -988,14 +1010,14 @@ namespace SysmonXAppFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace("InstallTraceBackend() - About to install trace backend");
+			logger.Trace("InstallTraceBackend - About to install trace backend");
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("InstallTraceBackend() - Custom trace backend not currently supported");
+				logger.Error("InstallTraceBackend - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("InstallTraceBackend() - Installing sysmon backend");
+				logger.Trace("InstallTraceBackend - Installing sysmon backend");
 
 				std::wstring targetArchBinaryBackend;
 				CommonTypes::StringsContainer processOutput;
@@ -1049,7 +1071,7 @@ namespace SysmonXAppFlows::InternalActions
 					for (auto it = processOutput.begin(); it != processOutput.end(); it++)
 					{
 						std::string line(*it);
-						logger.Trace("InstallTraceBackend() - {}", line.c_str());
+						logger.Trace("InstallTraceBackend - {}", line.c_str());
 					}
 				}
 
@@ -1059,14 +1081,14 @@ namespace SysmonXAppFlows::InternalActions
 				//Is backend service still there?
 				if (ServiceHelpers::IsServiceCreated(GeneralHelpers::GetFileNameWithoutExtension(GeneralHelpers::GetBaseFileName(targetArchBinaryBackend))))
 				{
-					logger.Trace("InstallTraceBackend() - Sysmon was succesfully installed");
+					logger.Trace("InstallTraceBackend - Sysmon was succesfully installed");
 					ret = true;
 				}
 			}
 		}
 		else
 		{
-			logger.Error("InstallTraceBackend() - Configuration was not initialized ");
+			logger.Error("InstallTraceBackend - Configuration was not initialized ");
 		}
 
 		return ret;
@@ -1080,14 +1102,14 @@ namespace SysmonXAppFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace("SetupCollectionService() - About to setup collection service data");
+			logger.Trace("SetupCollectionService - About to setup collection service data");
 
 			std::wstring currentProcessFullPath;
 			
 			if (GeneralHelpers::GetCurrentProcessFullPath(currentProcessFullPath))
 			{
-				logger.Trace(L"SetupCollectionService() - Current process is at {}", currentProcessFullPath);
-				logger.Trace(L"SetupCollectionService() - About to copy current process to working dir at {}", currentProcessFullPath);
+				logger.Trace(L"SetupCollectionService - Current process is at {}", currentProcessFullPath);
+				logger.Trace(L"SetupCollectionService - About to copy current process to working dir at {}", config.GetSysmonXWorkingDirectory());
 
 				std::wstring targetFile;
 				if (config.GetFullPathCollectionServiceFile(targetFile) &&
@@ -1096,28 +1118,28 @@ namespace SysmonXAppFlows::InternalActions
 					GeneralHelpers::IsValidFile(targetFile))
 				{
 					targetCollectionServiceFile.append(targetFile);
-					logger.Trace(L"SetupCollectionService() - Collection service file was copied to {}", targetCollectionServiceFile);
+					logger.Trace(L"SetupCollectionService - Collection service file was copied to {}", targetCollectionServiceFile);
 					ret = true;
 				}
 				else
 				{
-					logger.Error("SetupCollectionService() - There was a problem copying the target file");
+					logger.Error("SetupCollectionService - There was a problem copying the target file");
 				}
 			}
 			else
 			{
-				logger.Error("SetupCollectionService() - There was a problem getting path to current process");
+				logger.Error("SetupCollectionService - There was a problem getting path to current process");
 			}
 		}
 		else
 		{
-			logger.Error("SetupCollectionService() - Configuration was not initialized ");
+			logger.Error("SetupCollectionService - Configuration was not initialized ");
 		}
 
 		return ret;
 	}
 
-	bool InstallCollectionServiceHelper(const std::wstring &targetCollectionServiceFile)
+	bool InstallHelperCollectionService(const std::wstring &targetCollectionServiceFile)
 	{
 		bool ret = false;
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
@@ -1128,20 +1150,20 @@ namespace SysmonXAppFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace(L"InstallCollectionService() - About to install collection service {}", collectionServiceName);
+			logger.Trace(L"InstallCollectionService - About to install collection service {}", collectionServiceName);
 
 			if (ServiceHelpers::IsServiceCreated(collectionServiceName))
 			{
-				logger.Trace("InstallCollectionService() - Previous instance of service detected. Uninstalling it first");
+				logger.Trace("InstallCollectionService - Previous instance of service detected. Uninstalling it first");
 
 				if (ServiceHelpers::StopTargetService(collectionServiceName) &&
 					ServiceHelpers::DeleteService(collectionServiceName))
 				{
-					logger.Trace(L"InstallCollectionService() - Previous instance of service {} was deleted", collectionServiceName);
+					logger.Trace(L"InstallCollectionService - Previous instance of service {} was deleted", collectionServiceName);
 				}
 				else
 				{
-					logger.Error("InstallCollectionService() - There was a problem removing previous instance of service");
+					logger.Error("InstallCollectionService - There was a problem removing previous instance of service");
 				}
 			}
 
@@ -1152,29 +1174,49 @@ namespace SysmonXAppFlows::InternalActions
 				 collectionServiceName,
 				 collectionServiceDisplay))
 			{
-				logger.Trace(L"InstallCollectionService() - Service {} was properly registered", collectionServiceName);
+				logger.Trace(L"InstallCollectionService - Service {} was properly registered", collectionServiceName);
 				
-				logger.Trace(L"InstallCollectionService() - About to start service {}", collectionServiceName);
+				logger.Trace(L"InstallCollectionService - About to start service {}", collectionServiceName);
 				if (ServiceHelpers::StartTargetService(collectionServiceName))
 				{
-					logger.Trace(L"InstallCollectionService() - Service {} was properly started", collectionServiceName);
+					logger.Trace(L"InstallCollectionService - Service {} was properly started", collectionServiceName);
 					ret = true;
 				}
 				else
 				{
-					logger.Error(L"InstallCollectionService() - There was a problem starting service {} ", collectionServiceName);
+					logger.Error(L"InstallCollectionService - There was a problem starting service {} ", collectionServiceName);
 				}
 			}
 			else
 			{
-				logger.Error(L"InstallCollectionService() - There was a problem registering service {} ", collectionServiceName);
+				logger.Error(L"InstallCollectionService - There was a problem registering service {} ", collectionServiceName);
 			}
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("InstallCollectionService() - Configuration was not initialized ");
+			logger.Error("InstallCollectionService - Configuration was not initialized ");
+		}
+
+		return ret;
+	}
+
+
+	bool IsNewCollectionServiceInstallRequired()
+	{
+		bool ret = true;
+		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
+		ConfigManager &config = ConfigManager::Instance();
+
+		std::wstring collectionServiceName(config.GetCollectionServiceName());
+
+		if (config.IsInitialized())
+		{
+			if (AreWorkBinariesInSync() && ServiceHelpers::IsServiceStarted(collectionServiceName))
+			{
+				ret = false;
+			}
 		}
 
 		return ret;
@@ -1197,38 +1239,38 @@ namespace SysmonXServiceFlows
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("IsServiceWorkEnvironmentReady() - About to prepare collection service work environment");
+			logger.Trace("IsServiceWorkEnvironmentReady - About to prepare collection service work environment");
 
 			//Checking Service Sanity
 			if (InternalActions::CheckServiceSanity())
 			{
-				logger.Trace("IsServiceWorkEnvironmentReady() - Service Sanity is OK.");
+				logger.Trace("IsServiceWorkEnvironmentReady - Service Sanity is OK.");
 			}
 			else
 			{
-				logger.Error("IsServiceWorkEnvironmentReady() - There was a problem found when checking Service Sanity.");
+				logger.Error("IsServiceWorkEnvironmentReady - There was a problem found when checking Service Sanity.");
 				return ret;
 			}
 
 			//Ensuring Running Conditions
 			if (InternalActions::EnsureRunningConditions(traceBackendType))
 			{
-				logger.Trace("IsServiceWorkEnvironmentReady() - Running conditions were met, Service Collection is OK to run.");
+				logger.Trace("IsServiceWorkEnvironmentReady - Running conditions were met, Service Collection is OK to run.");
 			}
 			else
 			{
-				logger.Error("IsServiceWorkEnvironmentReady() - There was a problem found when checking collection service running conditions.");
+				logger.Error("IsServiceWorkEnvironmentReady - There was a problem found when checking collection service running conditions.");
 				return ret;
 			}
 
 			//Setting up SysmonX components
 			if (InternalActions::SetupSysmonXComponents())
 			{
-				logger.Trace("IsServiceWorkEnvironmentReady() - Collection Service components were properly setup.");
+				logger.Trace("IsServiceWorkEnvironmentReady - Collection Service components were properly setup.");
 			}
 			else
 			{
-				logger.Error("IsServiceWorkEnvironmentReady() - There was a problem setting up collection service components.");
+				logger.Error("IsServiceWorkEnvironmentReady - There was a problem setting up collection service components.");
 				return ret;
 			}
 
@@ -1236,7 +1278,7 @@ namespace SysmonXServiceFlows
 		}
 		else
 		{
-			logger.Error("IsServiceWorkEnvironmentReady() - Configuration was not initialized ");
+			logger.Error("IsServiceWorkEnvironmentReady - Configuration was not initialized ");
 		}
 
 		return ret;
@@ -1255,16 +1297,16 @@ namespace SysmonXServiceFlows
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("EnableServiceProcessing() - About to enable collection service components for data generation and data processing");
+			logger.Trace("EnableServiceProcessing - About to enable collection service components for data generation and data processing");
 
 			//Enabling SysmonX components
 			if (InternalActions::EnableSysmonXComponents(traceBackendType))
 			{
-				logger.Trace("EnableServiceProcessing() - Collection Service components were properly enabled.");
+				logger.Trace("EnableServiceProcessing - Collection Service components were properly enabled.");
 			}
 			else
 			{
-				logger.Error("EnableServiceProcessing() - There was a problem enabling collection service components.");
+				logger.Error("EnableServiceProcessing - There was a problem enabling collection service components.");
 				return ret;
 			}
 
@@ -1272,7 +1314,7 @@ namespace SysmonXServiceFlows
 		}
 		else
 		{
-			logger.Error("EnableServiceProcessing() - Configuration was not initialized ");
+			logger.Error("EnableServiceProcessing - Configuration was not initialized ");
 		}
 
 		return ret;
@@ -1291,16 +1333,16 @@ namespace SysmonXServiceFlows
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("DisableServiceProcessing() - About to disable collection service components for data generation and data processing");
+			logger.Trace("DisableServiceProcessing - About to disable collection service components for data generation and data processing");
 
 			//Disabling SysmonX components
 			if (InternalActions::DisableSysmonXComponents(traceBackendType))
 			{
-				logger.Trace("DisableServiceProcessing() - Collection Service components were properly disabled.");
+				logger.Trace("DisableServiceProcessing - Collection Service components were properly disabled.");
 			}
 			else
 			{
-				logger.Error("DisableServiceProcessing() - There was a problem disabling collection service components.");
+				logger.Error("DisableServiceProcessing - There was a problem disabling collection service components.");
 				return ret;
 			}
 
@@ -1308,7 +1350,7 @@ namespace SysmonXServiceFlows
 		}
 		else
 		{
-			logger.Error("DisableServiceProcessing() - Configuration was not initialized ");
+			logger.Error("DisableServiceProcessing - Configuration was not initialized ");
 		}
 
 		return ret;
@@ -1328,27 +1370,27 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("CheckServiceSanity() - About to check for service sanity");
+			logger.Trace("CheckServiceSanity - About to check for service sanity");
 
 			//Checking Service Image File Integrity
 			if (CheckServiceImageFileIntegrity())
 			{
-				logger.Trace("CheckServiceSanity() - Service Image File integrity is OK.");
+				logger.Trace("CheckServiceSanity - Service Image File integrity is OK.");
 			}
 			else
 			{
-				logger.Error("CheckServiceSanity() - There was a problem found when checking Service Image File Integrity.");
+				logger.Error("CheckServiceSanity - There was a problem found when checking Service Image File Integrity.");
 				return ret;
 			}
 
 			//Checking Service Directory Security
 			if (CheckServiceDirectorySecurity())
 			{
-				logger.Trace("CheckServiceSanity() - Service Directory security is OK.");
+				logger.Trace("CheckServiceSanity - Service Directory security is OK.");
 			}
 			else
 			{
-				logger.Error("CheckServiceSanity() - There was a problem found when checking Service Directory Security.");
+				logger.Error("CheckServiceSanity - There was a problem found when checking Service Directory Security.");
 				return ret;
 			}
 
@@ -1356,7 +1398,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("CheckServiceSanity() - Configuration was not initialized.");
+			logger.Error("CheckServiceSanity - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1369,19 +1411,19 @@ namespace SysmonXServiceFlows::InternalActions
 		bool ret = false;
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 		ConfigManager &config = ConfigManager::Instance();
-		std::wstring workingServiceName;
+		std::wstring workingBackendServiceName;
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("EnsureRunningConditions() - About to check that required service conditions are there");
+			logger.Trace("EnsureRunningConditions - About to check that required service conditions are there");
 
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("EnsureRunningConditions() - Custom trace backend not currently supported");
+				logger.Error("EnsureRunningConditions - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("EnsureRunningConditions() - Checking running conditions of sysmon backend");
+				logger.Trace("EnsureRunningConditions - Checking running conditions of sysmon backend");
 
 				std::wstring targetBackendService;
 				if (GeneralHelpers::IsRunningAs64BitProcess())
@@ -1394,46 +1436,55 @@ namespace SysmonXServiceFlows::InternalActions
 				}
 
 				//Getting Service Name
-				if (GetSysmonServiceNameFromFile(targetBackendService, workingServiceName))
+				if (GetSysmonServiceNameFromFile(targetBackendService, workingBackendServiceName))
 				{
 					//Now checking if target backend service is created and on stopped state
-					if (ServiceHelpers::IsServiceCreated(workingServiceName))
+					if (ServiceHelpers::IsServiceCreated(workingBackendServiceName))
 					{
 						//Service is available
-						if (ServiceHelpers::IsServiceStopped(workingServiceName))
+						if (ServiceHelpers::IsServiceStopped(workingBackendServiceName))
 						{
-							//Service is stopped
-							logger.Trace(L"EnsureRunningConditions() - Sysmon backend under name {} is stopped!", workingServiceName);
-						}
-						/*
-						else
-						{
-							//Service is not stopped, stopping it
-							if (ServiceHelpers::StopTargetService(workingServiceName))
+							//Service is started
+							logger.Trace(L"EnsureRunningConditions - Sysmon backend under name {} is stopped. Attempting start operation!", workingBackendServiceName);
+
+							//Service is stopped, starting it
+							if (ServiceHelpers::StartTargetService(workingBackendServiceName))
 							{
 								//service is now stopped
-								logger.Trace(L"EnsureRunningConditions() - Sysmon backend under name {} is stopped!", workingServiceName);
+								logger.Trace(L"EnsureRunningConditions - Sysmon backend under name {} is now started!", workingBackendServiceName);
 							}
 							else
 							{
 								//service cannot be stopped
-								logger.Error(L"EnsureRunningConditions() - Sysmon backend under name {} cannot be stopped!", workingServiceName);
+								logger.Error(L"EnsureRunningConditions - Sysmon backend under name {} cannot be started!", workingBackendServiceName);
 								return ret;
 							}
 						}
-						*/
+
+						//Update configuration of backend trace sysmon
+						if (UpdateSysmonXConfiguration(CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON, false))
+						{
+							//service is now stopped
+							logger.Trace(L"EnsureRunningConditions - Trace Backend configuration {} was updated!", workingBackendServiceName);
+						}
+						else
+						{
+							//service cannot be stopped
+							logger.Error(L"EnsureRunningConditions - There was a problem updating the configuration of trace backedn {}", workingBackendServiceName);
+							return ret;
+						}
 					}
 					else
 					{
 						//service is not available
-						logger.Error(L"EnsureRunningConditions() - Sysmon backend under name {} is not available!", workingServiceName);
+						logger.Error(L"EnsureRunningConditions - Sysmon backend under name {} is not available!", workingBackendServiceName);
 						return ret;
 					}
 				}
 				else
 				{
 					//service name is not available
-					logger.Error("EnsureRunningConditions() - There was a problem getting trace backend service name");
+					logger.Error("EnsureRunningConditions - There was a problem getting trace backend service name");
 					return ret;
 				}
 
@@ -1442,7 +1493,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("EnsureRunningConditions() - Configuration was not initialized.");
+			logger.Error("EnsureRunningConditions - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1463,84 +1514,84 @@ namespace SysmonXServiceFlows::InternalActions
 			//Report Manager Initialization
 			if (ReportManager::Instance().Initialize())
 			{
-				logger.Trace("SetupSysmonXComponents() - Report Manager Component was properly initialized");
+				logger.Trace("SetupSysmonXComponents - Report Manager Component was properly initialized");
 
 				if (ReportManager::Instance().SetTargetReportChannels(config.GetReportOutputList()))
 				{
-					logger.Trace("SetupSysmonXComponents() - Target report channels were properly set at Report Mananger Component");
+					logger.Trace("SetupSysmonXComponents - Target report channels were properly set at Report Mananger Component");
 				}
 				else
 				{
-					logger.Error("SetupSysmonXComponents() - There was a setting target report channels at Report Manager Component");
+					logger.Error("SetupSysmonXComponents - There was a setting target report channels at Report Manager Component");
 					return ret;
 				}
 			}
 			else
 			{
-				logger.Error("SetupSysmonXComponents() - There was a problem initializing Report Manager Component");
+				logger.Error("SetupSysmonXComponents - There was a problem initializing Report Manager Component");
 				return ret;
 			}
 
 			//Events Manager Initialization
 			if (EventsManager::Instance().Initialize())
 			{
-				logger.Trace("SetupSysmonXComponents() - Events Manager Component was properly initialized");
+				logger.Trace("SetupSysmonXComponents - Events Manager Component was properly initialized");
 
 				if (EventsManager::Instance().AreCollectorsReady())
 				{
-					logger.Trace("SetupSysmonXComponents() - Target Events Collectors were properly set at Events Mananger Component");
+					logger.Trace("SetupSysmonXComponents - Target Events Collectors were properly set at Events Mananger Component");
 				}
 				else
 				{
-					logger.Error("SetupSysmonXComponents() - There was a setting target Events Collectors at Events Manager Component");
+					logger.Error("SetupSysmonXComponents - There was a setting target Events Collectors at Events Manager Component");
 					return ret;
 				}
 			}
 			else
 			{
-				logger.Error("SetupSysmonXComponents() - There was a problem initializing Events Manager Component");
+				logger.Error("SetupSysmonXComponents - There was a problem initializing Events Manager Component");
 				return ret;
 			}
 
 			//Correlation Engine Initialization
 			if (MatchingEngine::Instance().Initialize())
 			{
-				logger.Trace("SetupSysmonXComponents() - Correlation Engine Component was properly initialized");
+				logger.Trace("SetupSysmonXComponents - Correlation Engine Component was properly initialized");
 			}
 			else
 			{
-				logger.Error("SetupSysmonXComponents() - There was a problem initializing Correlation Engine Component");
+				logger.Error("SetupSysmonXComponents - There was a problem initializing Correlation Engine Component");
 				return ret;
 			}
 
 			//Rules Manager Initialization
 			if (RulesManager::Instance().Initialize())
 			{
-				logger.Trace("SetupSysmonXComponents() - Rules Manager Component was properly initialized");
+				logger.Trace("SetupSysmonXComponents - Rules Manager Component was properly initialized");
 
 				if (RulesManager::Instance().IsConfigFileSyntaxValid(config.GetConfigurationFile()))
 				{
-					logger.Trace("SetupSysmonXComponents() - Configuration File syntax was validated");
+					logger.Trace("SetupSysmonXComponents - Configuration File syntax was validated");
 				}
 				else
 				{
-					logger.Error("SetupSysmonXComponents() - There was a problem found with given configuration file syntax");
+					logger.Error("SetupSysmonXComponents - There was a problem found with given configuration file syntax");
 					return ret;
 				}
 
 				if (RulesManager::Instance().PopulateMatchingEngineMatchers(config.GetConfigurationFile()))
 				{
-					logger.Trace("SetupSysmonXComponents() - Populating matching engines is done");
+					logger.Trace("SetupSysmonXComponents - Populating matching engines is done");
 				}
 				else
 				{
-					logger.Error("SetupSysmonXComponents() - There was a populating matching engines with configuration");
+					logger.Error("SetupSysmonXComponents - There was a populating matching engines with configuration");
 					return ret;
 				}
 			}
 			else
 			{
-				logger.Error("SetupSysmonXComponents() - There was a problem initializing Rules Manager Component");
+				logger.Error("SetupSysmonXComponents - There was a problem initializing Rules Manager Component");
 				return ret;
 			}
 
@@ -1548,7 +1599,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("SetupSysmonXComponents() - Configuration was not initialized.");
+			logger.Error("SetupSysmonXComponents - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1562,29 +1613,29 @@ namespace SysmonXServiceFlows::InternalActions
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 		ConfigManager &config = ConfigManager::Instance();
 		std::wstring workingServiceName;
+		std::wstring backendConfigFile;
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
 			//Enabling backend components
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("UpdateSysmonXConfiguration() - Custom trace backend not currently supported");
+				logger.Error("UpdateSysmonXConfiguration - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("UpdateSysmonXConfiguration() - Checking running conditions of sysmon backend");
+				logger.Trace("UpdateSysmonXConfiguration - Checking running conditions of sysmon backend");
 
 
-				std::wstring backendConfigFile;
 				if (config.GetFullPathBackendConfigFile(backendConfigFile) &&
 					!backendConfigFile.empty() &&
-					RulesManager::Instance().GenerateTraceBackendConfiguration(config.GetConfigurationFile(), backendConfigFile))
+					ConfigManager::Instance().GenerateBackendConfigFile(backendConfigFile))
 				{
-					logger.Trace("UpdateSysmonXConfiguration() - Trace backend config file was written");
+					logger.Trace(L"UpdateSysmonXConfiguration - Trace backend config file was written at {}", backendConfigFile);
 				}
 				else
 				{
-					logger.Error("UpdateSysmonXConfiguration() - There was a problem writting to trace backend config file");
+					logger.Error("UpdateSysmonXConfiguration - There was a problem writting to trace backend config file");
 					return ret;
 				}
 
@@ -1616,32 +1667,32 @@ namespace SysmonXServiceFlows::InternalActions
 					{
 						if (ServiceHelpers::IsServiceStopped(workingServiceName))
 						{
-							logger.Trace(L"UpdateSysmonXConfiguration() - Sysmon backend under name {} is already stopped, about to start it!", workingServiceName);
+							logger.Trace(L"UpdateSysmonXConfiguration - Sysmon backend under name {} is already stopped, about to start it!", workingServiceName);
 							if (ServiceHelpers::StartTargetService(workingServiceName) && ServiceHelpers::IsServiceStarted(workingServiceName))
 							{
-								logger.Trace(L"UpdateSysmonXConfiguration() - Sysmon backend under name {} is running!", workingServiceName);
+								logger.Trace(L"UpdateSysmonXConfiguration - Sysmon backend under name {} is running!", workingServiceName);
 							}
 							else
 							{
-								logger.Error(L"UpdateSysmonXConfiguration() - Sysmon backend under name {} cannot be started!", workingServiceName);
+								logger.Error(L"UpdateSysmonXConfiguration - Sysmon backend under name {} cannot be started!", workingServiceName);
 								return ret;
 							}
 						}
 						else
 						{
-							logger.Trace(L"UpdateSysmonXConfiguration() - Sysmon backend under name {} is already running!", workingServiceName);
+							logger.Trace(L"UpdateSysmonXConfiguration - Sysmon backend under name {} is already running!", workingServiceName);
 						}
 					}
 					else
 					{
-						logger.Error(L"UpdateSysmonXConfiguration() - Sysmon backend under name {} is not available!", workingServiceName);
+						logger.Error(L"UpdateSysmonXConfiguration - Sysmon backend under name {} is not available!", workingServiceName);
 						return ret;
 					}
 				}
 				else
 				{
 					//service name is not available
-					logger.Error("UpdateSysmonXConfiguration() - There was a problem getting trace backend service name");
+					logger.Error("UpdateSysmonXConfiguration - There was a problem getting trace backend service name");
 					return ret;
 				}
 
@@ -1651,14 +1702,25 @@ namespace SysmonXServiceFlows::InternalActions
 					//Now updating configuration file
 					if (RunUpdateSysmonConfigurationCommand(targetBackendServiceFullPath, backendConfigFile))
 					{
-						logger.Trace(L"UpdateSysmonXConfiguration() - Configuration file at {} was properly updated", backendConfigFile);
+						logger.Trace(L"UpdateSysmonXConfiguration - Configuration file at {} was properly updated", backendConfigFile);
 					}
 					else
 					{
 						//service name is not available
-						logger.Error(L"UpdateSysmonXConfiguration() - There was a problem updating backend configuration file at {}", backendConfigFile);
+						logger.Error(L"UpdateSysmonXConfiguration - There was a problem updating backend configuration file at {}", backendConfigFile);
 						return ret;
 					}
+				}
+
+				//Deleting trace backend config file
+				if (GeneralHelpers::RemoveDeletePending(backendConfigFile))
+				{
+					logger.Trace(L"UpdateSysmonXConfiguration - Trace backend config file was removed at {} ", backendConfigFile);
+				}
+				else
+				{
+					logger.Error("UpdateSysmonXConfiguration - There was a problem removing trace backend config file");
+					return ret;
 				}
 
 				//Restart service so it can pick up new config
@@ -1668,12 +1730,12 @@ namespace SysmonXServiceFlows::InternalActions
 					std::wstring workingSysmonXServiceName = config.GetCollectionServiceName();
 					if (ServiceHelpers::IsServiceCreated(workingSysmonXServiceName) && ServiceHelpers::RestartTargetService(workingSysmonXServiceName))
 					{
-						logger.Trace("UpdateSysmonXConfiguration() - Collection service was properly started");
+						logger.Trace("UpdateSysmonXConfiguration - Collection service was properly started");
 					}
 					else
 					{
 						//service name is not available
-						logger.Error("UpdateSysmonXConfiguration() - There was a problem restarting collection service");
+						logger.Error("UpdateSysmonXConfiguration - There was a problem restarting collection service");
 						return ret;
 					}
 				}
@@ -1683,7 +1745,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("UpdateSysmonXConfiguration() - Configuration was not initialized.");
+			logger.Error("UpdateSysmonXConfiguration - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1699,29 +1761,16 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("EnableSysmonXComponents() - About to shutdown sysmonx collection service components");
+			logger.Trace("EnableSysmonXComponents - About to shutdown sysmonx collection service components");
 
-			//Updating Sysmon Configuration
-			//TODO: mjo fix this
-			/*
-			if (UpdateSysmonXConfiguration(backendType, false))
-			{
-				logger.Trace("EnableSysmonXComponents() - Trace Backend configuration was properly updated");
-			}
-			else
-			{
-				logger.Error("EnableSysmonXComponents() - There was a problem updating trace backend configuration");
-				return ret;
-			}
-			*/
 			//Event Processing start collection signal
 			if (EventsManager::Instance().StartEventsCollection())
 			{
-				logger.Trace("EnableSysmonXComponents() - Events Manager events collection process was properly started");
+				logger.Trace("EnableSysmonXComponents - Events Manager events collection process was properly started");
 			}
 			else
 			{
-				logger.Error("EnableSysmonXComponents() - There was a problem starting Events Manager collection process");
+				logger.Error("EnableSysmonXComponents - There was a problem starting Events Manager collection process");
 				return ret;
 			}
 
@@ -1729,7 +1778,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("EnableSysmonXComponents() - Configuration was not initialized.");
+			logger.Error("EnableSysmonXComponents - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1746,27 +1795,27 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("DisableSysmonXComponents() - About to shutdown sysmonx collection service components");
+			logger.Trace("DisableSysmonXComponents - About to shutdown sysmonx collection service components");
 
 			//Event Processing stop collection signal
 			if (EventsManager::Instance().StopEventsCollection())
 			{
-				logger.Trace("DisableSysmonXComponents() - Events Manager events collection process was properly stopped");
+				logger.Trace("DisableSysmonXComponents - Events Manager events collection process was properly stopped");
 			}
 			else
 			{
-				logger.Error("DisableSysmonXComponents() - There was a problem stopping Events Manager collection process");
+				logger.Error("DisableSysmonXComponents - There was a problem stopping Events Manager collection process");
 				return ret;
 			}
 
 			//Enabling backend components
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
 			{
-				logger.Error("DisableSysmonXComponents() - Custom trace backend not currently supported");
+				logger.Error("DisableSysmonXComponents - Custom trace backend not currently supported");
 			}
 			else if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON)
 			{
-				logger.Trace("DisableSysmonXComponents() - Checking running conditions of sysmon backend");
+				logger.Trace("DisableSysmonXComponents - Checking running conditions of sysmon backend");
 
 				std::wstring targetBackendService;
 				if (GeneralHelpers::IsRunningAs64BitProcess())
@@ -1786,32 +1835,32 @@ namespace SysmonXServiceFlows::InternalActions
 					{
 						if (ServiceHelpers::IsServiceStarted(workingServiceName))
 						{
-							logger.Trace(L"DisableSysmonXComponents() - Sysmon backend under name {} is already started, about to stop it!", workingServiceName);
+							logger.Trace(L"DisableSysmonXComponents - Sysmon backend under name {} is already started, about to stop it!", workingServiceName);
 							if (ServiceHelpers::StopTargetService(workingServiceName) && ServiceHelpers::IsServiceStopped(workingServiceName))
 							{
-								logger.Trace(L"DisableSysmonXComponents() - Sysmon backend under name {} is stopped!", workingServiceName);
+								logger.Trace(L"DisableSysmonXComponents - Sysmon backend under name {} is stopped!", workingServiceName);
 							}
 							else
 							{
-								logger.Error(L"DisableSysmonXComponents() - Sysmon backend under name {} cannot be stopped!", workingServiceName);
+								logger.Error(L"DisableSysmonXComponents - Sysmon backend under name {} cannot be stopped!", workingServiceName);
 								return ret;
 							}
 						}
 						else
 						{
-							logger.Trace(L"DisableSysmonXComponents() - Sysmon backend under name {} is already stopped!", workingServiceName);
+							logger.Trace(L"DisableSysmonXComponents - Sysmon backend under name {} is already stopped!", workingServiceName);
 						}
 					}
 					else
 					{
-						logger.Error(L"DisableSysmonXComponents() - Sysmon backend under name {} is not available!", workingServiceName);
+						logger.Error(L"DisableSysmonXComponents - Sysmon backend under name {} is not available!", workingServiceName);
 						return ret;
 					}
 				}
 				else
 				{
 					//service name is not available
-					logger.Error("DisableSysmonXComponents() - There was a problem getting trace backend service name");
+					logger.Error("DisableSysmonXComponents - There was a problem getting trace backend service name");
 					return ret;
 				}
 			}
@@ -1820,7 +1869,7 @@ namespace SysmonXServiceFlows::InternalActions
 		}
 		else
 		{
-			logger.Error("DisableSysmonXComponents() - Configuration was not initialized.");
+			logger.Error("DisableSysmonXComponents - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1836,13 +1885,13 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("CheckServiceImageFileIntegrity() - About to check collection service image file integrity");
+			logger.Trace("CheckServiceImageFileIntegrity - About to check collection service image file integrity");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("CheckServiceImageFileIntegrity() - Configuration was not initialized.");
+			logger.Error("CheckServiceImageFileIntegrity - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1858,13 +1907,13 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized() && config.IsServiceMode())
 		{
-			logger.Trace("CheckServiceDirectorySecurity() - About to check collection service working directory security checks");
+			logger.Trace("CheckServiceDirectorySecurity - About to check collection service working directory security checks");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("CheckServiceDirectorySecurity() - Configuration was not initialized.");
+			logger.Error("CheckServiceDirectorySecurity - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1878,7 +1927,7 @@ namespace SysmonXServiceFlows::InternalActions
 
 		if (config.IsInitialized())
 		{
-			logger.Trace("GetSysmonServiceNameFromFile() - About to get Sysmon Service Name from Image File Name");
+			logger.Trace("GetSysmonServiceNameFromFile - About to get Sysmon Service Name from Image File Name");
 
 			std::wstring workingServiceName;
 			if (GeneralHelpers::GetFileNameWithoutExtension(serviceImageFileName, workingServiceName) &&
@@ -1892,20 +1941,20 @@ namespace SysmonXServiceFlows::InternalActions
 				}
 				else
 				{
-					logger.Error(L"GetSysmonServiceNameFromFile() - Sysmon backend under name {} is not available!", workingServiceName);
+					logger.Error(L"GetSysmonServiceNameFromFile - Sysmon backend under name {} is not available!", workingServiceName);
 					return ret;
 				}
 			}
 			else
 			{
 				//service name is not available
-				logger.Error("GetSysmonServiceNameFromFile() - There was a problem getting trace backend service name");
+				logger.Error("GetSysmonServiceNameFromFile - There was a problem getting trace backend service name");
 				return ret;
 			}			
 		}
 		else
 		{
-			logger.Error("GetSysmonServiceNameFromFile() - Configuration was not initialized.");
+			logger.Error("GetSysmonServiceNameFromFile - Configuration was not initialized.");
 		}
 
 		return ret;
@@ -1921,7 +1970,7 @@ namespace SysmonXServiceFlows::InternalActions
 			GeneralHelpers::IsValidFile(backendFile) &&
 			GeneralHelpers::IsValidFile(configFile))
 		{
-			logger.Trace(L"UpdateSysmonConfiguration() - About to update sysmon configuration with {} ", configFile);
+			logger.Trace(L"UpdateSysmonConfiguration - About to update sysmon configuration with {} ", configFile);
 
 			//Running Sysmon Backend now to update configuration
 			DWORD exitCode;
@@ -1938,7 +1987,7 @@ namespace SysmonXServiceFlows::InternalActions
 				for (auto it = processOutput.begin(); it != processOutput.end(); it++)
 				{
 					std::string line(*it);
-					logger.Trace("UpdateSysmonConfiguration() - {}", line.c_str());
+					logger.Trace("UpdateSysmonConfiguration - {}", line.c_str());
 				}
 			}
 
@@ -1946,14 +1995,14 @@ namespace SysmonXServiceFlows::InternalActions
 				(exitCode == SysmonXDefs::SYSMON_EXIT_CODE_ALREADY_INSTALLED) ||
 				(exitCode == SysmonXDefs::SYSMON_EXIT_CODE_ALREADY_RUNNING))
 			{
-				logger.Trace("UpdateSysmonConfiguration() - Sysmon configuration was succesfully updated");
+				logger.Trace("UpdateSysmonConfiguration - Sysmon configuration was succesfully updated");
 				ret = true;
 			}
 
 		}
 		else
 		{
-			logger.Error("UpdateSysmonConfiguration() - Configuration was not initialized or there was a problem with given arguments.");
+			logger.Error("UpdateSysmonConfiguration - Configuration was not initialized or there was a problem with given arguments.");
 		}
 
 		return ret;

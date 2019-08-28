@@ -4,7 +4,7 @@ bool ReportChannelLogfile::Initialize()
 {
 	bool ret = false;
 
-	m_logger.Trace("ReportChannelLogfile::Initialize() - About to initialize Logfile Report Channel processor");
+	m_logger.Trace("ReportChannelLogfile::Initialize - About to initialize Logfile Report Channel processor");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{
@@ -27,7 +27,7 @@ bool ReportChannelLogfile::SendReportFinding(const SysmonXTypes::ReportObject &r
 	{
 		std::wstring dataToReport;
 		dataToReport.append(L"\nEventID "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->EventID)); dataToReport.append(L"\n");
-		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessID)); dataToReport.append(L"\n");
+		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessId)); dataToReport.append(L"\n");
 		dataToReport.append(L"CommandLine "); dataToReport.append(reportData->Event->CommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"Image "); dataToReport.append(reportData->Event->Image);  dataToReport.append(L"\n");
 		dataToReport.append(L"ParentProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ParentProcessId)); dataToReport.append(L"\n");

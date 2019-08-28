@@ -9,11 +9,11 @@ public:
 	{
 		bool ret = false;
 
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_EventCollectorTechID);
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_EventETWProviderName);
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_EventETWProviderPID);
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_EventCommandLine);
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_EventImage);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventCollectorTechID);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderName);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderPID);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_CommandLine);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_Image);
 
 		if (!m_properties.empty())
 		{

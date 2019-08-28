@@ -9,13 +9,13 @@ bool CollectorService::Continue()
 
 	try
 	{
-		logger.TraceUp("CollectorService::Continue() - Continue is not yet supported");
+		logger.TraceUp("CollectorService::Continue - Continue is not yet supported");
 		ret = true;
 
 	}
 	catch (...)
 	{
-		logger.TraceDown("CollectorService::Continue() - There was an error continuing the service. Setting state to original one.");
+		logger.TraceDown("CollectorService::Continue - There was an error continuing the service. Setting state to original one.");
 	}
 
 	return ret;
@@ -31,13 +31,13 @@ bool CollectorService::Pause()
 
 	try
 	{
-		logger.TraceUp("CollectorService::Pause() - Paused is not yet supported");
+		logger.TraceUp("CollectorService::Pause - Paused is not yet supported");
 		ret = true;
 
 	}
 	catch (...)
 	{
-		logger.TraceDown("CollectorService::Pause() - There was an error pausing the service. Setting state to original one.");
+		logger.TraceDown("CollectorService::Pause - There was an error pausing the service. Setting state to original one.");
 	}
 
 	return ret;
@@ -68,13 +68,13 @@ bool CollectorService::Shutdown()
 
 		if (!ret)
 		{
-			logger.TraceUp("CollectorService::Shutdown() - There was an error stopping the service. Setting state to original one");
+			logger.TraceUp("CollectorService::Shutdown - There was an error stopping the service. Setting state to original one");
 			UpdateServiceStatus(originalState);
 		}
 	}
 	catch (...)
 	{
-		logger.TraceDown("CollectorService::Shutdown() - There was an error stopping the service. Setting state to original one.");
+		logger.TraceDown("CollectorService::Shutdown - There was an error stopping the service. Setting state to original one.");
 		UpdateServiceStatus(originalState);
 	}
 
@@ -111,13 +111,13 @@ bool CollectorService::Run(DWORD dwArgc, PWSTR *pszArgv)
 
 		if (!ret)
 		{
-			logger.TraceUp("CollectorService::Run() - There was an error starting the service. Shutting it down.");
+			logger.TraceUp("CollectorService::Run - There was an error starting the service. Shutting it down.");
 			UpdateServiceStatus(SERVICE_STOPPED);
 		}
 	}
 	catch (...)
 	{
-		logger.TraceDown("CollectorService::Run() - There was an error starting the service. Shutting it down.");
+		logger.TraceDown("CollectorService::Run - There was an error starting the service. Shutting it down.");
 		UpdateServiceStatus(SERVICE_STOPPED);
 	}
 
@@ -190,7 +190,7 @@ void WINAPI CollectorService::ServiceMain(DWORD argc, LPWSTR *argv)
 	{
 		if (!service.Run(argc, argv))
 		{
-			logger.TraceDown("CollectorService::ServiceMain() - There was a problem starting sysmonx collector service");
+			logger.TraceDown("CollectorService::ServiceMain - There was a problem starting sysmonx collector service");
 		}
 	}
 }
@@ -215,12 +215,12 @@ bool CollectorService::RunService()
 	if (StartServiceCtrlDispatcher(sTable))
 	{
 		ret = true;
-		logger.TraceUp("CollectorService::RunService() - ServiceMain call was succesfully dispatched");
+		logger.TraceUp("CollectorService::RunService - ServiceMain call was succesfully dispatched");
 	}
 	else
 	{
 		DWORD err = GetLastError();
-		logger.TraceDown("CollectorService::RunService() - There was a problem connecting with SCM. Error is 0x%x", err);
+		logger.TraceDown("CollectorService::RunService - There was a problem connecting with SCM. Error is 0x%x", err);
 	}
 
 	return ret;
@@ -249,7 +249,7 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 	if (collectorService.ServiceStopEvent != INVALID_HANDLE_VALUE)
 	{
 		//Initializing Service Work Environment
-		logger.TraceUp("CollectorService::WorkerThread() - About to setup working environment");
+		logger.TraceUp("CollectorService::WorkerThread - About to setup working environment");
 
 		/*
 		while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
@@ -260,7 +260,7 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 		
 		if (SysmonXServiceFlows::IsServiceWorkEnvironmentReady())
 		{
-			logger.TraceUp("CollectorService::WorkerThread() - Working environment is ready, about to enable processing");
+			logger.TraceUp("CollectorService::WorkerThread - Working environment is ready, about to enable processing");
 			if (SysmonXServiceFlows::EnableServiceProcessing())
 			{
 				//Checking periodically if we need to stop
@@ -269,28 +269,28 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 					Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
 				}
 
-				logger.TraceUp("CollectorService::WorkerThread() - Processing requested to be stopped. About to Disable processing");
+				logger.TraceUp("CollectorService::WorkerThread - Processing requested to be stopped. About to Disable processing");
 				if (SysmonXServiceFlows::DisableServiceProcessing())
 				{
-					logger.TraceUp("CollectorService::WorkerThread() - Processing is stopped. Quitting service now");
+					logger.TraceUp("CollectorService::WorkerThread - Processing is stopped. Quitting service now");
 				}
 				else
 				{
-					logger.TraceDown("CollectorService::WorkerThread() - There was a problem stopping service processing");
+					logger.TraceDown("CollectorService::WorkerThread - There was a problem stopping service processing");
 				}
 
 				ret = ERROR_SUCCESS;
 			}
 			else
 			{
-				logger.TraceDown("CollectorService::WorkerThread() - There was a problem enabling service processing");
+				logger.TraceDown("CollectorService::WorkerThread - There was a problem enabling service processing");
 				SysmonXServiceFlows::DisableServiceProcessing();
 				ret = ERROR_NO_WORK_DONE;
 			}
 		}
 		else
 		{
-			logger.TraceDown("CollectorService::WorkerThread() - There was a problem enabling service work environment");
+			logger.TraceDown("CollectorService::WorkerThread - There was a problem enabling service work environment");
 			ret = ERROR_NOT_READY;
 		}		
 	}

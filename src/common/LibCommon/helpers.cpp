@@ -1745,7 +1745,7 @@ namespace GeneralHelpers
 					CreateNewDirectory(tempPath.c_str(), lpSecurityAttributes) &&
 					IsValidDirectory(tempPath.c_str()))
 				{
-					if (tempPath.back() != L'\\') tempPath.push_back(L'\\');
+					GeneralHelpers::AddPathTrailCharsIfNeeded(tempPath);
 					newPath.assign(tempPath);
 					ret = true;
 				}
@@ -1787,7 +1787,7 @@ namespace GeneralHelpers
 						CreateDirectoryW(tempPath.c_str(), &secureAttributes) &&
 						IsValidDirectory(tempPath.c_str()))
 					{
-						if (tempPath.back() != L'\\') tempPath.push_back(L'\\');
+						GeneralHelpers::AddPathTrailCharsIfNeeded(tempPath);
 						newPath.assign(tempPath);
 						ret = true;
 					}
@@ -1814,7 +1814,7 @@ namespace GeneralHelpers
 		{
 			commonPath.assign(workingCommonAppData);
 
-			if (commonPath.back() != L'\\') commonPath.push_back(L'\\');
+			GeneralHelpers::AddPathTrailCharsIfNeeded(commonPath);
 
 			ret = true;
 		}
@@ -1830,14 +1830,14 @@ namespace GeneralHelpers
 		if (GetCommonAppDataPath(workingPath) &&
 			!workingPath.empty())
 		{
-			if (workingPath.back() != L'\\') workingPath.push_back(L'\\');
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingPath);
 			workingPath.append(SYSMONX_FOLDER_NAME);
 
 			SECURITY_ATTRIBUTES secureAttributes = { 0 };
 			secureAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
 			secureAttributes.bInheritHandle = FALSE;
 
-			if (workingPath.back() != L'\\') workingPath.push_back(L'\\');
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingPath);
 
 			if (IsValidDirectory(workingPath))
 			{
@@ -1873,9 +1873,12 @@ namespace GeneralHelpers
 			!randomString.empty())
 		{
 			workingPath.assign(sysmonXCommonPath);
-			if (workingPath.back() != L'\\') workingPath.push_back(L'\\');
+
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingPath);
+
 			workingPath.append(StrToWStr(randomString));
-			if (workingPath.back() != L'\\') workingPath.push_back(L'\\');
+
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingPath);
 
 			if (!workingPath.empty())
 			{
@@ -1916,7 +1919,7 @@ namespace GeneralHelpers
 					CreateDirectoryW(workingSysmonXPath.c_str(), &secureAttributes) &&
 					IsValidDirectory(workingSysmonXPath))
 				{
-					if (workingSysmonXPath.back() != L'\\') workingSysmonXPath.push_back(L'\\');
+					GeneralHelpers::AddPathTrailCharsIfNeeded(workingSysmonXPath);
 
 					if (IsValidDirectory(workingSysmonXPath))
 					{
@@ -1953,10 +1956,7 @@ namespace GeneralHelpers
 		{			
 			workingTempFile.assign(tempDirectory);
 			//checking if it is properly postpended
-			if (workingTempFile.back() != L'\\')
-			{
-				workingTempFile.push_back(L'\\');
-			}
+			GeneralHelpers::AddPathTrailCharsIfNeeded(workingTempFile);
 			
 			if (!workingTempFile.empty() && GetRandomString(lengthRandomDir, randomString))
 			{
@@ -2180,7 +2180,7 @@ namespace GeneralHelpers
 			}
 		}
 
-		return ret;
+return ret;
 	}
 
 	bool ComputeMD5FileHash(const std::wstring &filename, std::string &hash)
@@ -2276,10 +2276,14 @@ namespace GeneralHelpers
 			IsValidFile(file1) &&
 			IsValidFile(file2) &&
 			ComputeMD5FileHash(file1, hashFile1) &&
-			ComputeMD5FileHash(file2, hashFile2) && 
-			(hashFile1.compare(hashFile2) == 0))
+			ComputeMD5FileHash(file2, hashFile2) &&
+			!hashFile1.empty() &&
+			!hashFile2.empty())
 		{
-			ret = true;
+			if (hashFile1.compare(hashFile2) == 0)
+			{
+				ret = true;
+			}			
 		}
 
 		return ret;
@@ -2550,6 +2554,14 @@ namespace GeneralHelpers
 	void StrToLowercase(std::string &str)
 	{
 		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+	}
+
+	void AddPathTrailCharsIfNeeded(std::wstring &path)
+	{
+		if (!path.empty() && path.back() != '\\')
+		{
+			path.push_back('\\');
+		}
 	}
 
 	const std::time_t GetEpochTimestamp()

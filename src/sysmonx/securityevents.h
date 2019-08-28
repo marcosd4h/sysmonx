@@ -27,9 +27,27 @@ namespace SysmonXDefs
 	static const std::wstring EVENT_FILTER_OPERATION_STR_LESS_THAN = L"less than";
 	static const std::wstring EVENT_FILTER_OPERATION_STR_MORE_THAN = L"more than";
 	static const std::wstring EVENT_FILTER_OPERATION_STR_IMAGE = L"image";
-	static const std::wstring EVENT_FILTER_OPERATION_STR_REGEX_MATCH = L"regex_match";
-	static const std::wstring EVENT_FILTER_OPERATION_STR_REGEX_SEARCH = L"regex_search";
+	static const std::wstring EVENT_FILTER_OPERATION_STR_REGEX_MATCH = L"regex";
 
+	//Events Names - Trace Backend
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_PROCESS_CREATE = L"ProcessCreate";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_TIME = L"FileCreateTime";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_NETWORK_CONNECT = L"NetworkConnect";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_PROCESS_TERMINATE = L"ProcessTerminate";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_DRIVER_LOADER = L"DriverLoad";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_IMAGE_LOAD = L"ImageLoad";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_CREATE_REMOTE_THREAD = L"CreateRemoteThread";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_RAW_ACCESS_READ = L"RawAccessRead";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_PROCESS_ACCESS = L"ProcessAccess";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_FILE_CREATE = L"FileCreate";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_REGISTRY_EVENT = L"RegistryEvent";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_STREAM = L"FileCreateStreamHash";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_PIPE_EVENT = L"PipeEvent";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_WMI_EVENT = L"WmiEvent";
+	static const std::wstring EVENT_SYSMON_BACKEND_NAME_DNS_QUERY = L"DnsQuery";
+
+	//Events Names - SysmonX 
+	static const std::wstring EVENT_SYSMONX_NAME_POWERSHELL = L"PowershellEvent";
 }
 
 namespace SysmonXTypes
@@ -61,6 +79,16 @@ namespace SysmonXTypes
 	typedef std::wstring		EventName;
 	typedef std::wstring		EventAggregationName;
 
+
+	//Tracking Sysmon Backend Options Flags
+	enum SysmonBackendOptionFlags
+	{
+		SYSMON_OPTIONS_ALL_DISABLED = 0x00,
+		SYSMON_OPTIONS_NETWORK_TRACKING_ENABLED = 0x01,
+		SYSMON_OPTIONS_IMAGE_LOADING_ENABLED = 0x02,
+		SYSMON_OPTIONS_IMAGE_NA,
+	};
+
 	enum EventFilterEvalGroup
 	{
 		EVENT_FILTER_EVAL_INCLUDE_GROUP_AND = 0,
@@ -81,7 +109,6 @@ namespace SysmonXTypes
 		EVENT_FILTER_OPERATION_MORE_THAN,
 		EVENT_FILTER_OPERATION_IMAGE,
 		EVENT_FILTER_OPERATION_REGEX_MATCH,
-		EVENT_FILTER_OPERATION_REGEX_SEARCH,
 		EVENT_FILTER_OPERATION_NA
 	};
 
@@ -125,23 +152,20 @@ namespace SysmonXTypes
 		SECURITY_EVENT_ID_SYSMON_PROCESS_ACCESS = 10,
 		SECURITY_EVENT_ID_SYSMON_FILE_CREATE = 11,
 		SECURITY_EVENT_ID_SYSMON_REGISTRY_EVENT = 12,
-		SECURITY_EVENT_ID_SYSMON_REGISTRY_SET_VALUE = 13,
-		SECURITY_EVENT_ID_SYSMON_REGISTRY_RENAMED = 14,
+		SECURITY_EVENT_ID_SYSMON_REGISTRY_EVENT_SET_VALUE = 13,
+		SECURITY_EVENT_ID_SYSMON_REGISTRY_EVENT_NAME = 14,
 		SECURITY_EVENT_ID_SYSMON_FILE_CREATE_STREAM_HASH = 15,
 		SECURITY_EVENT_ID_SYSMON_SERVICE_CONFIGURATION_CHANGE = 16,
-		SECURITY_EVENT_ID_SYSMON_CREATE_NAMEDPIPE = 17,
-		SECURITY_EVENT_ID_SYSMON_CONNECT_NAMEDPIPE = 18,
-		SECURITY_EVENT_ID_SYSMON_WMI_FILTER = 19,
-		SECURITY_EVENT_ID_SYSMON_WMI_CONSUMER = 20,
-		SECURITY_EVENT_ID_SYSMON_WMI_BINDING = 21,
-		SECURITY_EVENT_ID_SYSMON_DNS_QUERY = 22,
+		SECURITY_EVENT_ID_SYSMON_NAMEDPIPE_EVENT = 17,
+		SECURITY_EVENT_ID_SYSMON_NAMEDPIPE_CONNECT = 18,
+		SECURITY_EVENT_ID_SYSMON_WMI_EVENT = 19,
+		SECURITY_EVENT_ID_SYSMON_DNS_EVENT = 22,
 		SECURITY_EVENT_ID_SYSMON_ERROR = 255,
 
 		//SysmonX related IDs
 		SECURITY_EVENT_ID_SYSMONX_CREATE_PROCESS = 1000,
-		SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND = 4104,
+		SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND = 1001,
 		SECURITY_EVENT_ID_SYSMONX_AUTHENTICATION = 1002,
-		SECURITY_EVENT_ID_SYSMONX_TBD2 = 1001,
 
 		//Last possible ID
 		SECURITY_EVENT_NOT_VALID = 65535 //(USHRT_MAX)
@@ -164,8 +188,9 @@ namespace SysmonXTypes
 
 		//Sysmon Generic
 		EventWString	UtcTime;
+		EventWString	ErrorID;
 		EventWString	RuleName;
-		EventUINT32		ProcessID;
+		EventUINT32		ProcessId;
 		EventGUID		ProcessGuid;
 		EventWString	Image;
 		EventWString	FileVersion;
@@ -209,6 +234,7 @@ namespace SysmonXTypes
 		EventWString	SignatureStatus;
 		EventGUID		SourceProcessGuid;
 		EventUINT32		SourceProcessId;
+		EventUINT32		SourceThreadId;
 		EventWString	SourceImage;
 		EventGUID		TargetProcessGuid;
 		EventUINT32		TargetProcessId;
@@ -313,17 +339,100 @@ namespace SysmonXTypes
 	//EventData Property ID
 	enum EventPropertyID
 	{
-		EVENT_PROPERTY_ID_EventVersion = 0,
-		EVENT_PROPERTY_ID_EventID,
-		EVENT_PROPERTY_ID_EventCollectorTechID,
-		EVENT_PROPERTY_ID_EventCollectorVectorID,
-		EVENT_PROPERTY_ID_EventCreationTimestamp,
-		EVENT_PROPERTY_ID_EventETWProviderPID,
-		EVENT_PROPERTY_ID_EventETWProviderName,
-		EVENT_PROPERTY_ID_EventCommandLine,
-		EVENT_PROPERTY_ID_EventImage,
-		EVENT_PROPERTY_ID_ScriptBlockText,
-		EVENT_PROPERTY_ID_NA
+		//Common Payload
+		EVENT_PROPERTY_COMMON_Version = 0,
+		EVENT_PROPERTY_COMMON_EventID,
+		EVENT_PROPERTY_COMMON_EventCollectorTechID,
+		EVENT_PROPERTY_COMMON_EventCollectorVectorID,
+		EVENT_PROPERTY_COMMON_EventCreationTimestamp,
+		EVENT_PROPERTY_COMMON_EventETWProviderPID,
+		EVENT_PROPERTY_COMMON_EventETWProviderName,
+
+		//Generic Sysmon Events Payload
+		EVENT_PROPERTY_CallTrace,
+		EVENT_PROPERTY_CommandLine,
+		EVENT_PROPERTY_Company,
+		EVENT_PROPERTY_Configuration,
+		EVENT_PROPERTY_ConfigurationFileHash,
+		EVENT_PROPERTY_Consumer,
+		EVENT_PROPERTY_CreationUtcTime,
+		EVENT_PROPERTY_CurrentDirectory,
+		EVENT_PROPERTY_Description,
+		EVENT_PROPERTY_Destination,
+		EVENT_PROPERTY_DestinationHostname,
+		EVENT_PROPERTY_DestinationIp,
+		EVENT_PROPERTY_DestinationIsIpv6,
+		EVENT_PROPERTY_DestinationPort,
+		EVENT_PROPERTY_DestinationPortName,
+		EVENT_PROPERTY_Details,
+		EVENT_PROPERTY_Device,
+		EVENT_PROPERTY_EventNamespace,
+		EVENT_PROPERTY_EventType,
+		EVENT_PROPERTY_FileVersion,
+		EVENT_PROPERTY_Filter,
+		EVENT_PROPERTY_GrantedAccess,
+		EVENT_PROPERTY_Hash,
+		EVENT_PROPERTY_Hashes,
+		EVENT_PROPERTY_EID,
+		EVENT_PROPERTY_Image,
+		EVENT_PROPERTY_ImageLoaded,
+		EVENT_PROPERTY_Initiated,
+		EVENT_PROPERTY_IntegrityLevel,
+		EVENT_PROPERTY_LogonGuid,
+		EVENT_PROPERTY_LogonId,
+		EVENT_PROPERTY_Name,
+		EVENT_PROPERTY_NewName,
+		EVENT_PROPERTY_NewThreadId,
+		EVENT_PROPERTY_Operation,
+		EVENT_PROPERTY_OriginalFileName,
+		EVENT_PROPERTY_ParentCommandLine,
+		EVENT_PROPERTY_ParentImage,
+		EVENT_PROPERTY_ParentProcessGuid,
+		EVENT_PROPERTY_ParentProcessId,
+		EVENT_PROPERTY_PipeName,
+		EVENT_PROPERTY_PreviousCreationUtcTime,
+		EVENT_PROPERTY_ProcessGuid,
+		EVENT_PROPERTY_ProcessId,
+		EVENT_PROPERTY_Product,
+		EVENT_PROPERTY_Protocol,
+		EVENT_PROPERTY_Query,
+		EVENT_PROPERTY_QueryName,
+		EVENT_PROPERTY_QueryResults,
+		EVENT_PROPERTY_QueryStatus,
+		EVENT_PROPERTY_RuleName,
+		EVENT_PROPERTY_SchemaVersion,
+		EVENT_PROPERTY_Signature,
+		EVENT_PROPERTY_SignatureStatus,
+		EVENT_PROPERTY_Signed,
+		EVENT_PROPERTY_SourceHostname,
+		EVENT_PROPERTY_SourceImage,
+		EVENT_PROPERTY_SourceIp,
+		EVENT_PROPERTY_SourceIsIpv6,
+		EVENT_PROPERTY_SourcePort,
+		EVENT_PROPERTY_SourcePortName,
+		EVENT_PROPERTY_SourceProcessGuid,
+		EVENT_PROPERTY_SourceProcessId,
+		EVENT_PROPERTY_SourceThreadId,
+		EVENT_PROPERTY_StartAddress,
+		EVENT_PROPERTY_StartFunction,
+		EVENT_PROPERTY_StartModule,
+		EVENT_PROPERTY_State,
+		EVENT_PROPERTY_TargetFilename,
+		EVENT_PROPERTY_TargetImage,
+		EVENT_PROPERTY_TargetObject,
+		EVENT_PROPERTY_TargetProcessGuid,
+		EVENT_PROPERTY_TargetProcessId,
+		EVENT_PROPERTY_TerminalSessionId,
+		EVENT_PROPERTY_Type,
+		EVENT_PROPERTY_User,
+		EVENT_PROPERTY_UtcTime,
+		EVENT_PROPERTY_Version,
+
+		//SysmonX Payload
+		EVENT_PROPERTY_ScriptBlockText, //Powershell
+
+		//Guard
+		EVENT_PROPERTY_NA
 	};
 
 

@@ -64,6 +64,9 @@
     <ClCompile Include="collectors\etwcollectorcallbacks\callback_powershell_events.cpp">
       <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
     </ClCompile>
+    <ClCompile Include="matchhelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\common.h">
@@ -135,6 +138,15 @@
     <ClInclude Include="matchers\match_event_sysmox_powershell.h">
       <Filter>Matchers\Events</Filter>
     </ClInclude>
+    <ClInclude Include="include\matchhelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventhelpers\event_sysmon_create_process.h">
+      <Filter>EventHelpers</Filter>
+    </ClInclude>
+    <ClInclude Include="eventhelpers\events_common.h">
+      <Filter>EventHelpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -160,6 +172,9 @@
     </Filter>
     <Filter Include="Matchers\Events">
       <UniqueIdentifier>{b7101155-47a0-48aa-9961-c06bba24f7f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EventHelpers">
+      <UniqueIdentifier>{7479b88b-cc41-4fe8-826f-6ab1aa4d78b1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

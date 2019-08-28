@@ -6,58 +6,48 @@ bool RulesManager::Initialize()
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 	ConfigManager &config = ConfigManager::Instance();
 
-	logger.Trace("RulesManager::Initialize() - About to initialize rules manager");
+	logger.Trace("RulesManager::Initialize - About to initialize rules manager");
 
 	if (config.IsInitialized() && !IsInitialized())
 	{
-
 		//clearing up containers
 		m_validEventsNames.clear();
-		m_validSysmonXOnlyEventsNames.clear();
 		m_validConditionFilters.clear();
-		m_validSysmonXOnlyConditionFilters.clear();
 		m_validEventProperties.clear();
-		m_validSysmonXOnlyEventProperties.clear();
-		m_validSysmonXOnlyEventsAggregation.clear();
+		m_validEventsAggregation.clear();
 
-		//Adding Trace Backend Event Names
-		m_validEventsNames.push_back(L"ProcessCreate");
-		m_validEventsNames.push_back(L"FileCreateTime");
-		m_validEventsNames.push_back(L"NetworkConnect");
-		m_validEventsNames.push_back(L"ProcessTerminate");
-		m_validEventsNames.push_back(L"DriverLoad");
-		m_validEventsNames.push_back(L"ImageLoad");
-		m_validEventsNames.push_back(L"CreateRemoteThread");
-		m_validEventsNames.push_back(L"RawAccessRead");
-		m_validEventsNames.push_back(L"ProcessAccess");
-		m_validEventsNames.push_back(L"FileCreate");
-		m_validEventsNames.push_back(L"RegistryEvent");
-		m_validEventsNames.push_back(L"FileCreateStreamHash");
-		m_validEventsNames.push_back(L"PipeEvent");
-		m_validEventsNames.push_back(L"WmiEvent");
-
-		//Adding SysmonX Event Names
-		m_validSysmonXOnlyEventsNames.push_back(L"PowershellEvent");
-
-		//Adding Trace Backend Condition Filters
-		//TODO: check how to handle default condition to "is"
-		m_validConditionFilters.push_back(L"is");
-		m_validConditionFilters.push_back(L"is not");
-		m_validConditionFilters.push_back(L"contains");
-		m_validConditionFilters.push_back(L"excludes");
-		m_validConditionFilters.push_back(L"begin with");
-		m_validConditionFilters.push_back(L"end with");
-		m_validConditionFilters.push_back(L"less than");
-		m_validConditionFilters.push_back(L"more than");
-		m_validConditionFilters.push_back(L"image");
+		//Adding Event Names
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_CREATE);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_TIME);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_NETWORK_CONNECT);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_TERMINATE);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_DRIVER_LOADER);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_IMAGE_LOAD);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_CREATE_REMOTE_THREAD);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_RAW_ACCESS_READ);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_ACCESS);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_REGISTRY_EVENT);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_STREAM);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PIPE_EVENT);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_WMI_EVENT);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_DNS_QUERY);
+		m_validEventsNames.push_back(SysmonXDefs::EVENT_SYSMONX_NAME_POWERSHELL);
 
 		//Adding SysmonX Condition Filters
-		m_validSysmonXOnlyConditionFilters.push_back(L"regex_match");
-		m_validSysmonXOnlyConditionFilters.push_back(L"is");
-		m_validSysmonXOnlyConditionFilters.push_back(L"regex_search");
+		//TODO: check how to handle default condition to "is"
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_IS);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_IS_NOT);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_CONTAINS);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_EXCLUDES);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_BEGIN_WITH);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_END_WITH);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_LESS_THAN);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_MORE_THAN);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_IMAGE);
+		m_validConditionFilters.push_back(SysmonXDefs::EVENT_FILTER_OPERATION_STR_REGEX_MATCH);
 
-		//Adding Trace Backend Supported Events Properties
-
+		//Adding  Supported Events Properties
 		EventPropertyNameContainer ProcessCreate;
 		ProcessCreate.push_back(L"RuleName");
 		ProcessCreate.push_back(L"UtcTime");
@@ -81,56 +71,59 @@ bool RulesManager::Initialize()
 		ProcessCreate.push_back(L"ParentProcessId");
 		ProcessCreate.push_back(L"ParentImage");
 		ProcessCreate.push_back(L"ParentCommandLine");
-		m_validEventProperties.insert(std::make_pair(L"ProcessCreate", ProcessCreate));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_CREATE, ProcessCreate));
 
 		EventPropertyNameContainer FileCreateTime;
-		m_validEventProperties.insert(std::make_pair(L"FileCreateTime", FileCreateTime));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_TIME, FileCreateTime));
 
 		EventPropertyNameContainer NetworkConnect;
-		m_validEventProperties.insert(std::make_pair(L"NetworkConnect", FileCreateTime));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_NETWORK_CONNECT, FileCreateTime));
 
 		EventPropertyNameContainer ProcessTerminate;
-		m_validEventProperties.insert(std::make_pair(L"ProcessTerminate", ProcessTerminate));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_TERMINATE, ProcessTerminate));
 
 		EventPropertyNameContainer DriverLoad;
-		m_validEventProperties.insert(std::make_pair(L"DriverLoad", DriverLoad));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_DRIVER_LOADER, DriverLoad));
 
 		EventPropertyNameContainer ImageLoad;
-		m_validEventProperties.insert(std::make_pair(L"ImageLoad", ImageLoad));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_IMAGE_LOAD, ImageLoad));
 
 		EventPropertyNameContainer CreateRemoteThread;
-		m_validEventProperties.insert(std::make_pair(L"CreateRemoteThread", CreateRemoteThread));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_CREATE_REMOTE_THREAD, CreateRemoteThread));
 
 		EventPropertyNameContainer RawAccessRead;
-		m_validEventProperties.insert(std::make_pair(L"RawAccessRead", RawAccessRead));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_RAW_ACCESS_READ, RawAccessRead));
 
 		EventPropertyNameContainer ProcessAccess;
-		m_validEventProperties.insert(std::make_pair(L"ProcessAccess", ProcessAccess));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PROCESS_ACCESS, ProcessAccess));
 
 		EventPropertyNameContainer FileCreate;
-		m_validEventProperties.insert(std::make_pair(L"FileCreate", FileCreate));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE, FileCreate));
 
 		EventPropertyNameContainer RegistryEvent;
-		m_validEventProperties.insert(std::make_pair(L"RegistryEvent", RegistryEvent));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_REGISTRY_EVENT, RegistryEvent));
 
 		EventPropertyNameContainer FileCreateStreamHash;
-		m_validEventProperties.insert(std::make_pair(L"FileCreateStreamHash", FileCreateStreamHash));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_FILE_CREATE_STREAM, FileCreateStreamHash));
 
 		EventPropertyNameContainer PipeEvent;
-		m_validEventProperties.insert(std::make_pair(L"PipeEvent", PipeEvent));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_PIPE_EVENT, PipeEvent));
 
 		EventPropertyNameContainer WmiEvent;
-		m_validEventProperties.insert(std::make_pair(L"WmiEvent", WmiEvent));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_WMI_EVENT, WmiEvent));
+
+		EventPropertyNameContainer DNSQueryEvent;
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMON_BACKEND_NAME_DNS_QUERY, DNSQueryEvent));
 
 		//Adding SysmonX Supported Events Properties
 		EventPropertyNameContainer PowershellEvent;
 		PowershellEvent.push_back(L"ScriptBlock");
-		m_validEventProperties.insert(std::make_pair(L"PowershellEvent", PowershellEvent));
+		m_validEventProperties.insert(std::make_pair(SysmonXDefs::EVENT_SYSMONX_NAME_POWERSHELL, PowershellEvent));
 
 		//Adding SysmonX Aggregation Options;
-		m_validSysmonXOnlyEventsAggregation.push_back(L"cmdline_spoofing");
-		m_validSysmonXOnlyEventsAggregation.push_back(L"parent_pid_spoofing");
-		m_validSysmonXOnlyEventsAggregation.push_back(L"hollow_modules");
+		m_validEventsAggregation.push_back(L"cmdline_spoofing");
+		m_validEventsAggregation.push_back(L"parent_pid_spoofing");
+		m_validEventsAggregation.push_back(L"hollow_modules");
 
 		m_isInitialized = true;
 		ret = true;
@@ -152,17 +145,17 @@ bool RulesManager::SetConfigurationFile(const std::wstring &configFile)
 
 	if (config.IsInitialized())
 	{
-		logger.Trace("RulesManager::SetConfigurationFile() - About to process new configuration file");
+		logger.Trace("RulesManager::SetConfigurationFile - About to process new configuration file");
 
 		if (GeneralHelpers::IsValidFile(configFile))
 		{
-			logger.Trace("RulesManager::SetConfigurationFile() - Give configuration file is valid");
+			logger.Trace("RulesManager::SetConfigurationFile - Give configuration file is valid");
 
 			ret = true;
 		}
 		else
 		{
-			logger.Error("RulesManager::SetConfigurationFile() - There was a problem with given configuration file");
+			logger.Error("RulesManager::SetConfigurationFile - There was a problem with given configuration file");
 		}
 	}
 
@@ -191,27 +184,6 @@ bool RulesManager::IsEventNameValid(const EventName &name)
 	return ret;
 }
 
-bool RulesManager::IsSysmonXOnlyEventNameValid(const EventName &name)
-{
-	bool ret = false;
-
-	if (!m_validSysmonXOnlyEventsNames.empty())
-	{
-		//Checking if given element is present
-		for (auto eventName : m_validSysmonXOnlyEventsNames)
-		{
-			if (boost::algorithm::iequals(eventName, name))
-			{
-				ret = true;
-				break;
-			}
-		}
-	}
-
-	return ret;
-}
-
-
 bool RulesManager::IsConditionFilterValid(const EventConditionFilterName &filterName)
 {
 	bool ret = false;
@@ -231,27 +203,6 @@ bool RulesManager::IsConditionFilterValid(const EventConditionFilterName &filter
 
 	return ret;
 }
-
-bool RulesManager::IsSysmonXOnlyConditionFilterValid(const EventConditionFilterName &filterName)
-{
-	bool ret = false;
-
-	if (!m_validSysmonXOnlyConditionFilters.empty())
-	{
-		//Checking if given element is present
-		for (auto conditionFilterName : m_validSysmonXOnlyConditionFilters)
-		{
-			if (boost::algorithm::iequals(conditionFilterName, filterName))
-			{
-				ret = true;
-				break;
-			}
-		}
-	}
-
-	return ret;
-}
-
 
 bool RulesManager::IsEventPropertyValid(const EventName &name, const EventPropertyName &propertyName)
 {
@@ -289,50 +240,14 @@ bool RulesManager::IsEventPropertyValid(const EventName &name, const EventProper
 }
 
 
-bool RulesManager::IsSysmonXOnlyEventPropertyValid(const EventName &name, const EventPropertyName &propertyName)
+bool RulesManager::IsEventAggregationValid(const EventName &name)
 {
 	bool ret = false;
 
-	bool shoudlBreak = false;
-	if (!m_validEventProperties.empty())
+	if (!m_validEventsAggregation.empty())
 	{
 		//Checking if given element is present
-		for (auto eventPropertyContainer : m_validSysmonXOnlyEventProperties)
-		{
-			//First iterating to target event name
-			if (boost::algorithm::iequals(name, eventPropertyContainer.first))
-			{
-				for (auto eventProperty : eventPropertyContainer.second)
-				{
-					if (boost::algorithm::iequals(eventProperty, propertyName))
-					{
-						ret = true;
-						shoudlBreak = true;
-						break;
-					}
-				}
-
-				if (shoudlBreak)
-				{
-					ret = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return ret;
-}
-
-
-bool RulesManager::IsSysmonXOnlyEventAggregationValid(const EventName &name)
-{
-	bool ret = false;
-
-	if (!m_validSysmonXOnlyConditionFilters.empty())
-	{
-		//Checking if given element is present
-		for (auto eventAggregationName : m_validSysmonXOnlyEventsAggregation)
+		for (auto eventAggregationName : m_validEventsAggregation)
 		{
 			if (boost::algorithm::iequals(eventAggregationName, name))
 			{
@@ -371,8 +286,7 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 				{
 					std::string workEventName(eventInRuleGroup.name());
 
-					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)) ||
-						IsSysmonXOnlyEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
+					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
 					{
 						for (pugi::xml_attribute eventAttribute : eventInRuleGroup.attributes())
 						{
@@ -385,9 +299,7 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 							std::string workEventPropertyName(eventProperty.name());
 
 							if (IsEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-								GeneralHelpers::StrToWStr(workEventPropertyName)) ||
-								IsSysmonXOnlyEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-									GeneralHelpers::StrToWStr(workEventPropertyName)))
+								GeneralHelpers::StrToWStr(workEventPropertyName)))
 							{
 								for (pugi::xml_attribute eventPropertyAttribute : eventProperty.attributes())
 								{
@@ -412,8 +324,7 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 			{
 				std::string workEventName(event.name());
 
-				if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)) ||
-					IsSysmonXOnlyEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
+				if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
 				{
 					for (pugi::xml_attribute eventAttribute : event.attributes())
 					{
@@ -426,10 +337,7 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 						std::string workEventPropertyName(eventProperty.name());
 
 						if (IsEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-							GeneralHelpers::StrToWStr(workEventPropertyName)) ||
-							IsSysmonXOnlyEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-								GeneralHelpers::StrToWStr(workEventPropertyName)))
-
+							GeneralHelpers::StrToWStr(workEventPropertyName)))
 						{
 							for (pugi::xml_attribute eventPropertyAttribute : eventProperty.attributes())
 							{
@@ -456,130 +364,6 @@ bool RulesManager::IsConfigFileSyntaxValid(const std::wstring &configFile)
 	return ret;
 }
 
-bool RulesManager::GenerateTraceBackendConfiguration(const std::wstring &configFile, const std::wstring &targetTraceBackendConfigFile)
-{
-	bool ret = false;
-	pugi::xml_document doc;
-
-	if (!configFile.empty() &&
-		GeneralHelpers::IsValidFile(configFile) &&
-		doc.load_file(configFile.c_str()))
-	{
-		//Traversing until EventFiltering tag
-		pugi::xml_node eventFilteringNode = doc.child("Sysmon").child("EventFiltering");
-
-		//parsing events, one by one
-		for (pugi::xml_node event : eventFilteringNode)
-		{
-			//Checking if we are inside of a RuleGroup tag
-			if (boost::algorithm::iequals(event.name(), "RuleGroup"))
-			{
-				for (pugi::xml_node eventInRuleGroup : event)
-				{
-					std::string workEventName(eventInRuleGroup.name());
-
-					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
-					{
-						for (pugi::xml_attribute eventAttribute : eventInRuleGroup.attributes())
-						{
-							std::string workEventAttributeName(eventAttribute.name());
-							std::string workEventAttributeValue(eventAttribute.value());
-							if (boost::algorithm::iequals(workEventAttributeName, "scanners")) event.remove_attribute(eventAttribute);
-						}
-
-						for (pugi::xml_node eventProperty : eventInRuleGroup.children())
-						{
-							std::string workEventPropertyName(eventProperty.name());
-
-							if (IsEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-								GeneralHelpers::StrToWStr(workEventPropertyName)))
-							{
-								for (pugi::xml_attribute eventPropertyAttribute : eventProperty.attributes())
-								{
-									std::string workEventPropertyAttributeName(eventPropertyAttribute.name());
-									std::string workEventPropertyAttributeValue(eventPropertyAttribute.value());
-
-									if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition") &&
-										IsSysmonXOnlyConditionFilterValid(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)))
-									{
-										eventInRuleGroup.remove_child(eventProperty);
-										break;
-									}
-								}
-							}
-							else
-							{
-								eventInRuleGroup.remove_child(eventProperty);
-							}
-						}
-					}
-					else
-					{
-						eventInRuleGroup.remove_child(event);
-					}
-				}
-			}
-			else
-			{
-				std::string workEventName(event.name());
-
-				if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
-				{
-					for (pugi::xml_attribute eventAttribute : event.attributes())
-					{
-						std::string workEventAttributeName(eventAttribute.name());
-						std::string workEventAttributeValue(eventAttribute.value());
-						if (boost::algorithm::iequals(workEventAttributeName, "scanners")) event.remove_attribute(eventAttribute);
-					}
-
-					for (pugi::xml_node eventProperty : event.children())
-					{
-						std::string workEventPropertyName(eventProperty.name());
-
-						if (IsEventPropertyValid(GeneralHelpers::StrToWStr(workEventName),
-							GeneralHelpers::StrToWStr(workEventPropertyName)))
-
-						{
-							for (pugi::xml_attribute eventPropertyAttribute : eventProperty.attributes())
-							{
-								std::string workEventPropertyAttributeName(eventPropertyAttribute.name());
-								std::string workEventPropertyAttributeValue(eventPropertyAttribute.value());
-
-								if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition") &&
-									IsSysmonXOnlyConditionFilterValid(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)))
-								{
-									event.remove_child(eventProperty);
-									continue;
-								}
-							}
-						}
-						else
-						{
-							event.remove_child(eventProperty);
-						}
-					}
-				}
-				else
-				{
-					eventFilteringNode.remove_child(event);
-				}
-			}
-		}
-
-		if (GeneralHelpers::IsValidFile(targetTraceBackendConfigFile))
-		{
-			GeneralHelpers::RemoveFile(targetTraceBackendConfigFile);
-		}
-
-		if (doc.save_file(GeneralHelpers::WStrToStr(targetTraceBackendConfigFile).c_str()))
-		{
-			ret = true;
-		}
-	}
-
-	return ret;
-}
-
 bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile)
 {
 	bool ret = false;
@@ -598,14 +382,12 @@ bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile
 		//parsing events, one by one
 		for (pugi::xml_node event : eventFilteringNode)
 		{
-			EventID workingEventID = SysmonXHelpers::GetEventIDBasedOnName(GeneralHelpers::StrToWStr(event.name()));
+			EventID workingEventID = MatchHelpers::GetEventIDBasedOnName(GeneralHelpers::StrToWStr(event.name()));
 			UINT32 workingFilterEvalGroup = EventFilterEvalGroup::EVENT_FILTER_EVAL_NA;
 
-			//GetEventIDBasedOnName(const SysmonXTypes::EventIDName &eventName)
 			//Checking if we are inside of a RuleGroup tag
 			if (boost::algorithm::iequals(event.name(), "RuleGroup"))
 			{
-
 				for (pugi::xml_attribute groupAttribute : event.attributes())
 				{
 					std::string workGroupAttributeName(groupAttribute.name());
@@ -627,8 +409,7 @@ bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile
 					std::string workEventName(eventInRuleGroup.name());
 
 					//Trace backend events, remove non Sysmon filter conditions
-					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)) || 
-						IsSysmonXOnlyEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
+					if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
 					{
 						for (pugi::xml_attribute eventAttribute : eventInRuleGroup.attributes())
 						{
@@ -655,13 +436,12 @@ bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile
 									std::string workEventPropertyAttributeName(eventPropertyAttribute.name());
 									std::string workEventPropertyAttributeValue(eventPropertyAttribute.value());
 
-									if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition") &&
-										IsSysmonXOnlyConditionFilterValid(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)))
+									if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition"))
 									{
 										if (!matchingEngine.AddNewEventFilterCondition(workingEventID, 
 											GeneralHelpers::StrToWStr(workingPropertyName),
 											(EventFilterEvalGroup)workingFilterEvalGroup,
-											SysmonXHelpers::GetEventFilterOperationBasedOnName(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)),
+											MatchHelpers::GetEventFilterOperationBasedOnName(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)),
 											GeneralHelpers::StrToWStr(workingPropertyValue)))
 										{
 											return ret;
@@ -678,8 +458,7 @@ bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile
 				std::string workEventName(event.name());
 				workingFilterEvalGroup = EventFilterEvalGroup::EVENT_FILTER_EVAL_INCLUDE_GROUP_OR;
 
-				if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)) ||
-					IsSysmonXOnlyEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
+				if (IsEventNameValid(GeneralHelpers::StrToWStr(workEventName)))
 				{
 					for (pugi::xml_attribute eventAttribute : event.attributes())
 					{
@@ -706,13 +485,12 @@ bool RulesManager::PopulateMatchingEngineMatchers(const std::wstring &configFile
 								std::string workEventPropertyAttributeName(eventPropertyAttribute.name());
 								std::string workEventPropertyAttributeValue(eventPropertyAttribute.value());
 
-								if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition") &&
-									IsSysmonXOnlyConditionFilterValid(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)))
+								if (boost::algorithm::iequals(workEventPropertyAttributeName, "condition"))
 								{
 									if (!matchingEngine.AddNewEventFilterCondition(workingEventID,
 										GeneralHelpers::StrToWStr(workingPropertyName),
 										(EventFilterEvalGroup)workingFilterEvalGroup,
-										SysmonXHelpers::GetEventFilterOperationBasedOnName(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)),
+										MatchHelpers::GetEventFilterOperationBasedOnName(GeneralHelpers::StrToWStr(workEventPropertyAttributeValue)),
 										GeneralHelpers::StrToWStr(workingPropertyValue)))
 									{
 										return ret;

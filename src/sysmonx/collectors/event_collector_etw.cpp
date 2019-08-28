@@ -5,7 +5,7 @@ bool EventCollectorETW::Initialize()
 	boost::unique_lock<boost::mutex> lock(m_mutex);
 	bool ret = false;
 
-	m_logger.Trace("EventCollectorETW::Initialize() - About to initialize Event Collector ETW Technology");
+	m_logger.Trace("EventCollectorETW::Initialize - About to initialize Event Collector ETW Technology");
 
 	if (m_config.IsInitialized() && !IsInitialized())
 	{
@@ -42,7 +42,7 @@ bool EventCollectorETW::UpdatePolicy(const SysmonXTypes::RulesContainer &reportD
 	if (IsInitialized())
 	{
 		m_isEnabled = false;
-		m_logger.Trace("EventCollectorETW::UpdatePolicy() - About to update ETW Event collection policy");
+		m_logger.Trace("EventCollectorETW::UpdatePolicy - About to update ETW Event collection policy");
 
 		ret = true;
 	}
@@ -57,7 +57,7 @@ bool EventCollectorETW::StartEventsCollection()
 
 	if (IsInitialized() && InitETWCollectors())
 	{
-		m_logger.Trace("EventCollectorETW::StartEventsCollection() - About to start ETW event collection");
+		m_logger.Trace("EventCollectorETW::StartEventsCollection - About to start ETW event collection");
 
 		//Starting KrabsETW collection
 		m_etwKernelTraceThread = std::make_shared<std::thread>([&]() { m_isKernelTraceStarted = true; m_kernelTrace->start(); m_isKernelTraceStarted = false; });
@@ -66,13 +66,13 @@ bool EventCollectorETW::StartEventsCollection()
 		//Check if threads are still running
 		if (m_isKernelTraceStarted && m_isUserTraceStarted && m_etwUserTraceThread && m_etwKernelTraceThread)
 		{
-			m_logger.Trace("EventCollectorETW::StartEventsCollection() - ETW Collection Started!");
+			m_logger.Trace("EventCollectorETW::StartEventsCollection - ETW Collection Started!");
 			m_isEnabled = true;
 			ret = true;
 		}
 		else
 		{
-			m_logger.Error("EventCollectorETW::StartEventsCollection() - There was a problem starting ETW collection");
+			m_logger.Error("EventCollectorETW::StartEventsCollection - There was a problem starting ETW collection");
 		}
 	}
 
@@ -84,7 +84,7 @@ bool EventCollectorETW::StopEventsCollection()
 	boost::unique_lock<boost::mutex> lock(m_mutex);
 	bool ret = false;
 
-	m_logger.Trace("EventCollectorETW::StopEventsCollection() - About to stop ETW event collection");
+	m_logger.Trace("EventCollectorETW::StopEventsCollection - About to stop ETW event collection");
 
 	if (IsInitialized())
 	{

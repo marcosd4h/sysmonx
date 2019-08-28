@@ -31,6 +31,7 @@
     <ClCompile Include="localhelpers.cpp" />
     <ClCompile Include="matchers\filter_property_processor.cpp" />
     <ClCompile Include="matchers\match_event_base.cpp" />
+    <ClCompile Include="matchhelpers.cpp" />
     <ClCompile Include="matchingengine.cpp" />
     <ClCompile Include="reporters\report_channel_debug_events.cpp" />
     <ClCompile Include="reporters\report_channel_etw.cpp" />
@@ -44,11 +45,14 @@
   <ItemGroup>
     <ClInclude Include="collectors\event_collector_dummy.h" />
     <ClInclude Include="collectors\event_collector_etw.h" />
+    <ClInclude Include="eventhelpers\events_common.h" />
+    <ClInclude Include="eventhelpers\event_sysmon_create_process.h" />
     <ClInclude Include="eventsmanager.h" />
     <ClInclude Include="include\common.h" />
     <ClInclude Include="include\configmanager.h" />
     <ClInclude Include="include\localdefs.h" />
     <ClInclude Include="include\localhelpers.h" />
+    <ClInclude Include="include\matchhelpers.h" />
     <ClInclude Include="include\servicemanager.h" />
     <ClInclude Include="executionflows.h" />
     <ClInclude Include="matchers\filter_property_processor.h" />

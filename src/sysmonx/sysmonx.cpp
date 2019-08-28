@@ -14,7 +14,7 @@ void ShowHelp()
 	logger.TraceConsole(" #     #   #   #    # #    # #    # #   ##  #   #  ");
 	logger.TraceConsole("  #####    #    ####  #    #  ####  #    # #     # ");
 	logger.TraceConsole("                                                   ");
-	logger.TraceConsole("        OpenSource Alternative to Sysmon        ");
+	logger.TraceConsole("     Augmented and OpenSource version of Sysmon    ");
 	logger.TraceConsole("\nSysmonX Version: %s", SysmonXDefs::SYSMONX_VERSION.c_str());
 
 	logger.TraceConsole("\nSysmonX Options:");

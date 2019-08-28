@@ -8,7 +8,7 @@ bool MatchEventBase::IsPropertySupported(const SysmonXTypes::EventPropertyName &
 
 	if (!propertyName.empty())
 	{
-		EventPropertyID workingProperty = SysmonXHelpers::GetEventPropertyIDBasedOnName(propertyName);
+		EventPropertyID workingProperty = MatchHelpers::GetEventPropertyIDBasedOnName(propertyName);
 
 		for (EventPropertyID &it : m_properties)
 		{
@@ -69,8 +69,8 @@ bool MatchEventBase::AddNewFilterConditionToTargetProperty(
 	bool ret = false;
 
 	//Getting property ID for new property name
-	EventPropertyID propertyID = SysmonXHelpers::GetEventPropertyIDBasedOnName(propertyName);
-	if (propertyID != EventPropertyID::EVENT_PROPERTY_ID_NA)
+	EventPropertyID propertyID = MatchHelpers::GetEventPropertyIDBasedOnName(propertyName);
+	if (propertyID != EventPropertyID::EVENT_PROPERTY_NA)
 	{
 		//Checking if new filter condition needs to be added to existing element or not
 		auto mapITFilterCondition = workContainer.find(propertyID);
@@ -137,7 +137,7 @@ bool MatchEventBase::ShouldEventBeExcluded(const EventObject &eventData)
 			auto propertyProcessorIT = m_ExcludeFilterGroup.find(eventPropertyID);
 			if (propertyProcessorIT != m_ExcludeFilterGroup.end())
 			{
-				if (propertyProcessorIT->second->IsThereAMatch(SysmonXHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
+				if (propertyProcessorIT->second->IsThereAMatch(MatchHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
 				{
 					ret = true;
 				}
@@ -161,7 +161,7 @@ bool MatchEventBase::ShouldEventBeIncludedGroupOR(const EventObject &eventData)
 			auto propertyProcessorIT = m_IncludeORFilterGroup.find(eventPropertyID);
 			if (propertyProcessorIT != m_IncludeORFilterGroup.end())
 			{
-				if (propertyProcessorIT->second->IsThereAMatch(SysmonXHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
+				if (propertyProcessorIT->second->IsThereAMatch(MatchHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
 				{
 					ret = true;
 				}
@@ -185,7 +185,7 @@ bool MatchEventBase::ShouldEventBeIncludedGroupAND(const EventObject &eventData)
 			auto propertyProcessorIT = m_IncludeANDFilterGroup.find(eventPropertyID);
 			if (propertyProcessorIT != m_IncludeANDFilterGroup.end())
 			{
-				if (propertyProcessorIT->second->IsThereAMatch(SysmonXHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
+				if (propertyProcessorIT->second->IsThereAMatch(MatchHelpers::GetMatchingDataFromEvent(eventData, eventPropertyID)))
 				{
 					ret = true;
 				}

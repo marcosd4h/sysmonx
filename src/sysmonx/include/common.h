@@ -9,6 +9,7 @@
 #include "localtypes.h"
 #include "securityevents.h"
 #include "localhelpers.h"
+#include "matchhelpers.h"
 #include "interfaces.h"
 #include "configmanager.h"
 #include "reportmanager.h"

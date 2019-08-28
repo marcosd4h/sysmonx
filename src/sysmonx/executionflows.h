@@ -20,7 +20,7 @@ namespace SysmonXAppFlows
 	{		
 		bool UpdateLoggingData();
 		bool ValidateConfigFileSyntax();
-		bool SetupWorkBinaries();
+		bool AreWorkBinariesInSync();
 		bool HardenSysmonXSecurity();
 		bool DownloadAndExtract(const std::wstring &targetHost, const std::wstring &targetURLPath, const ProxyConfData &proxyData, const std::wstring &targetDirectory);
 		bool ValidateFileAndExtract(const std::wstring &zipFile, const std::wstring &targetDirectory);
@@ -29,7 +29,8 @@ namespace SysmonXAppFlows
 			std::wstring &target32BitsBackend, std::wstring &target64BitsBackend);
 		bool InstallTraceBackend(const CommonTypes::TraceBackendType &backendType, std::wstring &target32BitsBackend, std::wstring &target64BitsBackend);
 		bool SetupCollectionService(std::wstring &targetCollectionServiceFile);
-		bool InstallCollectionServiceHelper(const std::wstring &targetCollectionServiceFile);
+		bool InstallHelperCollectionService(const std::wstring &targetCollectionServiceFile);
+		bool IsNewCollectionServiceInstallRequired();
 	}
 }
 

@@ -9,7 +9,7 @@ public:
 	{
 		bool ret = false;
 
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ID_ScriptBlockText);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_ScriptBlockText);
 
 		if (!m_properties.empty())
 		{

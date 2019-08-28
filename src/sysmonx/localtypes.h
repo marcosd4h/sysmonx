@@ -10,8 +10,8 @@ namespace SysmonXTypes
 	struct ConfigSerializedData
 	{
 		int Version;
-		int HashAlgorithmToUse;
 		int ShouldCheckSignatureRevocation;
+		int OptionsFlags;
 		int WorkerThreads;
 		int CollectionServiceLoggingVerbosity;
 		CommonTypes::SerializedUIntVector CollectionServiceLoggingChannel;
@@ -28,6 +28,7 @@ namespace SysmonXTypes
 		CommonTypes::SerializedWCharVector PreviousWorkingDirectory;
 		CommonTypes::SerializedWCharVector WorkingDirectory;
 		CommonTypes::SerializedWCharVector ConfigFile;
+		CommonTypes::SerializedWCharVector HashAlgorithmToUse;
 	};
 
 }

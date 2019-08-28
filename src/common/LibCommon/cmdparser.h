@@ -7,8 +7,16 @@
 
 class CmdArgsParser 
 {
-
+	
 public:
+
+	enum CaseMode
+	{
+		CASE_MODE_SENSITIVE = 0,
+		CASE_MODE_INSENSITIVE,
+		CASE_MODE_NA
+	};
+
 	CmdArgsParser() = default;
 	~CmdArgsParser() = default;
 
@@ -32,102 +40,90 @@ public:
 		return ret;
 	}
 
-	const std::wstring& GetOptionValue(const std::wstring &cmdOption) const
-	{
-		static const std::wstring empty;
-
-		std::vector<std::wstring>::const_iterator cmdIt;
-		cmdIt = std::find(this->m_cmdTokens.begin(), this->m_cmdTokens.end(), cmdOption);
-
-		if (cmdIt != this->m_cmdTokens.end() && ++cmdIt != this->m_cmdTokens.end())
-		{
-			return *cmdIt;
-		}
-		else
-		{
-			return empty;
-		}		
-	}
-
-	const std::wstring& GetOptionValueInsensitive(const std::wstring &cmdOption) const
-	{
-		static const std::wstring empty;
-
-		std::wstring workingStr(cmdOption);
-		std::transform(workingStr.begin(), workingStr.end(), workingStr.begin(), ::towlower);
-
-		std::vector<std::wstring>::const_iterator cmdIt;
-		cmdIt = std::find(this->m_cmdITokens.begin(), this->m_cmdITokens.end(), workingStr);
-		if (cmdIt != this->m_cmdITokens.end() && ++cmdIt != this->m_cmdITokens.end())
-		{
-			return *cmdIt;
-		}
-		else
-		{
-			return empty;
-		}
-	}
-
-	const bool GetTwoOptionValue(const std::wstring &cmdOption, std::wstring &value1, std::wstring &value2) const
+	bool GetOptionValue(const std::wstring &cmdOption, std::wstring &value, int mode = CaseMode::CASE_MODE_SENSITIVE) const
 	{
 		bool ret = false;
+		std::vector<std::wstring> *tokensCollection = nullptr;
 		std::vector<std::wstring>::const_iterator cmdIt;
-		value1.clear();
-		value2.clear();
-
-		cmdIt = std::find(this->m_cmdTokens.begin(), this->m_cmdTokens.end(), cmdOption);
-		if (cmdIt != this->m_cmdTokens.end() && ++cmdIt != this->m_cmdTokens.end())
+		
+		if (!cmdOption.empty())
 		{
-			std::wstring workValue1(*cmdIt);
 
-			if (!workValue1.empty())
+			value.clear();
+			std::wstring workingOptionStr(cmdOption);
+
+			if (mode == CaseMode::CASE_MODE_SENSITIVE)
 			{
-				value1.assign(*cmdIt);
-				ret = true;
+				tokensCollection = (std::vector<std::wstring> *) &(this->m_cmdTokens);
+			}
+			else
+			{
+				std::transform(workingOptionStr.begin(), workingOptionStr.end(), workingOptionStr.begin(), ::towlower);
+				tokensCollection = (std::vector<std::wstring> *) &(this->m_cmdITokens);
+			}
 
-				if (cmdIt != this->m_cmdTokens.end() && ++cmdIt != this->m_cmdTokens.end())
+			cmdIt = std::find((*tokensCollection).begin(), (*tokensCollection).end(), workingOptionStr);
+			if (cmdIt != (*tokensCollection).end())
+			{
+				if (++cmdIt != (*tokensCollection).end())
 				{
-					std::wstring workValue2(*cmdIt);
+					std::wstring workArgValue(*cmdIt);
 
-					if (workValue2[0] != L'-')
+					if (workArgValue[0] != L'-')
 					{
-						value2.assign(workValue2);
-					}					
+						value.assign(workArgValue);
+					}
 				}
+
+				ret = true;
 			}
 		}
 
 		return ret;
 	}
 
-	const bool GetTwoOptionValueInsensitive(const std::wstring &cmdOption, std::wstring &value1, std::wstring &value2) const
+	const bool GetTwoOptionValue(const std::wstring &cmdOption, std::wstring &value1, std::wstring &value2, int mode = CaseMode::CASE_MODE_SENSITIVE) const
 	{
 		bool ret = false;
+		std::vector<std::wstring> *tokensCollection = nullptr;
 		std::vector<std::wstring>::const_iterator cmdIt;
-
-		std::wstring workingStr(cmdOption);
-		std::transform(workingStr.begin(), workingStr.end(), workingStr.begin(), ::towlower);
 		value1.clear();
 		value2.clear();
 
-		cmdIt = std::find(this->m_cmdITokens.begin(), this->m_cmdITokens.end(), workingStr);
-		if (cmdIt != this->m_cmdITokens.end() && ++cmdIt != this->m_cmdITokens.end())
+		if (!cmdOption.empty())
 		{
-			std::wstring workValue1(*cmdIt);
+			std::wstring workingOptionStr(cmdOption);
 
-			if (!workValue1.empty())
+			if (mode == CaseMode::CASE_MODE_SENSITIVE)
 			{
-				value1.assign(*cmdIt);
-				ret = true;
+				tokensCollection = (std::vector<std::wstring> *) &(this->m_cmdTokens);
+			}
+			else
+			{
+				std::transform(workingOptionStr.begin(), workingOptionStr.end(), workingOptionStr.begin(), ::towlower);
+				tokensCollection = (std::vector<std::wstring> *) &(this->m_cmdITokens);
+			}
 
-				if (cmdIt != this->m_cmdITokens.end() && ++cmdIt != this->m_cmdITokens.end())
+			cmdIt = std::find((*tokensCollection).begin(), (*tokensCollection).end(), workingOptionStr);
+
+			if (cmdIt != (*tokensCollection).end() && ++cmdIt != (*tokensCollection).end())
+			{
+				std::wstring workValue1(*cmdIt);
+				if (!workValue1.empty() && (workValue1[0] != L'-'))
 				{
-					std::wstring workValue2(*cmdIt);
+					value1.assign(workValue1);
+					ret = true;
 
-					if (workValue2[0] != L'-')
+					if (cmdIt != (*tokensCollection).end() && ++cmdIt != (*tokensCollection).end())
 					{
-						value2.assign(workValue2);
+						std::wstring workValue2(*cmdIt);
+
+						if (!workValue2.empty() && (workValue2[0] != L'-'))
+						{
+							value2.assign(workValue2);
+						}
 					}
+
 				}
 			}
 		}

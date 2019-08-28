@@ -49,10 +49,6 @@ bool FilterPropertyBase::IsThereAMatch(const MATCHING_TYPE_STRING &matchData)
 		{
 			ret = true;
 		}
-		else if (IsReadyPolicyFilterCondition_REGEX_SEARCH() && EvalFilterCondition_REGEX_SEARCH(matchData))
-		{
-			ret = true;
-		}
 	}
 
 	return ret;
@@ -64,7 +60,7 @@ bool FilterPropertyBase::IsReadyToProcess()
 
 	if (IsReadyPolicyFilterCondition_IS() || IsReadyPolicyFilterCondition_IS_NOT() || IsReadyPolicyFilterCondition_CONTAINS() || IsReadyPolicyFilterCondition_EXCLUDES() ||
 		IsReadyPolicyFilterCondition_BEGIN_WITH() || IsReadyPolicyFilterCondition_END_WITH() || IsReadyPolicyFilterCondition_LESS_THAN() || IsReadyPolicyFilterCondition_MORE_THAN() ||
-		IsReadyPolicyFilterCondition_IMAGE() || IsReadyPolicyFilterCondition_REGEX_MATCH() && IsReadyPolicyFilterCondition_REGEX_SEARCH())
+		IsReadyPolicyFilterCondition_IMAGE() || IsReadyPolicyFilterCondition_REGEX_MATCH())
 	{
 		ret = true;
 	}
@@ -114,17 +110,6 @@ bool FilterPropertyBase::AddEvalCondition(const EventFilterOperation &operation,
 			{
 				boost::wregex expr{ stringData.c_str() };
 				m_evalPolicyCondition_REGEX_MATCH.push_back(expr);
-			}
-			catch (...)
-			{
-				return ret;
-			}
-			break;
-		case EVENT_FILTER_OPERATION_REGEX_SEARCH:
-			try
-			{
-				boost::wregex expr{ stringData.c_str() };
-				m_evalPolicyCondition_REGEX_SEARCH.push_back(expr);
 			}
 			catch (...)
 			{
@@ -319,25 +304,6 @@ bool FilterPropertyBase::EvalFilterCondition_IMAGE(const MATCHING_TYPE_STRING &v
 		for (auto itValue = m_evalPolicyCondition_IMAGE.begin(); itValue != m_evalPolicyCondition_IMAGE.end(); itValue++)
 		{
 			if (boost::algorithm::iequals(*itValue, ImageBase))
-			{
-				ret = true;
-				break;
-			}
-		}
-	}
-
-	return ret;
-}
-
-bool FilterPropertyBase::EvalFilterCondition_REGEX_SEARCH(const MATCHING_TYPE_STRING &value)
-{
-	bool ret = false;
-
-	if (!value.empty() && IsReadyPolicyFilterCondition_REGEX_SEARCH())
-	{
-		for (auto itValue = m_evalPolicyCondition_REGEX_SEARCH.begin(); itValue != m_evalPolicyCondition_REGEX_SEARCH.end(); itValue++)
-		{
-			if (boost::regex_search(value, *itValue))
 			{
 				ret = true;
 				break;

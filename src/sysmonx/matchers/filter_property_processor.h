@@ -22,7 +22,6 @@ public:
 	bool EvalFilterCondition_MORE_THAN(const MATCHING_TYPE_STRING &value);
 	bool EvalFilterCondition_IMAGE(const MATCHING_TYPE_STRING &value);
 	bool EvalFilterCondition_REGEX_MATCH(const MATCHING_TYPE_STRING &value);
-	bool EvalFilterCondition_REGEX_SEARCH(const MATCHING_TYPE_STRING &value);
 
 	//Helpers
 	bool IsReadyPolicyFilterCondition_IS() { return !m_evalPolicyCondition_IS.empty(); }
@@ -35,7 +34,6 @@ public:
 	bool IsReadyPolicyFilterCondition_MORE_THAN() { return !m_evalPolicyCondition_MORE_THAN.empty(); }
 	bool IsReadyPolicyFilterCondition_IMAGE() { return !m_evalPolicyCondition_IMAGE.empty(); }
 	bool IsReadyPolicyFilterCondition_REGEX_MATCH() { return !m_evalPolicyCondition_REGEX_MATCH.empty(); }
-	bool IsReadyPolicyFilterCondition_REGEX_SEARCH() { return !m_evalPolicyCondition_REGEX_SEARCH.empty(); }
 	std::wstring &GetFilteredProperty() { return m_propertyName; }
 
 	//Lifecycle Management
@@ -57,7 +55,6 @@ private:
 	EventFilterContainer m_evalPolicyCondition_MORE_THAN;
 	EventFilterContainer m_evalPolicyCondition_IMAGE;
 	EventFilterContainerRegex m_evalPolicyCondition_REGEX_MATCH;
-	EventFilterContainerRegex m_evalPolicyCondition_REGEX_SEARCH;
 
 };
 
