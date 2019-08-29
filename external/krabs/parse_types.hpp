@@ -122,6 +122,11 @@ namespace krabs {
         {
             return bytes_;
         }
+		
+		void clear()
+		{
+			bytes_.clear();
+		}
 
     private:
         std::vector<BYTE> bytes_;

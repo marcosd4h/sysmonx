@@ -104,12 +104,24 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			if (BoolValue)
+			{
+				StrValue.assign(L"1");
+			}
+			else
+			{
+				StrValue.assign(L"0");
+			}
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const bool& GetValue() { return BoolValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator bool() const& { return BoolValue; }
 
-	private:
+		//Public internal members
 		bool BoolValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -133,12 +145,16 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			boost::conversion::try_lexical_convert(IntValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const UINT16& GetValue() { return IntValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator UINT16() const& { return IntValue; }
 
-	private:
 		UINT16 IntValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -162,12 +178,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			boost::conversion::try_lexical_convert(IntValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const UINT32& GetValue() { return IntValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator UINT32() const& { return IntValue; }
 
-	private:
+		//Public internal members
 		UINT32 IntValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -191,12 +212,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			boost::conversion::try_lexical_convert(IntValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const UINT64& GetValue() { return IntValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator UINT64() const& { return IntValue; }
 
-	private:
+		//Public internal members
 		UINT64 IntValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -219,16 +245,21 @@ namespace SysmonXTypes
 		EventLARGEINT& operator=(const LARGE_INTEGER &value)
 		{
 			LargeIntValue = value;
-			boost::conversion::try_lexical_convert(value.QuadPart, StrValue);
+			boost::conversion::try_lexical_convert(LargeIntValue.QuadPart, StrValue);
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			boost::conversion::try_lexical_convert(LargeIntValue.QuadPart, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const LARGE_INTEGER& GetValue() { return LargeIntValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator LARGE_INTEGER() const& { return LargeIntValue; }
 
-	private:
+		//Public internal members
 		LARGE_INTEGER LargeIntValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -245,22 +276,27 @@ namespace SysmonXTypes
 		EventGUID(const GUID &value)
 		{
 			GUIDValue = value;
-			GeneralHelpers::GetWStringFromGUID(value, StrValue);
+			GeneralHelpers::GetWStringFromGUID(GUIDValue, StrValue);
 		}
 
 		EventGUID& operator=(const GUID &value)
 		{
 			GUIDValue = value;
-			GeneralHelpers::GetWStringFromGUID(value, StrValue);
+			GeneralHelpers::GetWStringFromGUID(GUIDValue, StrValue);
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			GeneralHelpers::GetWStringFromGUID(GUIDValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const GUID& GetValue() { return GUIDValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator GUID() const& { return GUIDValue; }
 
-	private:
+		//Public internal members
 		GUID GUIDValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -287,12 +323,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const CommonTypes::ArrayBoolT& GetValue() { return ArrayValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator CommonTypes::ArrayBoolT() const& { return ArrayValue; }
 
-	private:
+		//Public internal members
 		CommonTypes::ArrayBoolT ArrayValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -319,12 +360,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const CommonTypes::Array16T& GetValue() { return ArrayValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator CommonTypes::Array16T() const& { return ArrayValue; }
 
-	private:
+		//Public internal members
 		CommonTypes::Array16T ArrayValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -351,12 +397,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const CommonTypes::Array32T& GetValue() { return ArrayValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator CommonTypes::Array32T() const& { return ArrayValue; }
 
-	private:
+		//Public internal members
 		CommonTypes::Array32T ArrayValue;
 		MATCHING_TYPE_STRING StrValue;
 	};
@@ -383,12 +434,17 @@ namespace SysmonXTypes
 			return *this;
 		}
 
-		const std::wstring& GetWString() { return StrValue; }
+		void PrecomputeStr()
+		{
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		const MATCHING_TYPE_STRING& GetWString() { return StrValue; }
 		const CommonTypes::Array64T& GetValue() { return ArrayValue; }
 		operator MATCHING_TYPE_STRING() const& { return StrValue; }
 		operator CommonTypes::Array64T() const& { return ArrayValue; }
 
-	private:
+		//Public internal members
 		CommonTypes::Array64T ArrayValue;
 		MATCHING_TYPE_STRING StrValue;
 	};

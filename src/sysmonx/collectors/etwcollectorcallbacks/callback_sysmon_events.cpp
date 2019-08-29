@@ -23,10 +23,15 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 				currentPID = schema.process_id();
 				currentOPCode = schema.event_opcode();
 
+				//Sysmon events parsing happens here
+				//Just to avoid unnecesary calls everything happens on a big if-else section below
+				//Elements will be fetch from ETW source one-by-one and will be precomputed into str when required (non-str types)
+
 				//Event 1 - SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS
 				if ((currentEventID == EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS))
 				{
 					krabs::parser parser(schema);
+					krabs::binary workingBinary;
 
 					//Creating new security event and transfering ownership
 					SysmonXTypes::EventObject newEvent = SysmonXEvents::GetNewSecurityEvent(EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS);
@@ -41,11 +46,6 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 					newEvent->EventETWProviderName.assign(ETWProvidersName::SYSMON_PROVIDER_NAME);
 
 					//Filling up event-specific data
-					if (!(parser.try_parse<EventUINT32>(L"ProcessId", newEvent->ProcessId)))
-					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
-					}
-
 					if (!(parser.try_parse<std::wstring>(L"RuleName", newEvent->RuleName)))
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "RuleName", currentEventID);
@@ -55,20 +55,34 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "UtcTime", currentEventID);
 					}
-
-					if (!(parser.try_parse<std::wstring>(L"CommandLine", newEvent->CommandLine)))
+					
+					workingBinary.clear();
+					if (parser.try_parse<krabs::binary>(L"ProcessGuid", workingBinary) && KrabsETWHelper::GetGUIDValue(workingBinary, newEvent->ProcessGuid.GUIDValue))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "CommandLine", currentEventID);
+						newEvent->ProcessGuid.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ProcessGuid", currentEventID);
 					}
 
-					if (!(parser.try_parse<std::wstring>(L"FileVersion", newEvent->FileVersion)))
+					if (parser.try_parse<UINT32>(L"ProcessId", newEvent->ProcessId.IntValue))
 					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "FileVersion", currentEventID);
+						newEvent->ProcessId.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ProcessId", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Image", newEvent->Image)))
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Image", currentEventID);
+					}
+
+					if (!(parser.try_parse<std::wstring>(L"FileVersion", newEvent->FileVersion)))
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "FileVersion", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"Description", newEvent->Description)))
@@ -106,6 +120,37 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "User", currentEventID);
 					}
 
+					workingBinary.clear();
+					if (parser.try_parse<krabs::binary>(L"LogonGuid", workingBinary) && KrabsETWHelper::GetGUIDValue(workingBinary, newEvent->LogonGuid.GUIDValue))
+					{
+						newEvent->LogonGuid.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "LogonGuid", currentEventID);
+					}
+
+					/*
+					workingBinary.clear();
+					if (parser.try_parse<krabs::binary>(L"LogonId", workingBinary) && KrabsETWHelper::GetHEXINT64Value(workingBinary, newEvent->LogonId.ArrayValue))
+					{
+						newEvent->LogonGuid.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "LogonId", currentEventID);
+					}
+					*/
+
+					if (parser.try_parse<UINT32>(L"TerminalSessionId", newEvent->TerminalSessionId.IntValue))
+					{
+						newEvent->TerminalSessionId.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "TerminalSessionId", currentEventID);
+					}
+
 					if (!(parser.try_parse<std::wstring>(L"IntegrityLevel", newEvent->IntegrityLevel)))
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "IntegrityLevel", currentEventID);
@@ -116,29 +161,33 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "Hashes", currentEventID);
 					}
 
+					workingBinary.clear();
+					if (parser.try_parse<krabs::binary>(L"ParentProcessGuid", workingBinary) && KrabsETWHelper::GetGUIDValue(workingBinary, newEvent->ParentProcessGuid.GUIDValue))
+					{
+						newEvent->ParentProcessGuid.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentProcessGuid", currentEventID);
+					}
+
+					if (parser.try_parse<UINT32>(L"ParentProcessId", newEvent->ParentProcessId.IntValue))
+					{
+						newEvent->ParentProcessId.PrecomputeStr();
+					}
+					else
+					{
+						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentProcessId", currentEventID);
+					}
+
 					if (!(parser.try_parse<std::wstring>(L"ParentImage", newEvent->ParentImage)))
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
-					}
-
-					if (!(parser.try_parse<EventUINT32>(L"ParentProcessId", newEvent->ParentProcessId)))
-					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentProcessId", currentEventID);
 					}
 
 					if (!(parser.try_parse<std::wstring>(L"ParentCommandLine", newEvent->ParentCommandLine)))
 					{
 						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentCommandLine", currentEventID);
-					}
-
-					if (!(parser.try_parse<std::wstring>(L"ParentImage", newEvent->ParentImage)))
-					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "ParentImage", currentEventID);
-					}
-
-					if (!(parser.try_parse<EventUINT32>(L"TerminalSessionId", newEvent->TerminalSessionId)))
-					{
-						m_logger.Error("EventCollectorETW::SetupCallbackSysmonEventsHandler - There was a problem parsing property {} at Event ID {}", "TerminalSessionId", currentEventID);
 					}
 
 					m_eventsProcessor.DispatchEvent(newEvent);
