@@ -58,26 +58,340 @@ namespace SysmonXTypes
 	typedef UINT32				MATCHING_TYPE_UINT32;
 	typedef UINT16				MATCHING_TYPE_UINT16;
 	typedef UINT8				MATCHING_TYPE_UINT8;
-	typedef std::wstring		EventPropertyName;
-	typedef std::wstring		EventIDName;
+
+	//Event types - string based types
 	typedef std::wstring		EventWString;
 	typedef std::string			EventString;
-	typedef bool				EventBool;
-	typedef UINT16				EventUINT16;
-	typedef UINT32				EventUINT32;
-	typedef UINT64				EventUINT64;
-	typedef LARGE_INTEGER		EventLARGEINT;
-	typedef GUID				EventGUID;
-	typedef std::vector<bool>	EventArrayBool;
-	typedef std::vector<UINT16> EventArray16;
-	typedef std::vector<UINT32> EventArray32;
-	typedef std::vector<UINT64> EventArray64;
-
 	typedef std::wstring		EventPropertyName;
-	typedef std::vector<EventPropertyName> EventPropertyNameContainer;
+	typedef std::wstring		EventIDName;
+	typedef std::wstring		EventPropertyName;
 	typedef std::wstring		EventConditionFilterName;
 	typedef std::wstring		EventName;
 	typedef std::wstring		EventAggregationName;
+	typedef std::vector<EventPropertyName> EventPropertyNameContainer;
+
+
+	//Event types - composed types
+	struct EventBool
+	{
+	public:
+		EventBool() : BoolValue(false) {}
+
+		EventBool(const bool &value)
+		{
+			BoolValue = value;
+			if (value)
+			{
+				StrValue.assign(L"1");
+			}
+			else
+			{
+				StrValue.assign(L"0");
+			}
+		}
+
+		EventBool& operator=(const bool &value)
+		{
+			BoolValue = value;
+			if (value)
+			{
+				StrValue.assign(L"1");
+			}
+			else
+			{
+				StrValue.assign(L"0");
+			}
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const bool& GetValue() { return BoolValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator bool() const& { return BoolValue; }
+
+	private:
+		bool BoolValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventUINT16
+	{
+	public:
+		EventUINT16() : IntValue(0) {}
+
+		EventUINT16(const UINT16 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+		}
+
+		EventUINT16& operator=(const UINT16 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const UINT16& GetValue() { return IntValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator UINT16() const& { return IntValue; }
+
+	private:
+		UINT16 IntValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventUINT32
+	{
+	public:
+		EventUINT32() : IntValue(0) {}
+
+		EventUINT32(const UINT32 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+		}
+
+		EventUINT32& operator=(const UINT32 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const UINT32& GetValue() { return IntValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator UINT32() const& { return IntValue; }
+
+	private:
+		UINT32 IntValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventUINT64
+	{
+	public:
+		EventUINT64() : IntValue(0) {}
+
+		EventUINT64(const UINT64 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+		}
+
+		EventUINT64& operator=(const UINT64 &value)
+		{
+			IntValue = value;
+			boost::conversion::try_lexical_convert(value, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const UINT64& GetValue() { return IntValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator UINT64() const& { return IntValue; }
+
+	private:
+		UINT64 IntValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventLARGEINT
+	{
+	public:
+		EventLARGEINT()
+		{
+			LargeIntValue.QuadPart = 0;
+		}
+
+		EventLARGEINT(const LARGE_INTEGER &value)
+		{
+			LargeIntValue = value;
+			boost::conversion::try_lexical_convert(value.QuadPart, StrValue);
+		}
+
+		EventLARGEINT& operator=(const LARGE_INTEGER &value)
+		{
+			LargeIntValue = value;
+			boost::conversion::try_lexical_convert(value.QuadPart, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const LARGE_INTEGER& GetValue() { return LargeIntValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator LARGE_INTEGER() const& { return LargeIntValue; }
+
+	private:
+		LARGE_INTEGER LargeIntValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventGUID
+	{
+	public:
+		EventGUID()
+		{
+			GUIDValue = { 0x00000000, 0x0000, 0x0000, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
+		}
+
+		EventGUID(const GUID &value)
+		{
+			GUIDValue = value;
+			GeneralHelpers::GetWStringFromGUID(value, StrValue);
+		}
+
+		EventGUID& operator=(const GUID &value)
+		{
+			GUIDValue = value;
+			GeneralHelpers::GetWStringFromGUID(value, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const GUID& GetValue() { return GUIDValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator GUID() const& { return GUIDValue; }
+
+	private:
+		GUID GUIDValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventArrayBool
+	{
+	public:
+		EventArrayBool()
+		{
+			ArrayValue.clear();
+		}
+
+		EventArrayBool(const CommonTypes::ArrayBoolT &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		EventArrayBool& operator=(const CommonTypes::ArrayBoolT &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const CommonTypes::ArrayBoolT& GetValue() { return ArrayValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator CommonTypes::ArrayBoolT() const& { return ArrayValue; }
+
+	private:
+		CommonTypes::ArrayBoolT ArrayValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventArray16
+	{
+	public:
+		EventArray16()
+		{
+			ArrayValue.clear();
+		}
+
+		EventArray16(const CommonTypes::Array16T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		EventArray16& operator=(const CommonTypes::Array16T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const CommonTypes::Array16T& GetValue() { return ArrayValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator CommonTypes::Array16T() const& { return ArrayValue; }
+
+	private:
+		CommonTypes::Array16T ArrayValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventArray32
+	{
+	public:
+		EventArray32()
+		{
+			ArrayValue.clear();
+		}
+
+		EventArray32(const CommonTypes::Array32T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		EventArray32& operator=(const CommonTypes::Array32T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const CommonTypes::Array32T& GetValue() { return ArrayValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator CommonTypes::Array32T() const& { return ArrayValue; }
+
+	private:
+		CommonTypes::Array32T ArrayValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
+
+
+	struct EventArray64
+	{
+	public:
+		EventArray64()
+		{
+			ArrayValue.clear();
+		}
+
+		EventArray64(const CommonTypes::Array64T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+		}
+
+		EventArray64& operator=(const CommonTypes::Array64T &value)
+		{
+			ArrayValue = value;
+			GeneralHelpers::GetStringFromArray(ArrayValue, StrValue);
+			return *this;
+		}
+
+		const std::wstring& GetWString() { return StrValue; }
+		const CommonTypes::Array64T& GetValue() { return ArrayValue; }
+		operator MATCHING_TYPE_STRING() const& { return StrValue; }
+		operator CommonTypes::Array64T() const& { return ArrayValue; }
+
+	private:
+		CommonTypes::Array64T ArrayValue;
+		MATCHING_TYPE_STRING StrValue;
+	};
 
 
 	//Tracking Sysmon Backend Options Flags

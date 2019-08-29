@@ -506,10 +506,9 @@ namespace MatchHelpers
 	//Performance SENSITIVE - This gets executed inside of the matching loop
 	//TODO: mjo - Rethink this entire thing - Consider moving performance overhead to event sensor allocator instead of paying performance cost here 
 	//TODO: mjo - fix incomplete conversions
-	//As a way to return references from object and avoid unnecesary constructors, a reference is returned here
-	//Due to the fact that we return a reference, we need to keep a static instance of a mMATCHING_TYPE_STRING global instance (again to avoid unncesary allocations)
-	//so we can return it on error scenarios. This should will be always empty
-	const SysmonXTypes::MATCHING_TYPE_STRING GetMatchingDataFromEvent(const SysmonXTypes::EventObject &eventData, const SysmonXTypes::EventPropertyID &eventID)
+	//As a way to return data from already event objec and avoid unnecesary constructors, a reference is returned here
+	//We are using composed types and overloaded () operators to do this trick
+	const SysmonXTypes::MATCHING_TYPE_STRING& GetMatchingDataFromEvent(const SysmonXTypes::EventObject &eventData, const SysmonXTypes::EventPropertyID &eventID)
 	{
 		static const MATCHING_TYPE_STRING ret;
 
@@ -518,32 +517,31 @@ namespace MatchHelpers
 			//Common Section
 			if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_Version)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventVersion);
+				return eventData->EventVersion.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventID)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventID);
+				return eventData->EventID.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventCollectorTechID)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventCollectorTechID);
+				return eventData->EventCollectorTechID.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventCollectorVectorID)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventCollectorVectorID);
+				return eventData->EventCollectorVectorID.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventCreationTimestamp)
 			{
-//				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventCreationTimestamp);
-				return ret;
+				return eventData->EventCreationTimestamp.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderPID)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventETWProviderPID);
+				return eventData->EventETWProviderPID.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderName)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->EventETWProviderName);
+				return eventData->EventETWProviderName;
 			}
 
 			//Backend specifics - Sysmon
@@ -597,11 +595,11 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_DestinationIsIpv6)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->DestinationIsIpv6);
+				return eventData->DestinationIsIpv6.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_DestinationPort)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->DestinationPort);
+				return eventData->DestinationPort.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_DestinationPortName)
 			{
@@ -633,8 +631,7 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_GrantedAccess)
 			{
-//				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->GrantedAccess);
-				return ret;
+				return eventData->GrantedAccess.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Hash)
 			{
@@ -646,7 +643,7 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_EID)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->ErrorID);
+				return eventData->ErrorID;
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Image)
 			{
@@ -658,7 +655,7 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Initiated)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->Initiated);
+				return eventData->Initiated.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_IntegrityLevel)
 			{
@@ -666,13 +663,11 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_LogonGuid)
 			{
-//				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->LogonGuid);
-				return ret;
+				return eventData->LogonGuid.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_LogonId)
 			{
-				//return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->LogonId);
-				return ret;
+				return eventData->LogonId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Name)
 			{
@@ -684,7 +679,7 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_NewThreadId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->NewThreadId);
+				return eventData->NewThreadId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Operation)
 			{
@@ -704,12 +699,11 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_ParentProcessGuid)
 			{
-				//return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->ParentProcessGuid);
-				return ret;
+				return eventData->ParentProcessGuid.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_ParentProcessId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->ParentProcessId);
+				return eventData->ParentProcessId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_PipeName)
 			{
@@ -721,12 +715,11 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_ProcessGuid)
 			{
-				//return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->ProcessGuid);
-				return ret;
+				return eventData->ProcessGuid.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_ProcessId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->ProcessId);
+				return eventData->ProcessId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Product)
 			{
@@ -786,11 +779,11 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourceIsIpv6)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->SourceIsIpv6);
+				return eventData->SourceIsIpv6.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourcePort)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->SourcePort);
+				return eventData->SourcePort.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourcePortName)
 			{
@@ -798,16 +791,15 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourceProcessGuid)
 			{
-				//return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->SourceProcessGuid);
-				return ret;
+				return eventData->SourceProcessGuid.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourceProcessId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->SourceProcessId);
+				return eventData->SourceProcessId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_SourceThreadId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->SourceThreadId);
+				return eventData->SourceThreadId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_StartAddress)
 			{
@@ -839,16 +831,15 @@ namespace MatchHelpers
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_TargetProcessGuid)
 			{
-				//return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->TargetProcessGuid);
-				return ret;
+				return eventData->TargetProcessGuid.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_TargetProcessId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->TargetProcessId);
+				return eventData->TargetProcessId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_TerminalSessionId)
 			{
-				return boost::lexical_cast<SysmonXTypes::MATCHING_TYPE_STRING>(eventData->TerminalSessionId);
+				return eventData->TerminalSessionId.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_Type)
 			{
@@ -872,10 +863,11 @@ namespace MatchHelpers
 			{
 				return eventData->FreeText;
 			}
-
 		}
 
 		return ret;
 	}
+
+
 
 }

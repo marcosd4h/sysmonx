@@ -877,7 +877,7 @@ bool ConfigManager::GenerateBackendConfigFile(std::wstring &backendConfigFile)
 			GeneralHelpers::AddPathTrailCharsIfNeeded(m_workingDirectory);
 
 			workingConfigFile.assign(m_workingDirectory);
-			workingConfigFile.append(SysmonXDefs::DEFAULT_CONFIG_FILE);
+			workingConfigFile.append(SysmonXDefs::DEFAULT_BACKEND_CONFIG_FILE_NAME);
 
 			//Now populating content
 			std::wofstream configFile;
@@ -891,7 +891,7 @@ bool ConfigManager::GenerateBackendConfigFile(std::wstring &backendConfigFile)
 			configFile << GetRevocationConfiguration().c_str();
 
 			//Adding Default Filtering
-			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_FILTERING.c_str();
+			configFile << SysmonXDefs::DEFAULT_SYSMON_TRACE_BACKEND_CONFIG_FILE_FILTERING.c_str();
 
 			//Adding Tail
 			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
@@ -938,6 +938,9 @@ bool ConfigManager::GenerateCollectionServiceConfigFile(std::wstring &collection
 			configFile << GetHashAlgorithmsConfiguration().c_str();
 			configFile << GetRevocationConfiguration().c_str();
 
+			//Adding Default Filtering
+			configFile << SysmonXDefs::DEFAULT_SYSMONX_CONFIG_FILE_FILTERING.c_str();
+
 			//Adding Tail
 			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
 
@@ -960,7 +963,7 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 	bool ret = false;
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 
-	//checking if value is not empty
+	//checking first full path to config file
 	if (!configFile.empty() && GeneralHelpers::IsValidFile(configFile))
 	{
 		if (!ValidateConfigurationFile(configFile))
@@ -975,7 +978,7 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 	}
 	else
 	{
-		//checking at current directory for file name
+		//then checking at current directory for given filename
 		std::wstring currentDirectoryWorkingFile;
 		if (GeneralHelpers::GetCurrentProcessModuleDirectory(currentDirectoryWorkingFile))
 		{

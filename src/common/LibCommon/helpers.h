@@ -95,6 +95,12 @@ namespace GeneralHelpers
 	std::string GetRandomString(const unsigned int length);
 	std::string GetErrorText(NTSTATUS code);
 
+	inline bool GetWStringFromGUID(const GUID &guidValue, std::wstring &value);
+	inline bool GetStringFromGUID(const GUID &guidValue, std::string &value);
+	inline bool GetStringFromArray(const CommonTypes::ArrayBoolT &valueArray, std::wstring &stringArray);
+	inline bool GetStringFromArray(const CommonTypes::Array16T &valueArray, std::wstring &stringArray);
+	inline bool GetStringFromArray(const CommonTypes::Array32T &valueArray, std::wstring &stringArray);
+	inline bool GetStringFromArray(const CommonTypes::Array64T &valueArray, std::wstring &stringArray);
 
 	//Abusing lexical cast from boost here
 	template <typename Source>

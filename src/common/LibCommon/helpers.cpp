@@ -2569,6 +2569,163 @@ return ret;
 		std::time_t result = std::time(nullptr);
 		return result;
 	}
+
+	bool GetWStringFromGUID(const GUID &guidValue, std::wstring &value)
+	{
+		bool ret = false;
+		value.clear();
+		std::wstringstream newGuidStr;
+
+		newGuidStr << std::uppercase;
+		newGuidStr.width(8);
+		newGuidStr << std::hex << guidValue.Data1 << L'-';
+		newGuidStr.width(4);
+		newGuidStr << std::hex << guidValue.Data2 << L'-';
+		newGuidStr.width(4);
+		newGuidStr << std::hex << guidValue.Data3 << L'-';
+		newGuidStr.width(2);
+		newGuidStr << std::hex
+			<< static_cast<short>(guidValue.Data4[0])
+			<< static_cast<short>(guidValue.Data4[1])
+			<< L'-'
+			<< static_cast<short>(guidValue.Data4[2])
+			<< static_cast<short>(guidValue.Data4[3])
+			<< static_cast<short>(guidValue.Data4[4])
+			<< static_cast<short>(guidValue.Data4[5])
+			<< static_cast<short>(guidValue.Data4[6])
+			<< static_cast<short>(guidValue.Data4[7]);
+		newGuidStr << std::nouppercase;
+
+		if (newGuidStr.rdbuf()->in_avail())
+		{
+			value.assign(newGuidStr.str());
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool GetStringFromGUID(const GUID &guidValue, std::string &value)
+	{
+		bool ret = false;
+		value.clear();
+		std::stringstream newGuidStr;
+
+		newGuidStr << std::uppercase;
+		newGuidStr.width(8);
+		newGuidStr << std::hex << guidValue.Data1 << '-';
+		newGuidStr.width(4);
+		newGuidStr << std::hex << guidValue.Data2 << '-';
+		newGuidStr.width(4);
+		newGuidStr << std::hex << guidValue.Data3 << '-';
+		newGuidStr.width(2);
+		newGuidStr << std::hex
+			<< static_cast<short>(guidValue.Data4[0])
+			<< static_cast<short>(guidValue.Data4[1])
+			<< '-'
+			<< static_cast<short>(guidValue.Data4[2])
+			<< static_cast<short>(guidValue.Data4[3])
+			<< static_cast<short>(guidValue.Data4[4])
+			<< static_cast<short>(guidValue.Data4[5])
+			<< static_cast<short>(guidValue.Data4[6])
+			<< static_cast<short>(guidValue.Data4[7]);
+		newGuidStr << std::nouppercase;
+
+		if (newGuidStr.rdbuf()->in_avail())
+		{
+			value.assign(newGuidStr.str());
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool GetStringFromArray(const CommonTypes::ArrayBoolT &valueArray, std::wstring &stringArray)
+	{
+		bool ret = false;
+
+		for (const bool& value : valueArray)
+		{
+			if (value)
+			{
+				stringArray.append(L"0");
+			}
+			else
+			{
+				stringArray.append(L"1");
+			}
+		}
+
+		if (!stringArray.empty())
+		{
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool GetStringFromArray(const CommonTypes::Array16T &valueArray, std::wstring &stringArray)
+	{
+		bool ret = false;
+
+		for (const UINT16& value : valueArray)
+		{
+			std::wstring workValue;
+			if (boost::conversion::try_lexical_convert(value, workValue))
+			{
+				stringArray.append(workValue);
+			}
+		}
+
+		if (!stringArray.empty())
+		{
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool GetStringFromArray(const CommonTypes::Array32T &valueArray, std::wstring &stringArray)
+	{
+		bool ret = false;
+
+		for (const UINT32& value : valueArray)
+		{
+			std::wstring workValue;
+			if (boost::conversion::try_lexical_convert(value, workValue))
+			{
+				stringArray.append(workValue);
+			}
+		}
+
+		if (!stringArray.empty())
+		{
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool GetStringFromArray(const CommonTypes::Array64T &valueArray, std::wstring &stringArray)
+	{
+		bool ret = false;
+
+		for (const UINT64& value : valueArray)
+		{
+			std::wstring workValue;
+			if (boost::conversion::try_lexical_convert(value, workValue))
+			{
+				stringArray.append(workValue);
+			}
+		}
+
+		if (!stringArray.empty())
+		{
+			ret = true;
+		}
+
+		return ret;
+	}
 }
 
 namespace RegistryHelpers

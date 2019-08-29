@@ -30,10 +30,10 @@ bool ReportChannelDebugEvents::SendReportFinding(const SysmonXTypes::ReportObjec
 		std::wstring dataToReport;
 
 		dataToReport.append(L"TEST_SYSMONX_EVENT");
-		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessId)); dataToReport.append(L"\n");
+		dataToReport.append(L"ProcessId "); dataToReport.append(reportData->Event->ProcessId.GetWString()); dataToReport.append(L"\n");
 		dataToReport.append(L"CommandLine "); dataToReport.append(reportData->Event->CommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"Image "); dataToReport.append(reportData->Event->Image);  dataToReport.append(L"\n");
-		dataToReport.append(L"ParentProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ParentProcessId)); dataToReport.append(L"\n");
+		dataToReport.append(L"ParentProcessId "); dataToReport.append(reportData->Event->ParentProcessId.GetWString()); dataToReport.append(L"\n");
 		dataToReport.append(L"ParentCommandLine "); dataToReport.append(reportData->Event->ParentCommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"ParentImage "); dataToReport.append(reportData->Event->ParentImage);  dataToReport.append(L"\n");
 

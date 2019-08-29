@@ -9,10 +9,11 @@ bool EventCollectorETW::InitializeCustomETWProviders()
 		m_sysmonProvider = std::make_shared<krabs::provider<>>(ETWProvidersName::SYSMON_PROVIDER_NAME);
 		m_powershellProvider = std::make_shared<krabs::provider<>>(ETWProvidersName::POWERSHELL_PROVIDER_NAME);
 
-		//if ((m_sysmonProvider != nullptr) && (m_powershellProvider != nullptr))
-		//{
+		if ((m_sysmonProvider != nullptr) && 
+			(m_powershellProvider != nullptr))
+		{
 			ret = true;
-		//}
+		}
 	}
 
 	return ret;

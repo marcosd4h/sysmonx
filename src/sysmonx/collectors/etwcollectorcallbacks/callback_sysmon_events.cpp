@@ -31,7 +31,7 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 					//Creating new security event and transfering ownership
 					SysmonXTypes::EventObject newEvent = SysmonXEvents::GetNewSecurityEvent(EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS);
 										
-					//Filling up Common Section of event
+					//Filling up Event common section
 					newEvent->EventVersion = SysmonXDefs::CURRENT_EVENT_VERSION;
 					newEvent->EventID = currentEventID;
 					newEvent->EventCollectorTechID = EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW;

@@ -27,7 +27,7 @@ void ShowHelp()
 	logger.TraceConsole(" -r (It forces the trace backend to check signature revocation.)");
 	logger.TraceConsole(" -s (It prints latest trace backends configuration schema definitions.)");
 	logger.TraceConsole(" -i (It installs trace backends and collection service. This will enable ETW trace backend and it will grab and install Sysmon as trace backend.)");
-	logger.TraceConsole(" –accepteula (It accepts trace backend EULA. This needs to be passed together with -i.)");
+	logger.TraceConsole(" -accepteula (It accepts trace backend EULA. This needs to be passed together with -i.)");
 	logger.TraceConsole(" -u <force> (It uninstalls collection service and trace backends.)");
 	logger.TraceConsole(" -m (It installs collection service manifests.)");
 	logger.TraceConsole(" -t <web|filesystem> <Directory with Installer Files from where to grab target backends in case filesystem was choosed>");

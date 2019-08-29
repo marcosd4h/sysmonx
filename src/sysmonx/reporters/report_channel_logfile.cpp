@@ -26,11 +26,11 @@ bool ReportChannelLogfile::SendReportFinding(const SysmonXTypes::ReportObject &r
 	if (IsInitialized() && reportData)
 	{
 		std::wstring dataToReport;
-		dataToReport.append(L"\nEventID "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->EventID)); dataToReport.append(L"\n");
-		dataToReport.append(L"ProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ProcessId)); dataToReport.append(L"\n");
+		dataToReport.append(L"\nEventID "); dataToReport.append(reportData->Event->EventID.GetWString()); dataToReport.append(L"\n");
+		dataToReport.append(L"ProcessId "); dataToReport.append(reportData->Event->ProcessId.GetWString()); dataToReport.append(L"\n");
 		dataToReport.append(L"CommandLine "); dataToReport.append(reportData->Event->CommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"Image "); dataToReport.append(reportData->Event->Image);  dataToReport.append(L"\n");
-		dataToReport.append(L"ParentProcessId "); dataToReport.append(GeneralHelpers::GetWstrFromInteger(reportData->Event->ParentProcessId)); dataToReport.append(L"\n");
+		dataToReport.append(L"ParentProcessId "); dataToReport.append(reportData->Event->ParentProcessId.GetWString()); dataToReport.append(L"\n");
 		dataToReport.append(L"ParentCommandLine "); dataToReport.append(reportData->Event->ParentCommandLine);  dataToReport.append(L"\n");
 		dataToReport.append(L"ParentImage "); dataToReport.append(reportData->Event->ParentImage);  dataToReport.append(L"\n");
 		dataToReport.append(L"Scanner Process Hollowing "); dataToReport.append(reportData->Event->ScannerResult);  dataToReport.append(L"\n");

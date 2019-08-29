@@ -105,7 +105,7 @@ bool MatchingEngine::EventPreProcessor(SysmonXTypes::EventObject &data)
 
 	if (m_config.IsInitialized())
 	{
-		MatchEventContainer::iterator matcherIT = m_matchers.find((SysmonXTypes::EventID)data->EventID);
+		MatchEventContainer::iterator matcherIT = m_matchers.find((SysmonXTypes::EventID)data->EventID.GetValue());
 		if (matcherIT != m_matchers.end())
 		{
 			MatchEventBaseObject &matchEventHandler = matcherIT->second;

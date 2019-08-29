@@ -261,8 +261,8 @@ namespace SysmonXAppFlows
 				return ret;
 			}
 
-			//Not doing any of this on uninstall scenario
-			if (!(config.WasUninstallRequested() && config.WasInstallRequested()))
+			//Not doing any of this on install or uninstall scenario
+			if (!(config.WasUninstallRequested() || config.WasInstallRequested()))
 			{
 				//Validate configuration file
 				logger.Trace("SetupWorkEnvironment - About to validate configuration file");
@@ -1713,7 +1713,8 @@ namespace SysmonXServiceFlows::InternalActions
 				}
 
 				//Deleting trace backend config file
-				if (GeneralHelpers::RemoveDeletePending(backendConfigFile))
+				/*
+				if (GeneralHelpers::RemoveFile(backendConfigFile))
 				{
 					logger.Trace(L"UpdateSysmonXConfiguration - Trace backend config file was removed at {} ", backendConfigFile);
 				}
@@ -1722,7 +1723,7 @@ namespace SysmonXServiceFlows::InternalActions
 					logger.Error("UpdateSysmonXConfiguration - There was a problem removing trace backend config file");
 					return ret;
 				}
-
+				*/
 				//Restart service so it can pick up new config
 				if (shouldServiceBeRestarted)
 				{

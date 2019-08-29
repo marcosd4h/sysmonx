@@ -53,6 +53,10 @@ namespace CommonTypes
 	typedef cista::offset::vector<wchar_t> SerializedWCharVector;
 	typedef cista::offset::vector<unsigned int> SerializedUIntVector;
 	typedef cista::offset::vector<cista::offset::string> SerializedCistaStringVector;
+	typedef std::vector<bool>	ArrayBoolT;
+	typedef std::vector<UINT16> Array16T;
+	typedef std::vector<UINT32> Array32T;
+	typedef std::vector<UINT64> Array64T;
 
 	struct ProxyConfData
 	{
