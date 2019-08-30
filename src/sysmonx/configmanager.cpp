@@ -975,6 +975,7 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 		m_wasNewConfigFileRequested = true;
 		m_configFileSyntaxOK = true;
 		m_configurationFile.assign(configFile);
+		ret = true;
 	}
 	else
 	{
@@ -996,6 +997,7 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 				m_wasNewConfigFileRequested = true;
 				m_configFileSyntaxOK = true;
 				m_configurationFile.assign(currentDirectoryWorkingFile);
+				ret = true;
 			}
 			else
 			{

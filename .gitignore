@@ -3,5 +3,5 @@
 /int
 /.sysmonx.vcxproj.user
 /.sysmonx.log
-/src/sysmonx/default_sysmonx_logfile.log
-*.vcxproj.user
+src/sysmonx/default_sysmonx_logfile.log
+*.user

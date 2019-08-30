@@ -106,14 +106,15 @@ int wmain(int argc, wchar_t *argv[])
 	//Checking if main thread needs to run as a service 
 	if (config.IsServiceMode())
 	{
-		
-		//====================== MJO REMOVE THIS!! ======================//
+
+#ifdef SERVICE_DEBUG
 		if (config.WereStandaloneActionsRequested())
 		{
 			CollectorService &collectorService = CollectorService::Instance();
 			collectorService.RunFakeLogic();
 			return EXIT_FAILURE;
 		}
+#endif // SERVICE_DEBUG
 				
 		//Running as a service
 		if (!SysmonXAppFlows::RunCollectionService())
@@ -224,8 +225,6 @@ int wmain(int argc, wchar_t *argv[])
 		//Checking if service preconditions are there, and then made sure that service is running
 		if (config.IsServiceDataAvailable() && !config.WasUninstallRequested())
 		{
-			logger.Trace("Checking if collection service needs to be started.");
-
 			//and making sure that service is still running
 			if (ServiceHelpers::IsServiceStopped(config.GetCollectionServiceName()))
 			{
@@ -240,10 +239,6 @@ int wmain(int argc, wchar_t *argv[])
 					logger.Error("There was a problem starting collector service. Service is currently stopped and cannot be started.");
 					return EXIT_FAILURE;
 				}					
-			}
-			else
-			{
-				logger.Trace("Collection service does not require restart. Quitting now.");
 			}
 		}
 	}

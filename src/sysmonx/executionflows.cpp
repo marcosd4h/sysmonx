@@ -237,7 +237,9 @@ namespace SysmonXAppFlows
 
 		if (config.IsInitialized())
 		{
+
 			logger.Info("SetupWorkEnvironment - About to setup the current work environment");
+			std::wstring collectServiceName = config.GetCollectionServiceName();
 
 			//Checking Working Directory configuration data
 			if (GeneralHelpers::IsValidDirectory(config.GetSysmonXWorkingDirectory()))
@@ -273,6 +275,14 @@ namespace SysmonXAppFlows
 				else
 				{
 					logger.Error("SetupWorkEnvironment - There was a problem with given configuration file syntax");
+					return ret;
+				}
+
+				//Checking if collection service is installed
+				logger.Trace("SetupWorkEnvironment - Checking if collection service is installed");
+				if (!InternalActions::IsCollectionServicePresent())
+				{
+					logger.Error("SetupWorkEnvironment - Collection service was not installed. Try running SysmonX binary with -i option");
 					return ret;
 				}
 
@@ -435,10 +445,28 @@ namespace SysmonXAppFlows
 		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 		ConfigManager &config = ConfigManager::Instance();
 
-		if (config.IsInitialized() &&
-			SysmonXServiceFlows::InternalActions::UpdateSysmonXConfiguration(CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON, true))
+		if (config.IsInitialized())
 		{			
-			ret = true;
+			logger.Trace("UpdateConfiguration - About to run update configuration logic.");
+
+			if (config.WasNewConfigFileProvided())
+			{
+				logger.Trace(L"UpdateConfiguration - About to update SysmonX configuration with data from following configuration file: {}", config.GetConfigurationFile());
+
+				if (SysmonXServiceFlows::InternalActions::UpdateSysmonXConfiguration(CommonTypes::TraceBackendType::TRACE_BACKEND_SYSMON, true))
+				{
+					logger.Trace("UpdateConfiguration - Configuration was succesfully updated!");
+					ret = true;
+				}
+				else
+				{
+					logger.Error("UpdateConfiguration - There was a problem updating SysmonX with new configuration data.");
+				}
+			}
+			else
+			{
+				logger.Error("UpdateConfiguration - A configuration file was not provided!. Please use \"-c\" to input a configuration file.");
+			}
 		}
 		else
 		{
@@ -531,6 +559,33 @@ namespace SysmonXAppFlows::InternalActions
 		return ret;
 	}
 
+	bool IsCollectionServicePresent()
+	{
+		bool ret = false;
+		TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
+		ConfigManager &config = ConfigManager::Instance();
+
+		if (config.IsInitialized())
+		{
+			logger.Trace("IsCollectionServicePresent - About to check that collection service is installed");
+
+			std::wstring collectServiceName = config.GetCollectionServiceName();
+
+			if (!collectServiceName.empty() && ServiceHelpers::IsServiceCreated(collectServiceName))
+			{
+				logger.Trace("IsCollectionServicePresent - Collection service was found");
+				ret = true;
+			}
+			else
+			{
+				logger.Error("IsCollectionServicePresent - Collection service was not found");
+			}
+		}
+
+		return ret;
+	}
+
+
 	bool AreWorkBinariesInSync()
 	{
 		bool ret = false;
@@ -580,42 +635,50 @@ namespace SysmonXAppFlows::InternalActions
 						{
 							logger.Trace("AreWorkBinariesInSync - Both mgmt app and collection service binaries are not in sync. Attempt syncing now.");
 
-							if (!collectServiceName.empty() &&
-								ServiceHelpers::IsServiceCreated(collectServiceName) &&
-								ServiceHelpers::StopTargetService(collectServiceName))
+							if (!collectServiceName.empty() && ServiceHelpers::IsServiceCreated(collectServiceName))
 							{
-								logger.Trace("AreWorkBinariesInSync - Collection Service was found and it stop request was performed. Giving it some time for clean teardown.");
-								Sleep(3000);
+								logger.Trace("AreWorkBinariesInSync - Collection Service was created. Attepmting service stop now.");
 
-								if (GeneralHelpers::RemoveFile(collectServiceFileLocation) &&
-									GeneralHelpers::FileCopy(mgmtAppFileLocation, collectServiceFileLocation))
+								if (ServiceHelpers::StopTargetService(collectServiceName))
 								{
-									//check service file registration if service 
-									if (ServiceHelpers::IsServiceCreated(collectServiceName) &&
-										ServiceHelpers::IsSameServiceExecutablePath(collectServiceName, collectServiceFileLocation) &&
-										ServiceHelpers::StartTargetService(collectServiceName))
-									{
-										logger.Trace("AreWorkBinariesInSync - Service check was done. Both mgmt app and collection service binaries are now in sync!");
-										ret = true;
-									}
-									else
-									{
-										logger.Trace("AreWorkBinariesInSync - Both mgmt app and collection service binaries are now in sync!");
-										ret = true;
-									}
+									logger.Trace("AreWorkBinariesInSync - Service was succesfully stopped.");
 								}
 								else
 								{
-									logger.Error("AreWorkBinariesInSync - There was a problem trying to sync collection service and mgmt app.");
-									return ret;
+									logger.Trace("AreWorkBinariesInSync - There was a problem stopping the service. Continuing withouth service stop.");
+								}
+
+								//Dummy sleep to allow service to shutdown
+								Sleep(2000);
+							}
+							else
+							{
+								logger.Trace("AreWorkBinariesInSync - Collection Service was not created. No need to check service status.");
+							}
+
+							if (GeneralHelpers::RemoveFile(collectServiceFileLocation) &&
+								GeneralHelpers::FileCopy(mgmtAppFileLocation, collectServiceFileLocation))
+							{
+								//check service file registration if service 
+								if (ServiceHelpers::IsServiceCreated(collectServiceName) &&
+									ServiceHelpers::IsSameServiceExecutablePath(collectServiceName, collectServiceFileLocation) &&
+									ServiceHelpers::StartTargetService(collectServiceName))
+								{
+									logger.Trace("AreWorkBinariesInSync - Service check was done. Both mgmt app and collection service binaries are now in sync!");
+									ret = true;
+								}
+								else
+								{
+									logger.Trace("AreWorkBinariesInSync - Both mgmt app and collection service binaries are now in sync!");
+									ret = true;
 								}
 							}
 							else
 							{
-								logger.Error("AreWorkBinariesInSync - There was a problem stopping previous instance of collection service.");
-								logger.Error("AreWorkBinariesInSync - Please try running -u command to uninstall the service before continuing.");
+								logger.Error("AreWorkBinariesInSync - There was a problem trying to sync collection service and mgmt app.");
 								return ret;
 							}
+
 
 						}
 					}
@@ -1615,7 +1678,7 @@ namespace SysmonXServiceFlows::InternalActions
 		std::wstring workingServiceName;
 		std::wstring backendConfigFile;
 
-		if (config.IsInitialized() && config.IsServiceMode())
+		if (config.IsInitialized())
 		{
 			//Enabling backend components
 			if (backendType == CommonTypes::TraceBackendType::TRACE_BACKEND_CUSTOM)
@@ -1713,7 +1776,6 @@ namespace SysmonXServiceFlows::InternalActions
 				}
 
 				//Deleting trace backend config file
-				/*
 				if (GeneralHelpers::RemoveFile(backendConfigFile))
 				{
 					logger.Trace(L"UpdateSysmonXConfiguration - Trace backend config file was removed at {} ", backendConfigFile);
@@ -1723,7 +1785,7 @@ namespace SysmonXServiceFlows::InternalActions
 					logger.Error("UpdateSysmonXConfiguration - There was a problem removing trace backend config file");
 					return ret;
 				}
-				*/
+				
 				//Restart service so it can pick up new config
 				if (shouldServiceBeRestarted)
 				{

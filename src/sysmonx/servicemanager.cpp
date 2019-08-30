@@ -251,13 +251,12 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 		//Initializing Service Work Environment
 		logger.TraceUp("CollectorService::WorkerThread - About to setup working environment");
 
-		
+#ifdef SERVICE_DEBUG
 		while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
 		{
 			Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
 		}
-		
-		/*
+#else
 		if (SysmonXServiceFlows::IsServiceWorkEnvironmentReady())
 		{
 			logger.TraceUp("CollectorService::WorkerThread - Working environment is ready, about to enable processing");
@@ -292,8 +291,8 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 		{
 			logger.TraceDown("CollectorService::WorkerThread - There was a problem enabling service work environment");
 			ret = ERROR_NOT_READY;
-		}		
-		*/
+		}
+#endif // SERVICE_DEBUG
 	}
 	else
 	{

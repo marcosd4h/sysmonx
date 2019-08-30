@@ -21,6 +21,7 @@ namespace SysmonXAppFlows
 		bool UpdateLoggingData();
 		bool ValidateConfigFileSyntax();
 		bool AreWorkBinariesInSync();
+		bool IsCollectionServicePresent();
 		bool HardenSysmonXSecurity();
 		bool DownloadAndExtract(const std::wstring &targetHost, const std::wstring &targetURLPath, const ProxyConfData &proxyData, const std::wstring &targetDirectory);
 		bool ValidateFileAndExtract(const std::wstring &zipFile, const std::wstring &targetDirectory);
