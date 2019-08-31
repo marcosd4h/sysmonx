@@ -324,16 +324,19 @@ namespace GeneralHelpers
 
 	bool GetFullPathToFile(const std::wstring &fileName, std::wstring &fullPathFile)
 	{
-		bool ret = true;
-		wchar_t ptargetFile[MAX_PATH] = { 0 };
+		bool ret = false;
+		wchar_t ptargetFile[MAX_PATH + 1] = { 0 };
+		std::wstring workFilePath;
 
-		if (GetFullPathName(fileName.c_str(), MAX_PATH, ptargetFile, NULL) == 0)
+		if (GetFullPathNameW(fileName.c_str(), MAX_PATH, ptargetFile, NULL) != 0)
 		{
-			ret = false;
-		}
-		else
-		{
-			fullPathFile.assign(ptargetFile);
+			workFilePath.assign(ptargetFile);
+
+			if (!workFilePath.empty() && IsValidFile(workFilePath))
+			{
+				fullPathFile.assign(workFilePath);
+				ret = true;
+			}
 		}
 
 		return ret;

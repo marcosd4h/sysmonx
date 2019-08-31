@@ -263,8 +263,8 @@ namespace SysmonXAppFlows
 				return ret;
 			}
 
-			//Not doing any of this on install or uninstall scenario
-			if (!(config.WasUninstallRequested() || config.WasInstallRequested()))
+			//Not doing configuration actions just for few modes
+			if (!(config.WasUninstallRequested() || config.WasInstallRequested() || config.IsServiceMode()))
 			{
 				//Validate configuration file
 				logger.Trace("SetupWorkEnvironment - About to validate configuration file");

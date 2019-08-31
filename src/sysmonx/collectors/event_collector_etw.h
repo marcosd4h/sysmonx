@@ -54,7 +54,7 @@ public:
 
 private:
 
-	//ETW providers cCallbacks
+	//ETW providers callbacks
 	bool SetupCallbackSysmonEventsHandler();
 	bool SetupCallbackPowershellEventsHandler();
 	bool SetupCallbackKernelProcessCreateHandler();

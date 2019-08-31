@@ -567,8 +567,8 @@ EXTERN_C __declspec(selectany) const GUID SysmonX = {0x06a2ea53, 0xfc6c, 0x42e5,
 //
 EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR ProcessCreateSysmonX = {0x1, 0x1, 0x10, 0x4, 0x0, 0x0, 0x8000000000000000};
 #define ProcessCreateSysmonX_value 0x1
-EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PowershellEvents = {0x2, 0x1, 0x10, 0x4, 0x0, 0x0, 0x8000000000000000};
-#define PowershellEvents_value 0x2
+EXTERN_C __declspec(selectany) const EVENT_DESCRIPTOR PowershellEvents = {0x3ea, 0x1, 0x10, 0x4, 0x0, 0x0, 0x8000000000000000};
+#define PowershellEvents_value 0x3ea
 
 //
 // MCGEN_DISABLE_PROVIDER_CODE_GENERATION macro:
@@ -829,4 +829,4 @@ McTemplateU0zzjqzzzzzzzzzjiqzzjqzzz(
 #endif
 
 #define MSG_SysmonX_event_1_message          0xB0010001L
-#define MSG_SysmonX_event_2_message          0xB0010002L
+#define MSG_SysmonX_event_1002_message       0xB00103EAL

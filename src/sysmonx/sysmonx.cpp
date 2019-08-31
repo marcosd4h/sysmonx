@@ -63,7 +63,7 @@ int wmain(int argc, wchar_t *argv[])
 	ConfigManager &config = ConfigManager::Instance();
 
 	//Checking if process is running as Administrator and DEBUG token privileges can be enabled
-	if (!GeneralHelpers::IsRunningAsAdmin() || !GeneralHelpers::EnableTokenPrivilege(SE_DEBUG_NAME))
+	if (!(GeneralHelpers::IsRunningAsAdmin() && GeneralHelpers::EnableTokenPrivilege(SE_DEBUG_NAME)))
 	{
 		logger.TraceConsoleDown("This process should be run with administrator privileges. Showing help and quitting now.");
 		ShowHelp();

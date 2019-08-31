@@ -43,6 +43,7 @@
     <ClCompile Include="servicemanager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="collectors\etwcollectorcallbacks\callbacks_etw_event_ids.h" />
     <ClInclude Include="collectors\event_collector_dummy.h" />
     <ClInclude Include="collectors\event_collector_etw.h" />
     <ClInclude Include="eventhelpers\events_common.h" />

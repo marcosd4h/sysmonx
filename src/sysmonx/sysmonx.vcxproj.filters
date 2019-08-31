@@ -147,6 +147,9 @@
     <ClInclude Include="eventhelpers\events_common.h">
       <Filter>EventHelpers</Filter>
     </ClInclude>
+    <ClInclude Include="collectors\etwcollectorcallbacks\callbacks_etw_event_ids.h">
+      <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

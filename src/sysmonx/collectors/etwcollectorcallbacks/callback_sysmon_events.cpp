@@ -1,5 +1,5 @@
 #include "common.h"
-
+#include "callbacks_etw_event_ids.h"
 
 bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 {

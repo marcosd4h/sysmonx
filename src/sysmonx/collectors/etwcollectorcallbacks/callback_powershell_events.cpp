@@ -1,5 +1,5 @@
 #include "common.h"
-
+#include "callbacks_etw_event_ids.h"
 
 bool EventCollectorETW::SetupCallbackPowershellEventsHandler()
 {
@@ -12,21 +12,25 @@ bool EventCollectorETW::SetupCallbackPowershellEventsHandler()
 			UINT32 currentEventID = SysmonXDefs::INVALID_EVENT_ID;
 			UINT32 currentPID = SysmonXDefs::INVALID_PROCESS_ID;
 			UINT32 currentOPCode = SysmonXDefs::DEFAULT_OPCODE;
+			UINT32 schemaEventID = SysmonXDefs::INVALID_EVENT_ID;
 
 			try
 			{
 				// Grabbing event schema
 				krabs::schema schema(record);
 
-				//Assigning working data
-				currentEventID = schema.event_id();
-				currentPID = schema.process_id();
-				currentOPCode = schema.event_opcode();
+				// Getting event data for evaluation
+				schemaEventID = schema.event_id();
 
-				//Event 1 - SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS
-				if (currentEventID == EventID::SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND)
+				//Event 1001 - SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND
+				if (schemaEventID == ETW_POWERSHELL_PROVIDER::ETW_POWERSHELL_PROVIDER_SCRIPTBLOCK_LOGGING_EVENT)
 				{
 					krabs::parser parser(schema);
+
+					//Assigning working data
+					currentEventID = EventID::SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND;
+					currentPID = schema.process_id();
+					currentOPCode = schema.event_opcode();
 
 					//Creating new security event and transfering ownership
 					SysmonXTypes::EventObject newEvent = SysmonXEvents::GetNewSecurityEvent(EventID::SECURITY_EVENT_ID_SYSMONX_POWERSHELL_START_COMMAND);

@@ -140,6 +140,7 @@ BLACKBONE_API inline void InitVersion()
 VERSIONHELPERAPI
 IsWindowsVersionOrGreater( WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor, DWORD dwBuild )
 {
+	InitVersion();
     auto& g_WinVer = WinVer();
     if (g_WinVer.native.dwMajorVersion != 0)
     {

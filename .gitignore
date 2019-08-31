@@ -5,3 +5,6 @@
 /.sysmonx.log
 src/sysmonx/default_sysmonx_logfile.log
 *.user
+misc/sysmonxTEMP.BIN
+misc/MSG00001.bin
+misc/sysmonx.res

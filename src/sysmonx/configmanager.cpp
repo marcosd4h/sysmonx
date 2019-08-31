@@ -962,11 +962,14 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 {
 	bool ret = false;
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
+	std::wstring workConfigFile;
 
 	//checking first full path to config file
-	if (!configFile.empty() && GeneralHelpers::IsValidFile(configFile))
+	if (!configFile.empty() && 
+		GeneralHelpers::GetFullPathToFile(configFile, workConfigFile) &&
+		GeneralHelpers::IsValidFile(workConfigFile))
 	{
-		if (!ValidateConfigurationFile(configFile))
+		if (!ValidateConfigurationFile(workConfigFile))
 		{
 			logger.TraceConsoleDown(" The given configuration file contains invalid syntax.");
 			return ret;
@@ -974,37 +977,8 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 
 		m_wasNewConfigFileRequested = true;
 		m_configFileSyntaxOK = true;
-		m_configurationFile.assign(configFile);
+		m_configurationFile.assign(workConfigFile);
 		ret = true;
-	}
-	else
-	{
-		//then checking at current directory for given filename
-		std::wstring currentDirectoryWorkingFile;
-		if (GeneralHelpers::GetCurrentProcessModuleDirectory(currentDirectoryWorkingFile))
-		{
-			GeneralHelpers::AddPathTrailCharsIfNeeded(currentDirectoryWorkingFile);
-
-			currentDirectoryWorkingFile.append(configFile);
-			if (!currentDirectoryWorkingFile.empty() && GeneralHelpers::IsValidFile(currentDirectoryWorkingFile))
-			{
-				if (!ValidateConfigurationFile(currentDirectoryWorkingFile))
-				{
-					logger.TraceConsoleDown(" The given configuration file contains invalid syntax.");
-					return ret;
-				}
-
-				m_wasNewConfigFileRequested = true;
-				m_configFileSyntaxOK = true;
-				m_configurationFile.assign(currentDirectoryWorkingFile);
-				ret = true;
-			}
-			else
-			{
-				logger.TraceConsoleDown(" The given configuration file cannot be found.");
-				return ret;
-			}
-		}
 	}
 
 	return ret;
@@ -1360,13 +1334,6 @@ bool ConfigManager::SyncRuntimeConfigData()
 			if (!WasVerbosityRequested())
 			{
 				m_loggingVerbosity = LoggerVerbose::LOGGER_TRACE;
-			}
-
-			//Adding default report channel in case list is empty
-			if (!WasReportOptionsRequested() || m_reportOutputList.empty())
-			{
-				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_EVENTLOG);
-				m_reportOutputList.push_back(ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS);
 			}
 
 			//Adding default report channel in case list is empty
