@@ -4,7 +4,7 @@
 [![MIT license](https://badgen.net/badge/license/MIT/blue)](http://opensource.org/licenses/MIT)
 
 
-![SysmonX](https://raw.githubusercontent.com/marcosd4h/sysmonx/master/docs/misc/SysmonX_small.jpg)
+<center>![SysmonX](https://raw.githubusercontent.com/marcosd4h/sysmonx/master/docs/misc/SysmonX_small.jpg)</center>
 
 # SysmonX
 Open Source drop-in compatible version of sysmon
@@ -39,5 +39,5 @@ Example of new security events and features added to SysmonX are:
 ### SysmonX Overview Talk - Video [here](https://www.youtube.com/watch?v=bUgZIc7zfyk)
 
 ### SysmonX Demo: Component Install, Component Uninstall and Regex Detection - Video [here](https://www.youtube.com/watch?v=Z5B1T0P7sfs )
-![Component Install, Component Uninstall and Regex Detection](https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif =800x)
+![Component Install, Component Uninstall and Regex Detection](https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif =800px)
 
