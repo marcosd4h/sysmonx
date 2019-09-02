@@ -3,6 +3,9 @@
 [![Latest Commit](https://badgen.net/github/last-commit/marcosd4h/sysmonx)](https://github.com/marcosd4h/sysmonx/commits/master)
 [![MIT license](https://badgen.net/badge/license/MIT/blue)](http://opensource.org/licenses/MIT)
 
+
+![SysmonX](https://raw.githubusercontent.com/marcosd4h/sysmonx/blob/master/docs/misc/SysmonX.jpg)
+
 # SysmonX
 Open Source drop-in compatible version of sysmon
 >  This project is WORK IN PROGRESS. Expect feature changes and binary releases on the upcoming weeks.
@@ -31,4 +34,10 @@ Example of new security events and features added to SysmonX are:
 - Ability to perform regex over security event fields
 - Many more!
 
-Architecture deck available [here](https://github.com/marcosd4h/sysmonx/blob/master/docs/slides/SysmonX_Blackhat_2019.pdf)
+### SysmonX Overview deck available [here](https://github.com/marcosd4h/sysmonx/blob/master/docs/slides/SysmonX_Overview_09022019.pdf)
+
+### SysmonX Overview Talk: - Video [here](https://www.youtube.com/watch?v=bUgZIc7zfyk)
+
+### SysmonX Demo: Component Install, Component Uninstall and Regex Detection - Video [here](https://www.youtube.com/watch?v=Z5B1T0P7sfs )
+![Component Install, Component Uninstall and Regex Detection](https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif)
+
