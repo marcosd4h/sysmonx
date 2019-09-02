@@ -3,8 +3,10 @@
 [![Latest Commit](https://badgen.net/github/last-commit/marcosd4h/sysmonx)](https://github.com/marcosd4h/sysmonx/commits/master)
 [![MIT license](https://badgen.net/badge/license/MIT/blue)](http://opensource.org/licenses/MIT)
 
-
-<center>![SysmonX](https://raw.githubusercontent.com/marcosd4h/sysmonx/master/docs/misc/SysmonX_small.jpg)</center>
+<p align="center">
+  <br>
+  <img src="https://raw.githubusercontent.com/marcosd4h/sysmonx/master/docs/misc/SysmonX_small.jpg">
+</p>
 
 # SysmonX
 Open Source drop-in compatible version of sysmon
