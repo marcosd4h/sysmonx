@@ -40,4 +40,4 @@ Example of new security events and features added to SysmonX are:
 
 ### SysmonX Overview Talk - Video [here](https://www.youtube.com/watch?v=bUgZIc7zfyk)
 
-### SysmonX Demo: Component Install, Component Uninstall and Regex Detection - Video [here](https://www.youtube.com/watch?v=Z5B1T0P7sfs ) <br> <img src="https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif" data-canonical-src="https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif" "height="600" />
+### SysmonX Demo: Component Install, Component Uninstall and Regex Detection - Video [here](https://www.youtube.com/watch?v=Z5B1T0P7sfs ) ![SysmonX Demo: Component Install, Component Uninstall and Regex Detection](https://thumbs.gfycat.com/IllustriousSpeedyArawana-size_restricted.gif)
