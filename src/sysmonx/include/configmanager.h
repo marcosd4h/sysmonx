@@ -18,7 +18,6 @@ public:
 	bool Initialize(int argc, wchar_t *argv[]);
 	bool GetRegistryConfigData(CommonTypes::ByteContainer& rawBytes, SysmonXTypes::ConfigSerializedData* data);
 	bool GetBackendFiles(std::wstring &backend32BitsFile, std::wstring &backend64BitsFile);	
-	bool GetFullPathConfigFile(std::wstring &configFile);
 	bool GetFullPathBackendConfigFile(std::wstring &configFile);
 	bool GetFullPathCollectionServiceFile(std::wstring &collectionServiceFile);
 	bool IsNewCollectionServiceInstance();
@@ -26,11 +25,11 @@ public:
 	bool IsNewBackend64Instance();
 	bool IsNewWorkingDirectory();
 	bool GenerateBackendConfigFile(std::wstring &configFile);
-	bool GenerateCollectionServiceConfigFile(std::wstring &configFile);
 
 	//Boolean Configuration Helpers
 	bool IsInitialized() { return m_isInitialized; }
 	bool IsServiceMode() { return m_isServiceMode; }
+	bool IsDebugMode() { return m_isDebugMode; }	
 	bool IsServiceDataAvailable() { return m_isServiceDataAvailable; }
 	bool WasInstallRequested() { return m_wasInstallRequested; }
 	bool WasInstallAcceptEulaRequested() { return m_wasInstallAcceptEulaRequested; }
@@ -50,6 +49,7 @@ public:
 	bool WasNewConfigFileProvided() { return m_wasNewConfigFileRequested; }
 	bool WereStandaloneActionsRequested() { return (m_wasNewConfigFileRequested || m_wasPrintCurrentConfigurationRequested || m_wasDumpOfSchemaDefinitionsRequested || m_wasInstallEventsManifestRequested); }
 	bool IsConfigurationFileAvailable() { return !m_configurationFile.empty(); }
+	bool IsConfigurationFileContentAvailable() { return !m_configurationFileContent.empty(); }
 	bool IsTraceBackendDriverNameAvailable() { return !m_traceBackendDriverName.empty(); }
 	bool IsBackend32ServiceNameAvailable() { return !m_backend32ServiceName.empty(); }
 	bool IsBackend64ServiceNameAvailable() { return !m_backend64ServiceName.empty(); }
@@ -76,7 +76,7 @@ public:
 
 	//String Configuration Helpers
 	const std::wstring& GetHashAlgorithmToUse() { return m_hashAlgorithmToUse; }
-	const std::wstring& GetConfigurationFile() { return m_configurationFile; }
+	const std::wstring& GetConfigurationFileContent() { return m_configurationFileContent; }
 	const std::wstring& GetBackend32ServiceName() { return m_backend32ServiceName; }
 	const std::wstring& GetBackend64ServiceName() { return m_backend64ServiceName; }
 	const std::wstring& GetCollectionServiceName() { return m_collectionServiceName; }
@@ -102,6 +102,7 @@ private:
 	bool GenerateTraceBackendNames(const std::wstring &traceBackendName, std::wstring &traceBackend32BitsName, std::wstring &traceBackend64BitsName);
 	bool GetParsedProxyConfData(const std::wstring &proxyStr, ProxyConfData &proxyData);
 	bool ParseConfigurationFile(const std::wstring &configFile);
+	bool GenerateCollectionServiceConfigFileContent(std::wstring& configFile);
 	const BackendInstallVector GetBackendLocation(const std::wstring &backend);
 	const LoggerContainer GetLoggerMode(const std::wstring &loggerMode);
 	const LoggerVerbose GetVerbosityMode(const std::wstring &verbosityMode);
@@ -113,17 +114,7 @@ private:
 	std::wstring GetRevocationConfiguration();
 
 	//Lifecycle management
-	ConfigManager() : m_isInitialized(false), m_isServiceMode(false), m_isServiceDataAvailable(false), 
-		m_wasInstallRequested(false), m_wasInstallAcceptEulaRequested(false), m_wasUninstallRequested(false), 
-		m_wasUninstallForceRequested(false), m_wasSignatureRevocationCheckRequested(false),
-		m_wasLogOfLoadingModulesRequested(false), m_wasLogOfNetworkConnectionsRequested(false),
-		m_wasDumpOfSchemaDefinitionsRequested(false), m_wasInstallEventsManifestRequested(false), 
-		m_wasPrintCurrentConfigurationRequested(false), m_wasHelpRequested(false), 
-		m_configFileSyntaxOK(false), m_wasNumberOfWorkersRequested(false), m_wasCollectionLoggingRequested(false), 
-		m_wasVerbosityRequested(false), m_wasReportOptionsRequested(false), m_wasNewConfigFileRequested (false),
-		m_hashAlgorithmToUse(SysmonXDefs::SYSMON_DEFAULT_HASH_ALGORITHM), m_backendInstallerVector(BackendInstallVector::BACKEND_INSTALLER_WEB),
-		m_loggingMgmtApp(LoggerMode::LOGGER_CONSOLE), m_loggingCollectionService(LoggerMode::LOGGER_NA),
-		m_loggingVerbosity(LoggerVerbose::LOGGER_TRACE), m_nrWorkerOrchThreads(SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS)
+	ConfigManager() : m_loggingMgmtApp(LoggerMode::LOGGER_CONSOLE), m_loggingCollectionService(LoggerMode::LOGGER_NA)
 	{
 		m_processesToTrackOnLoadingModules.clear();
 		m_processesToTrackOnNetworkConnections.clear();
@@ -139,37 +130,39 @@ private:
 	ConfigManager& operator=(ConfigManager&&) = delete;
 
 	//Private variables
-	bool m_isInitialized;
-	bool m_isServiceMode;
-	bool m_isServiceDataAvailable;
-	bool m_wasInstallRequested;
-	bool m_wasInstallAcceptEulaRequested;
-	bool m_wasUninstallRequested;
-	bool m_wasUninstallForceRequested;
-	bool m_wasSignatureRevocationCheckRequested;
-	bool m_wasLogOfLoadingModulesRequested;
-	bool m_wasLogOfNetworkConnectionsRequested;
-	bool m_wasDumpOfSchemaDefinitionsRequested;
-	bool m_wasInstallEventsManifestRequested;
-	bool m_wasPrintCurrentConfigurationRequested;
-	bool m_wasHelpRequested;
-	bool m_configFileSyntaxOK;
-	bool m_wasNumberOfWorkersRequested;
-	bool m_wasCollectionLoggingRequested;
-	bool m_wasVerbosityRequested;
-	bool m_wasReportOptionsRequested;
-	bool m_wasNewConfigFileRequested;
-	std::wstring m_hashAlgorithmToUse;
+	bool m_isInitialized = false;
+	bool m_isServiceMode = false;
+	bool m_isDebugMode = false;
+	bool m_isServiceDataAvailable = false;
+	bool m_wasInstallRequested = false;
+	bool m_wasInstallAcceptEulaRequested = false;
+	bool m_wasUninstallRequested = false;
+	bool m_wasUninstallForceRequested = false;
+	bool m_wasSignatureRevocationCheckRequested = false;
+	bool m_wasLogOfLoadingModulesRequested = false;
+	bool m_wasLogOfNetworkConnectionsRequested = false;
+	bool m_wasDumpOfSchemaDefinitionsRequested = false;
+	bool m_wasInstallEventsManifestRequested = false;
+	bool m_wasPrintCurrentConfigurationRequested = false;
+	bool m_wasHelpRequested = false;
+	bool m_configFileSyntaxOK = false;
+	bool m_wasNumberOfWorkersRequested = false;
+	bool m_wasCollectionLoggingRequested = false;
+	bool m_wasVerbosityRequested = false;
+	bool m_wasReportOptionsRequested = false;
+	bool m_wasNewConfigFileRequested = false;
+	std::wstring m_hashAlgorithmToUse = SysmonXDefs::SYSMON_DEFAULT_HASH_ALGORITHM;
 	ProcessesList m_processesToTrackOnLoadingModules;
 	ProcessesList m_processesToTrackOnNetworkConnections;
-	BackendInstallVector m_backendInstallerVector;
-	LoggerContainer m_loggingMgmtApp;
+	BackendInstallVector m_backendInstallerVector = BackendInstallVector::BACKEND_INSTALLER_WEB;
+	LoggerContainer m_loggingMgmtApp ;
 	LoggerContainer m_loggingCollectionService;
 	ReportOutputList m_reportOutputList;
-	LoggerVerbose m_loggingVerbosity;
-	UINT32 m_nrWorkerOrchThreads;
+	LoggerVerbose m_loggingVerbosity = LoggerVerbose::LOGGER_TRACE;
+	UINT32 m_nrWorkerOrchThreads = SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS;
 	ProxyConfData m_proxyConfData;
 	std::wstring m_configurationFile;
+	std::wstring m_configurationFileContent;
 	std::wstring m_traceBackendDriverName;
 	std::wstring m_backend32ServiceName;
 	std::wstring m_backend64ServiceName;

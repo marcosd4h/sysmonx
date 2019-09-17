@@ -9,11 +9,9 @@ public:
 	bool Initialize();
 
 	ReportChannelDebugEvents() :
-		ReportChannelBase(L"Debug Events Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS), 
-		m_logger(TraceHelpers::Logger::Instance()), 
-		m_config(ConfigManager::Instance()) {}
+		ReportChannelBase(L"Debug Events Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_DEBUG_EVENTS) {}
 
 private:
-	TraceHelpers::Logger& m_logger;
-	ConfigManager& m_config;
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 };

@@ -15,9 +15,7 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 			if (cmdArgs.WasOptionRequested(SysmonXDefs::SERVICE_MODE_ARGS))
 			{
 				m_isServiceMode = true;
-
-				//TODO: mjo delete this!
-				if (cmdArgs.WasOptionRequested(L"-x")) m_wasPrintCurrentConfigurationRequested = true;
+				m_isDebugMode = false;
 
 				//Build System data
 				if (SyncRuntimeConfigData())
@@ -32,8 +30,48 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 					logger.TraceDown("There was a problem syncing runtime configuration data");
 				}
 			}
+			//Checking debug mode
+			else if (cmdArgs.WasOptionRequested(L"-t"))
+			{
+				//Parsing string values: -i. Configuration file
+				if (cmdArgs.WasOptionRequested(L"-i"))
+				{
+					std::wstring workingValue;
+					if (cmdArgs.GetOptionValue(L"-i", workingValue))
+					{
+						m_isDebugMode = true;
+						m_isServiceMode = true;
+
+						if (ParseConfigurationFile(workingValue) && SyncRuntimeConfigData())
+						{
+							m_loggingVerbosity = LoggerVerbose::LOGGER_TRACE;
+							m_loggingCollectionService.push_back(LoggerMode::LOGGER_CONSOLE);
+							m_loggingMgmtApp.push_back(LoggerMode::LOGGER_CONSOLE);
+							m_isInitialized = true;
+							ret = true;
+							return ret;
+						}
+						else
+						{
+							logger.TraceConsoleDown("There was a problem parsing the given configuration file required for debug mode.");
+							return ret;
+						}
+					}
+					else
+					{
+						logger.TraceConsoleDown("There was a problem parsing the -i option required for debug mode. Check if the config file input is valid");
+						return ret;
+					}
+				}
+				else
+				{
+					logger.TraceConsoleDown("Debug mode was requested without specifying -i <config_file>. Quitting now.");
+					return ret;
+				}
+			}
 			else
 			{
+				m_isDebugMode = false;
 				m_isServiceMode = false;
 			}
 
@@ -446,7 +484,7 @@ bool ConfigManager::Initialize(int argc, wchar_t *argv[])
 				m_isServiceDataAvailable = false;
 			}
 
-			//Build System data
+			//Build System data whenever we are not in debug mode
 			if (SyncRuntimeConfigData())
 			{
 				//No exceptions and parsing went OK
@@ -699,6 +737,7 @@ bool ConfigManager::IsSystemDataAvailable()
 	return ret;
 }
 
+//TODO: Unify this with RulesManager::IsConfigFileSyntaxValid()
 bool ConfigManager::ValidateConfigurationFile(const std::wstring &configFilename)
 {
 	bool ret = false;
@@ -912,48 +951,33 @@ bool ConfigManager::GenerateBackendConfigFile(std::wstring &backendConfigFile)
 
 
 //TODO: check security of new file
-bool ConfigManager::GenerateCollectionServiceConfigFile(std::wstring &collectionServiceConfigFile)
+bool ConfigManager::GenerateCollectionServiceConfigFileContent(std::wstring &collectionServiceConfigFileContent)
 {
 	bool ret = false;
 
-	std::wstring workingConfigFile;
+	//Now populating content
+	std::wstringstream configFile;
 
-	try
+	//Config Header
+	configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_HEADER.c_str();
+
+	//Adding Config Specific values
+	configFile << GetHashAlgorithmsConfiguration().c_str();
+	configFile << GetRevocationConfiguration().c_str();
+
+	//Adding Default Filtering
+	configFile << SysmonXDefs::DEFAULT_SYSMONX_CONFIG_FILE_FILTERING.c_str();
+
+	//Adding Tail
+	configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
+
+	//Assigning result
+	collectionServiceConfigFileContent.assign(configFile.str());
+
+	if (!collectionServiceConfigFileContent.empty())
 	{
-		if (GeneralHelpers::IsValidDirectory(m_workingDirectory))
-		{
-			GeneralHelpers::AddPathTrailCharsIfNeeded(m_workingDirectory);
-
-			workingConfigFile.assign(m_workingDirectory);
-			workingConfigFile.append(SysmonXDefs::DEFAULT_CONFIG_FILE);
-
-			//Now populating content
-			std::wofstream configFile;
-			configFile.open(workingConfigFile);
-
-			//Config Header
-			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_HEADER.c_str();
-
-			//Adding Config Specific values
-			configFile << GetHashAlgorithmsConfiguration().c_str();
-			configFile << GetRevocationConfiguration().c_str();
-
-			//Adding Default Filtering
-			configFile << SysmonXDefs::DEFAULT_SYSMONX_CONFIG_FILE_FILTERING.c_str();
-
-			//Adding Tail
-			configFile << SysmonXDefs::DEFAULT_SYSMON_CONFIG_FILE_TAIL.c_str();
-
-			//Closing and saving content
-			configFile.close();
-			collectionServiceConfigFile.assign(workingConfigFile);
-			ret = true;
-		}
-	}
-	catch (...)
-	{
-		ret = false;
-	}
+		ret = true;
+	}		
 
 	return ret;
 }
@@ -962,23 +986,50 @@ bool ConfigManager::ParseConfigurationFile(const std::wstring &configFile)
 {
 	bool ret = false;
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
-	std::wstring workConfigFile;
+	std::wstring fullpathConfigFile;
+	std::wstring workCurrentDirectory;
 
 	//checking first full path to config file
-	if (!configFile.empty() && 
-		GeneralHelpers::GetFullPathToFile(configFile, workConfigFile) &&
-		GeneralHelpers::IsValidFile(workConfigFile))
+	if (!configFile.empty())
 	{
-		if (!ValidateConfigurationFile(workConfigFile))
+		if (GeneralHelpers::IsValidFile(configFile) &&
+			ValidateConfigurationFile(configFile) &&
+			GeneralHelpers::GetTargetFileIntoString(configFile, m_configurationFileContent))
 		{
-			logger.TraceConsoleDown(" The given configuration file contains invalid syntax.");
-			return ret;
+			m_wasNewConfigFileRequested = true;
+			m_configFileSyntaxOK = true;
+			m_configurationFile.assign(configFile);
+			ret = true;
 		}
+		else
+		{
+			if (GeneralHelpers::GetCurrentProcessModuleDirectory(workCurrentDirectory))
+			{
+				GeneralHelpers::AddPathTrailCharsIfNeeded(workCurrentDirectory);
+				fullpathConfigFile.append(workCurrentDirectory);
+				fullpathConfigFile.append(configFile);
 
-		m_wasNewConfigFileRequested = true;
-		m_configFileSyntaxOK = true;
-		m_configurationFile.assign(workConfigFile);
-		ret = true;
+				if (GeneralHelpers::IsValidFile(fullpathConfigFile) &&
+					ValidateConfigurationFile(fullpathConfigFile) &&
+					GeneralHelpers::GetTargetFileIntoString(fullpathConfigFile, m_configurationFileContent))
+				{
+					m_wasNewConfigFileRequested = true;
+					m_configFileSyntaxOK = true;
+					m_configurationFile.assign(fullpathConfigFile);
+					ret = true;
+				}
+				else
+				{
+					m_configurationFileContent.clear();
+					logger.TraceConsoleDown(" The given configuration file contains invalid syntax or cannot be accessed.");
+				}
+			}
+		}
+	}
+	else
+	{
+		m_configurationFileContent.clear();
+		logger.TraceConsoleDown(" The given configuration file is invalid.");
 	}
 
 	return ret;
@@ -1088,11 +1139,11 @@ bool ConfigManager::SyncRuntimeConfigData()
 				//Configuration File
 				if (!WasNewConfigFileProvided())
 				{
-					m_configurationFile = GeneralHelpers::GetSerializedWString(workingSerializedPtr->ConfigFile);
+					m_configurationFileContent = GeneralHelpers::GetSerializedWString(workingSerializedPtr->ConfigFileContent);
 				}
 				else
 				{
-					workingSerializedPtr->ConfigFile = GeneralHelpers::GetSerializedVector(m_configurationFile);
+					workingSerializedPtr->ConfigFileContent = GeneralHelpers::GetSerializedVector(m_configurationFileContent);
 				}
 
 				//Hash Algorithm to use				
@@ -1297,17 +1348,17 @@ bool ConfigManager::SyncRuntimeConfigData()
 			m_previousWorkingDirectory.assign(m_workingDirectory);
 
 			//configuration file
-			std::wstring newConfigFile;
+			std::wstring newConfigFileContent;
 			if (!IsConfigurationFileAvailable())
 			{
-				if (GenerateCollectionServiceConfigFile(newConfigFile) &&
-					GeneralHelpers::IsValidFile(newConfigFile))
+				if (GenerateCollectionServiceConfigFileContent(newConfigFileContent))
 				{
-					m_configurationFile = newConfigFile;
+					m_configurationFileContent.assign(newConfigFileContent);
 				}
 				else
 				{
 					//cannot run wo config file
+					m_configurationFileContent.clear();
 					return ret;
 				}
 			}
@@ -1350,7 +1401,6 @@ bool ConfigManager::SyncRuntimeConfigData()
 			workingRegistryConfigData.PreviousCollectionServiceName = GeneralHelpers::GetSerializedVector(m_previousCollectionServiceName);
 			workingRegistryConfigData.PreviousBackend32BitsName = GeneralHelpers::GetSerializedVector(m_previousBackend32ServiceName);
 			workingRegistryConfigData.PreviousBackend64BitsName = GeneralHelpers::GetSerializedVector(m_previousBackend64ServiceName);
-			workingRegistryConfigData.ConfigFile = GeneralHelpers::GetSerializedVector(m_configurationFile);
 			workingRegistryConfigData.WorkingDirectory = GeneralHelpers::GetSerializedVector(m_workingDirectory);
 			workingRegistryConfigData.PreviousWorkingDirectory = GeneralHelpers::GetSerializedVector(m_workingDirectory);
 			workingRegistryConfigData.CollectionServiceLogfile = GeneralHelpers::GetSerializedVector(m_collectionServiceLogfile);
@@ -1358,6 +1408,7 @@ bool ConfigManager::SyncRuntimeConfigData()
 			workingRegistryConfigData.ShouldCheckSignatureRevocation = m_wasSignatureRevocationCheckRequested;
 			workingRegistryConfigData.CollectionServiceLoggingVerbosity = m_loggingVerbosity;
 			workingRegistryConfigData.Version = SysmonXDefs::SYSMONX_SERIALIZED_CONFIG_VERSION;
+			workingRegistryConfigData.ConfigFileContent = GeneralHelpers::GetSerializedVector(m_configurationFileContent);
 
 			//track of loading modules flag
 			if (m_wasLogOfLoadingModulesRequested)
@@ -1419,10 +1470,14 @@ bool ConfigManager::SyncRuntimeConfigData()
 		}
 
 		//Checking if serialized data are available
-		if (!decryptedConfDataBytes.empty() &&
-			GeneralHelpers::DPAPIEncrypt(decryptedConfDataBytes, SysmonXDefs::DEFAULT_SYSMONX_ENTROPY, encryptedConfDataBytes) &&
-			!encryptedConfDataBytes.empty() &&
-			RegistryHelpers::SetRegBinaryValue(HKEY_LOCAL_MACHINE, SysmonXDefs::SYSMONX_REGISTRY_KEY_LOCATION, SysmonXDefs::SYSMONX_REGISTRY_VALUE_LOCATION, encryptedConfDataBytes))
+		if (IsDebugMode() || IsServiceMode())
+		{
+			ret = true;
+		}
+		else if (!decryptedConfDataBytes.empty() &&
+				 GeneralHelpers::DPAPIEncrypt(decryptedConfDataBytes, SysmonXDefs::DEFAULT_SYSMONX_ENTROPY, encryptedConfDataBytes) &&
+				 !encryptedConfDataBytes.empty() &&
+				 RegistryHelpers::SetRegBinaryValue(HKEY_LOCAL_MACHINE, SysmonXDefs::SYSMONX_REGISTRY_KEY_LOCATION, SysmonXDefs::SYSMONX_REGISTRY_VALUE_LOCATION, encryptedConfDataBytes))
 		{
 			ret = true;
 		}
@@ -1490,30 +1545,6 @@ bool ConfigManager::GetBackendFiles(std::wstring &backend32BitsFile, std::wstrin
 		{
 			ret = true;
 		}		
-	}
-
-	return ret;
-}
-
-bool ConfigManager::GetFullPathConfigFile(std::wstring &configFile)
-{
-	bool ret = false;
-
-	if (GeneralHelpers::IsValidDirectory(m_workingDirectory))
-	{
-		std::wstring workingDir(m_workingDirectory);
-		std::wstring workingConfigFile;
-
-		GeneralHelpers::AddPathTrailCharsIfNeeded(workingDir);
-
-		workingConfigFile.append(workingDir);
-		workingConfigFile.append(m_configurationFile);
-
-		if (GeneralHelpers::IsValidFile(workingConfigFile))
-		{
-			configFile.assign(workingConfigFile);
-			ret = true;
-		}
 	}
 
 	return ret;

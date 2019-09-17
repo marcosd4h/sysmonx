@@ -9,11 +9,9 @@ public:
 	bool Initialize();
 
 	ReportChannelETW() :
-		ReportChannelBase(L"ETW Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_ETW),
-		m_logger(TraceHelpers::Logger::Instance()),
-		m_config(ConfigManager::Instance()) {}
+		ReportChannelBase(L"ETW Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_ETW) {}
 
 private:
-	TraceHelpers::Logger& m_logger;
-	ConfigManager& m_config;
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 };

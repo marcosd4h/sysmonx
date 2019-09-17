@@ -15,12 +15,19 @@ public:
 
 	//Evaluation if event should be filtered
 	//Upon true  events will be sent to next phase (reporting) 
-	bool ShouldFilterEvent(const  SysmonXTypes::EventObject &eventData);
+	bool AreMatchingFiltersForThisEvent(const  SysmonXTypes::EventObject &eventData);
 
 	//Helpers
 	SysmonXTypes::EventID GetEventID() { return m_eventID; }
 	SysmonXTypes::EventIDName GetEventName() { return m_eventName; }
 	bool IsInitialized() { return m_isInitialized; }
+
+	void ClearFilters()
+	{
+		m_IncludeANDFilterGroup.clear();
+		m_IncludeORFilterGroup.clear();
+		m_ExcludeFilterGroup.clear();
+	}
 
 	//Initialize
 	virtual bool Initialize() = 0;
@@ -28,7 +35,8 @@ public:
 protected:
 
 	//Lifecycle Management
-	MatchEventBase(const SysmonXTypes::EventID &eventID, const SysmonXTypes::EventIDName &eventName) : m_isInitialized(false), m_eventID(eventID), m_eventName(eventName) {}
+	MatchEventBase(const SysmonXTypes::EventID &eventID, const SysmonXTypes::EventIDName &eventName) :
+		m_eventID(eventID), m_eventName(eventName) {}
 	virtual ~MatchEventBase() = default;
 
 	//Evaluation if event should be filtered
@@ -43,7 +51,7 @@ protected:
 		FilterEventProperties &targetProperty);
 
 	//Protected vars
-	bool m_isInitialized;
+	bool m_isInitialized = false;
 	SysmonXTypes::EventIDName m_eventName;
 	std::vector < SysmonXTypes::EventPropertyID> m_properties;
 

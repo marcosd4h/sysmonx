@@ -7,9 +7,8 @@
 #include "cmdparser.h"
 #include "localdefs.h"
 #include "localtypes.h"
-#include "securityevents.h"
+#include "securitytypes.h"
 #include "localhelpers.h"
-#include "matchhelpers.h"
 #include "interfaces.h"
 #include "configmanager.h"
 #include "reportmanager.h"
@@ -20,6 +19,7 @@
 #include "rulesmanager.h"
 #include "servicemanager.h"
 #include "executionflows.h"
+#include "cachemanager.h"
 
 //Matchers
 #include "matchers\filter_property_processor.h"

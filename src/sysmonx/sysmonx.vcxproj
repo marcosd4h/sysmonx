@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cachemanager.cpp" />
     <ClCompile Include="collectors\etwcollectorcallbacks\callbacks_manager.cpp" />
     <ClCompile Include="collectors\etwcollectorcallbacks\callback_kernel_process_create.cpp" />
     <ClCompile Include="collectors\etwcollectorcallbacks\callback_powershell_events.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="servicemanager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cachemanager.h" />
     <ClInclude Include="collectors\etwcollectorcallbacks\callbacks_etw_event_ids.h" />
     <ClInclude Include="collectors\event_collector_dummy.h" />
     <ClInclude Include="collectors\event_collector_etw.h" />
@@ -53,7 +55,6 @@
     <ClInclude Include="include\configmanager.h" />
     <ClInclude Include="include\localdefs.h" />
     <ClInclude Include="include\localhelpers.h" />
-    <ClInclude Include="include\matchhelpers.h" />
     <ClInclude Include="include\servicemanager.h" />
     <ClInclude Include="executionflows.h" />
     <ClInclude Include="matchers\filter_property_processor.h" />
@@ -69,39 +70,39 @@
     <ClInclude Include="reporters\report_channel_logfile.h" />
     <ClInclude Include="reportmanager.h" />
     <ClInclude Include="rulesmanager.h" />
-    <ClInclude Include="securityevents.h" />
+    <ClInclude Include="securitytypes.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{08579D1B-A2DF-4FC0-9A56-8B8B5B473295}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>sysmonx</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>SysmonX</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -167,7 +168,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <DisableSpecificWarnings>4017;4700;4293;4244;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4017;4700;4244;4293;4244;</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -191,7 +192,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4017;4700;4244;4293;</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -218,7 +219,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <DisableSpecificWarnings>4017;4700;4293;4244;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4017;4700;4244;4293;4244;</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -245,7 +246,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;BOOST_COROUTINES_NO_DEPRECATION_WARNING;_SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <DisableSpecificWarnings>4017;4700;4293;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4017;4700;4244;4293;</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>

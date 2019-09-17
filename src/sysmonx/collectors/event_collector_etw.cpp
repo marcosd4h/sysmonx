@@ -103,6 +103,13 @@ bool EventCollectorETW::StopEventsCollection()
 				while (m_isUserTraceStarted) Sleep(500);
 				while (m_isKernelTraceStarted) Sleep(500);
 
+				m_etwKernelTraceThread->join();
+				m_etwUserTraceThread->join();
+				m_etwKernelTraceThread.reset();
+				m_etwUserTraceThread.reset();
+				m_etwKernelTraceThread = nullptr;
+				m_etwUserTraceThread = nullptr;
+
 				ret = true;
 			}
 		}

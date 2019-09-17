@@ -11,6 +11,16 @@ using boost::asio::strand;
 using boost::asio::thread_pool;
 using boost::asio::yield_context;
 
+
+namespace MatchHelpers
+{
+	SysmonXTypes::EventID GetEventIDBasedOnName(const SysmonXTypes::EventIDName& eventName);
+	SysmonXTypes::EventPropertyID GetEventPropertyIDBasedOnName(const SysmonXTypes::EventPropertyName& propertyName);
+	SysmonXTypes::EventFilterOperation GetEventFilterOperationBasedOnName(const SysmonXTypes::EventConditionFilterName& conditionName);
+	const SysmonXTypes::MATCHING_TYPE_STRING& GetMatchingDataFromEvent(const SysmonXTypes::EventObject& eventData, const SysmonXTypes::EventPropertyID& eventID);
+}
+
+
 class MatchingEngine
 {
 public:
@@ -24,15 +34,46 @@ public:
 	bool IsInitialized() { return m_isInitialized; };
 	bool Initialize();
 
+
 	// Entry points for events arriving to the matching engine.
 	// Code return inmediately after enqueuing security events to be handled by the thread pool
 	// Design decision: data is not const to allow logic to add attributes while event is processed through the pipeline
 	void DispatchEvent(SysmonXTypes::EventObject &data)
-	{
-		if (IsInitialized())
+	{		
+		//Quick and dirty evaluation
+		if (m_isInitialized && m_shouldProcessEvents)
 		{
 			spawn(m_pool, boost::bind(&MatchingEngine::ProcessNewEvents, this, data));
 		}
+	}
+
+	//Matching engine lifecycle
+	bool DisableEventsProcessing()
+	{
+		boost::lock_guard<boost::mutex> lk(m_mutex);
+		bool ret = false;
+
+		if (m_isInitialized)
+		{
+			m_shouldProcessEvents = false;
+			ret = true;
+		}
+
+		return ret;
+	}
+
+	bool EnableEventsProcessing()
+	{
+		boost::lock_guard<boost::mutex> lk(m_mutex);
+		bool ret = false;
+
+		if (m_isInitialized)
+		{
+			m_shouldProcessEvents = true;
+			ret = true;
+		}
+
+		return ret;
 	}
 
 	bool AddNewEventFilterCondition(
@@ -42,21 +83,22 @@ public:
 		const EventFilterOperation &operation,
 		const MATCHING_TYPE_STRING &data);
 
+	void ClearEventFilters();
+
 private:
 
 	//Object lifecycle 
 	MatchingEngine(const size_t nrThreads = SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS):
-		m_isInitialized(false), m_pool(nrThreads), m_dispatchStrand(m_pool.get_executor()),
-		m_reportManager(ReportManager::Instance()), m_logger(TraceHelpers::Logger::Instance()),
-		m_config(ConfigManager::Instance()) {}
+		m_pool(nrThreads), m_dispatchStrand(m_pool.get_executor()) {}
 
 	//Object lifecycle 
 	virtual ~MatchingEngine() 
 	{
+		m_shouldProcessEvents = false;
 		if (IsInitialized())
 		{
 			m_pool.join();
-		}		
+		}
 	}
 
 	//Adding New Matcher
@@ -118,12 +160,13 @@ private:
 	MatchingEngine& operator=(MatchingEngine&&) = delete;
 
 	// Private vars
-	bool m_isInitialized;
+	bool m_isInitialized = false;
+	bool m_shouldProcessEvents = false;
 	thread_pool m_pool;
 	strand<thread_pool::executor_type> m_dispatchStrand;
-	ReportManager& m_reportManager;
-	TraceHelpers::Logger& m_logger;
-	ConfigManager& m_config;
+	ReportManager& m_reportManager = ReportManager::Instance();
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 	boost::mutex m_mutex;
 	MatchEventContainer m_matchers;
 };

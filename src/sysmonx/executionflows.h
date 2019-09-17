@@ -39,9 +39,10 @@ namespace SysmonXAppFlows
 namespace SysmonXServiceFlows
 {
 	//Flows Entry Points
-	bool IsServiceWorkEnvironmentReady();
+	bool PrepareServiceWorkEnvironment();
 	bool EnableServiceProcessing();
 	bool DisableServiceProcessing();
+	bool UpdateConfigLive();
 
 	//Flows Internal Actions
 	namespace InternalActions
@@ -50,7 +51,8 @@ namespace SysmonXServiceFlows
 		bool EnsureRunningConditions(const CommonTypes::TraceBackendType &backendType);
 		bool SetupSysmonXComponents();
 		bool EnableSysmonXComponents(const CommonTypes::TraceBackendType &backendType);
-		bool UpdateSysmonXConfiguration(const CommonTypes::TraceBackendType &backendType, bool shouldServiceBeRestarted = false);
+		bool UpdateCollectionServiceConfiguration();
+		bool UpdateTraceBackendsConfiguration(const CommonTypes::TraceBackendType &backendType);
 		bool DisableSysmonXComponents(const CommonTypes::TraceBackendType &backendType);
 		bool CheckServiceImageFileIntegrity();
 		bool CheckServiceDirectorySecurity();

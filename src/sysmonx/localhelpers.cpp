@@ -880,7 +880,7 @@ namespace SysmonXHelpers
 	{
 		bool ret = false;
 		SysmonXCommon::CallStackDataPtr element = nullptr;
-		static const size_t MIN_NUMBER_OF_STACK_FRAMES = 3;
+		constexpr size_t MIN_NUMBER_OF_STACK_FRAMES = 3;
 
 		//traversing elements from last to first
 		if (csElements.size() > MIN_NUMBER_OF_STACK_FRAMES)
@@ -928,7 +928,7 @@ namespace SysmonXHelpers
 	{
 		bool ret = false;
 		SysmonXCommon::CallStackDataPtr element = nullptr;
-		static const size_t MIN_NUMBER_OF_STACK_FRAMES = 3;
+		constexpr size_t MIN_NUMBER_OF_STACK_FRAMES = 3;
 
 		//traversing elements from last to first
 		if (csElements.size() > MIN_NUMBER_OF_STACK_FRAMES)
@@ -1079,7 +1079,7 @@ namespace SysmonXHelpers
 		bool ret = false;
 		bool goodToGetSymbols = true;
 
-		static const DWORD MAX_NUMBER_OF_FRAMES = 64;
+		constexpr DWORD MAX_NUMBER_OF_FRAMES = 64;
 		if ((pid != 0) && (hProcess != INVALID_HANDLE_VALUE) && (hThread != INVALID_HANDLE_VALUE))
 		{
 			CONTEXT ctx = { 0 };
@@ -1229,15 +1229,14 @@ namespace SysmonXHelpers
 
 
 
-namespace WindowsHelpers
+namespace ScanHelpers
 {
-	bool GetBBProcessFromPID(const size_t targetPID, blackbone::Process &bbProcess)
+	bool GetBlackboneProcessFromPID(const size_t targetPID, blackbone::Process &bbProcess)
 	{
 		bool ret = false;
 
-		bbProcess.Attach((DWORD)targetPID);
-
-		if (bbProcess.valid())
+		if ((bbProcess.Attach((DWORD)targetPID) == STATUS_SUCCESS) && 
+			(bbProcess.valid()))
 		{
 			ret = true;
 		}
@@ -1245,26 +1244,31 @@ namespace WindowsHelpers
 		return ret;
 	}
 
-	bool GetMainModuleFromMemory(blackbone::Process &process, WindowsTypes::BytePTR &buffer, blackbone::pe::PEImage &module)
+	bool GetMainModuleFromMemory(blackbone::Process &process, blackbone::pe::PEImage &module)
 	{
 		bool ret = false;
 
 		if (process.valid())
 		{
-			blackbone::ModuleDataPtr mainModule = process.modules().GetMainModule();
+			blackbone::ModuleDataPtr memoryMainModule = process.modules().GetMainModule();
 
-			WindowsTypes::BytePTR localBuff(new uint8_t[mainModule->size]);
-
-			memset(localBuff.get(), 0, mainModule->size);
-			process.memory().Read(mainModule->baseAddress, mainModule->size, localBuff.get());
-
-			if ((localBuff != nullptr) &&
-				(module.Parse(localBuff.get()) == ERROR_SUCCESS) &&
-				(module.base()) &&
-				(module.imageSize() > 0))
+			if ((process.valid()) &&
+				(memoryMainModule) &&
+				(memoryMainModule->baseAddress) &&
+				(memoryMainModule->size > 0))
 			{
-				buffer = localBuff;
-				ret = true;
+				WindowsTypes::BytePTR workBuff(new uint8_t[memoryMainModule->size]());
+
+				process.memory().Read(memoryMainModule->baseAddress, memoryMainModule->size, workBuff.get());
+
+				if ((workBuff != nullptr) &&
+					(module.Parse(workBuff.get()) == ERROR_SUCCESS) &&
+					(module.base()) &&
+					(module.imageSize() > 0))
+				{
+					workBuff.reset();
+					ret = true;
+				}
 			}
 		}
 
@@ -1279,7 +1283,8 @@ namespace WindowsHelpers
 		{
 			blackbone::ModuleDataPtr mainModule = process.modules().GetMainModule();
 
-			if (!mainModule->fullPath.empty() &&
+			if ((mainModule) &&
+				(!mainModule->fullPath.empty()) &&
 				(module.Load(mainModule->fullPath) == ERROR_SUCCESS) &&
 				(module.base()) &&
 				(module.imageSize() > 0))
@@ -1290,4 +1295,55 @@ namespace WindowsHelpers
 
 		return ret;
 	}
+
+	bool IsProcessMainModuleHollowed(SysmonXTypes::EventObject& data)
+	{
+		bool ret = false;
+
+		//Performing Process Hollowing checks here
+		blackbone::Process process;
+		blackbone::pe::PEImage mainModuleMemory;
+		blackbone::pe::PEImage mainModuleDisk;
+
+		//Grabbing main module from memory and disk
+		if ((data->ProcessId > SysmonXDefs::MIN_PROCESS_ID) &&
+			(ScanHelpers::GetBlackboneProcessFromPID(data->ProcessId, process)) &&
+			(ScanHelpers::GetMainModuleFromMemory(process, mainModuleMemory)) &&
+			(ScanHelpers::GetMainModuleFromDisk(process, mainModuleDisk)))
+		{
+			const IMAGE_DOS_HEADER* headerModuleMemory = reinterpret_cast<const IMAGE_DOS_HEADER*>((void*)mainModuleMemory.base());
+			const IMAGE_DOS_HEADER* headerModuleDisk = reinterpret_cast<const IMAGE_DOS_HEADER*>(mainModuleDisk.base());
+
+			//Cross checking PE fields of modules on memory vs counterpart on disk
+			if (headerModuleMemory && headerModuleDisk)
+			{
+				if ((headerModuleMemory->e_magic == IMAGE_DOS_SIGNATURE) &&
+					(headerModuleDisk->e_magic == IMAGE_DOS_SIGNATURE) &&
+					(headerModuleMemory->e_oemid == headerModuleDisk->e_oemid) &&
+					(mainModuleMemory.imageSize() == mainModuleDisk.imageSize()) &&
+					(mainModuleMemory.DirectorySize(0) == mainModuleDisk.DirectorySize(0)) &&
+					(mainModuleMemory.mType() == mainModuleDisk.mType()) &&
+					(mainModuleMemory.headersSize() == mainModuleDisk.headersSize()) &&
+					(mainModuleMemory.subsystem() == mainModuleDisk.subsystem()) &&
+					(mainModuleMemory.DllCharacteristics() == mainModuleDisk.DllCharacteristics()) &&
+					(mainModuleMemory.GetImports().size() == mainModuleDisk.GetImports().size()) &&
+					(mainModuleMemory.sections().size() == mainModuleDisk.sections().size()))
+				{
+					data->ScannerResult.append(L" main_module_not_hollowed ");
+				}
+				else
+				{
+					data->ScannerResult.append(L" main_module_hollowed ");
+					ret = true;
+				}
+			}
+		}
+		else
+		{
+			data->ScannerResult.append(L" main_module_not_hollowed ");
+		}
+
+		return ret;
+	}
+
 }

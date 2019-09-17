@@ -14,19 +14,7 @@ public:
 
 	//Lifecycle management
 	EventCollectorETW() :
-		EventCollectorBase(L"Event Collector ETW Technology", SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW),
-		m_isInitialized(false),
-		m_isEnabled(false),
-		m_isKernelTraceStarted(false),
-		m_isUserTraceStarted(false),
-		m_eventsProcessor(MatchingEngine::Instance()),
-		m_logger(TraceHelpers::Logger::Instance()),
-		m_config(ConfigManager::Instance()),
-		m_kernelTrace(nullptr),
-		m_userTrace(nullptr),		
-		m_etwKernelTraceThread(nullptr), 
-		m_etwUserTraceThread(nullptr),
-		m_sysmonProvider(nullptr) {}
+		EventCollectorBase(L"Event Collector ETW Technology", SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW) {}
 
 	virtual ~EventCollectorETW() 
 	{ 
@@ -65,17 +53,17 @@ private:
 	bool InitializeProvidersCallbacks();
 
 	//private variables
-	std::atomic<bool> m_isInitialized;
-	std::atomic<bool> m_isEnabled;
-	std::atomic<bool> m_isKernelTraceStarted;
-	std::atomic<bool> m_isUserTraceStarted;
-	MatchingEngine &m_eventsProcessor;
-	TraceHelpers::Logger &m_logger;
-	ConfigManager &m_config;
-	std::shared_ptr<krabs::kernel_trace> m_kernelTrace;
-	std::shared_ptr<krabs::user_trace> m_userTrace;
-	std::shared_ptr<std::thread> m_etwKernelTraceThread;
-	std::shared_ptr<std::thread> m_etwUserTraceThread;
+	std::atomic<bool> m_isInitialized = false;
+	std::atomic<bool> m_isEnabled = false;
+	std::atomic<bool> m_isKernelTraceStarted = false;
+	std::atomic<bool> m_isUserTraceStarted = false;
+	MatchingEngine& m_eventsProcessor = MatchingEngine::Instance();
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
+	std::shared_ptr<krabs::kernel_trace> m_kernelTrace = nullptr;
+	std::shared_ptr<krabs::user_trace> m_userTrace = nullptr;
+	std::shared_ptr<std::thread> m_etwKernelTraceThread = nullptr;
+	std::shared_ptr<std::thread> m_etwUserTraceThread = nullptr;
 	boost::mutex m_mutex;
 
 	//KrabsETW convenience providers
@@ -99,7 +87,7 @@ private:
 	krabs::kernel::thread_provider m_kernelThreadProvider;
 
 	//Custom ETW providers
-	std::shared_ptr <krabs::provider<>> m_sysmonProvider;
-	std::shared_ptr <krabs::provider<>> m_powershellProvider;
+	std::shared_ptr <krabs::provider<>> m_sysmonProvider = nullptr;
+	std::shared_ptr <krabs::provider<>> m_powershellProvider = nullptr;
 };
 

@@ -42,7 +42,7 @@ bool EventCollectorETW::SetupCallbackSysmonEventsHandler()
 					newEvent->EventCollectorTechID = EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW;
 					newEvent->EventCollectorVectorID = EventCollectorVectorID::EVENT_SUBTYPE_ETW_USER_CUSTOM;
 					newEvent->EventCreationTimestamp = schema.timestamp();
-					newEvent->EventETWProviderPID = currentPID;
+					newEvent->EventCommonProcessID = currentPID;
 					newEvent->EventETWProviderName.assign(ETWProvidersName::SYSMON_PROVIDER_NAME);
 
 					//Filling up event-specific data

@@ -68,11 +68,11 @@ namespace CommonTypes
 
 	struct ServiceProperties
 	{
-		ServiceProperties() : canBeStopped(true), canBeShuttedDown(true), canBePausedOrResumed(true) {}
+		ServiceProperties() = default;
 
-		bool canBeStopped;
-		bool canBeShuttedDown;
-		bool canBePausedOrResumed;
+		bool canBeStopped = true;
+		bool canBeShuttedDown = true;
+		bool canBePausedOrResumed = true;
 	};
 
 	enum ProcessType

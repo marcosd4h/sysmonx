@@ -14,10 +14,7 @@ public:
 	bool IsCollectionRunning() { return m_isEnabled; };
 
 	EventCollectorSample() :
-		EventCollectorBase(L"Event Collector Sample Technology", SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW),
-		m_isInitialized(false),
-		m_isEnabled(false),
-		m_executionThread(nullptr) {}
+		EventCollectorBase(L"Event Collector Sample Technology", SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW) {}
 
 	virtual ~EventCollectorSample()
 	{
@@ -25,9 +22,9 @@ public:
 	}
 
 private:
-	bool m_isInitialized;
-	bool m_isEnabled;
-	boost::shared_ptr<boost::thread> m_executionThread;
+	bool m_isInitialized = false;
+	bool m_isEnabled = false;
+	boost::shared_ptr<boost::thread> m_executionThread = nullptr;
 	boost::mutex m_mutex;
 	SysmonXTypes::RulesContainer m_collectorPolicies;
 };

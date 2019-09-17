@@ -58,6 +58,7 @@
 #include <windows.h>
 #include <wininet.h>
 #include <sddl.h>
+#include <concurrent_unordered_map.h>
 
 //Blackbone
 #include <BlackBone\Config.h>

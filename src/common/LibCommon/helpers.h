@@ -139,6 +139,8 @@ namespace GeneralHelpers
 
 namespace RegistryHelpers
 {
+	bool OpenKey(const HKEY &hRootKey, const std::wstring &regSubKey, HKEY &hKey);
+	bool CloseKey(const HKEY& hKey);
 	bool DeleteKey(const HKEY &hRootKey, const std::wstring &regSubKey);
 	bool CreateKey(const HKEY &hRootKey, const std::wstring &regSubKey);
 	bool DeleteValue(const HKEY &hRootKey, const std::wstring &regSubKey, const std::wstring &regValue);
@@ -152,6 +154,7 @@ namespace RegistryHelpers
 	bool SetRegBoolValue(const HKEY hRootKey, const std::wstring& regSubKey, const std::wstring& regValue, const bool &nValue);
 	bool GetRegBinaryValue(const HKEY hRootKey, const std::wstring& regSubKey, const std::wstring& regValue, CommonTypes::ByteContainer& data);
 	bool SetRegBinaryValue(const HKEY hRootKey, const std::wstring& regSubKey, const std::wstring& regValue, const CommonTypes::ByteContainer& data);
+	bool PlaceRegMonitoringEvent(const HKEY& hKey, HANDLE& hEvent, DWORD flags = REG_NOTIFY_CHANGE_LAST_SET);
 }
 
 namespace ServiceHelpers

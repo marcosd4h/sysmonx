@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include "krabs.h"
+#include "krabs.hpp"
 
 // Note: This file exists to define the schema_locator
 // cache static variable. Due to issues with C++14 magic

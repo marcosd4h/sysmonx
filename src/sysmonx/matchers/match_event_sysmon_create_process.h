@@ -14,7 +14,7 @@ public:
 		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventCollectorTechID);
 		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventCollectorVectorID);
 		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventCreationTimestamp);
-		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderPID);
+		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderID);
 		m_properties.push_back(EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderName);
 
 		//Event specific attributes

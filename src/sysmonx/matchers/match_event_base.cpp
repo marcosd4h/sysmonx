@@ -24,7 +24,7 @@ bool MatchEventBase::IsPropertySupported(const SysmonXTypes::EventPropertyName &
 }
 
 
-bool MatchEventBase::ShouldFilterEvent(const EventObject &eventData)
+bool MatchEventBase::AreMatchingFiltersForThisEvent(const EventObject &eventData)
 {
 	bool ret = false;
 
@@ -106,7 +106,6 @@ bool MatchEventBase::AddNewFilterCondition(const SysmonXTypes::EventPropertyName
 		(operation >= EventFilterOperation::EVENT_FILTER_OPERATION_IS) &&
 		(operation < EventFilterOperation::EVENT_FILTER_OPERATION_NA))
 	{
-
 		if (evalGroup == EventFilterEvalGroup::EVENT_FILTER_EVAL_INCLUDE_GROUP_AND)
 		{
 			ret = AddNewFilterConditionToTargetProperty(propertyName, evalGroup, operation, data, m_IncludeANDFilterGroup);

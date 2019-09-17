@@ -5,7 +5,7 @@ bool EventCollectorETW::SetupCallbackKernelProcessCreateHandler()
 {
 	bool ret = false;
 
-	static const wchar_t *ETW_PROVIDER_NAME = L"Windows-Kernel-Process";
+	constexpr wchar_t *ETW_PROVIDER_NAME = L"Windows-Kernel-Process";
 
 	if (m_config.IsInitialized())
 	{
@@ -48,7 +48,7 @@ bool EventCollectorETW::SetupCallbackKernelProcessCreateHandler()
 					newEvent->EventCollectorTechID = EventCollectorTechID::EVENT_COLLECTOR_TECH_ETW;
 					newEvent->EventCollectorVectorID = EventCollectorVectorID::EVENT_SUBTYPE_ETW_KERNEL;
 					newEvent->EventCreationTimestamp = schema.timestamp();
-					newEvent->EventETWProviderPID = currentPID;
+					newEvent->EventCommonProcessID = currentPID;
 					newEvent->EventETWProviderName.assign(ETW_PROVIDER_NAME);
 
 					//Filling up event-specific data

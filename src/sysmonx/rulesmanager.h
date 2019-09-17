@@ -15,13 +15,13 @@ public:
 	bool IsInitialized() { return m_isInitialized; };
 	bool Initialize();
 	bool SetConfigurationFile(const std::wstring &configFile);
-	bool IsConfigFileSyntaxValid(const std::wstring &configFile);
-	bool PopulateMatchingEngineMatchers(const std::wstring &configFile);
+	bool IsConfigFileSyntaxValid();
+	bool LoadNewRulesContent();
 
 private:
 
-	RulesManager() : m_isInitialized(false) {};
-	~RulesManager() {}
+	RulesManager() = default;
+	~RulesManager() = default;
 
 	//Forcing singleton here
 	RulesManager(const RulesManager&) = delete;
@@ -34,11 +34,15 @@ private:
 	bool IsConditionFilterValid(const EventConditionFilterName &filterName);
 	bool IsEventPropertyValid(const EventName &name, const EventPropertyName &property);
 	bool IsEventAggregationValid(const EventName &name);
+	bool IsConfigXMLEventValid(const pugi::xml_node &event);
+	bool ProcessConfigXMLEvent(const pugi::xml_node &event, const UINT32 &workingFilterEvalGroup);
 
 	//private vars
+	bool m_isInitialized = false;
+	ConfigManager& m_config = ConfigManager::Instance();
+
 	std::vector <EventName> m_validEventsNames;
 	std::vector <EventConditionFilterName> m_validConditionFilters;
 	std::map <EventName, EventPropertyNameContainer> m_validEventProperties;
 	std::vector <EventName> m_validEventsAggregation;
-	bool m_isInitialized;
 };

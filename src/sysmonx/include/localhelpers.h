@@ -157,10 +157,11 @@ namespace WindowsTypes
 	typedef std::shared_ptr<uint8_t[]> BytePTR;
 }
 
-namespace WindowsHelpers
+namespace ScanHelpers
 {
-	bool GetBBProcessFromPID(const size_t targetPID, blackbone::Process &bbProcess);
-	bool GetMainModuleFromMemory(blackbone::Process &process, WindowsTypes::BytePTR &buffer, blackbone::pe::PEImage &module);
+	bool GetBlackboneProcessFromPID(const size_t targetPID, blackbone::Process &bbProcess);
+	bool GetMainModuleFromMemory(blackbone::Process &process, blackbone::pe::PEImage &module);
 	bool GetMainModuleFromDisk(blackbone::Process &process, blackbone::pe::PEImage &module);
+	bool IsProcessMainModuleHollowed(SysmonXTypes::EventObject& data);
 }
 

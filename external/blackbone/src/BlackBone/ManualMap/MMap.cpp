@@ -92,9 +92,12 @@ call_result_t<ModuleDataPtr> MMap::MapImageInternal(
     CustomArgs_t* pCustomArgs /*= nullptr*/
     )
 {
-    // Already loaded
-    if (auto hMod = _process.modules().GetModule( path ))
-        return hMod;
+    if (!(flags & ForceRemap))
+    {
+        // Already loaded
+        if (auto hMod = _process.modules().GetModule(path))
+            return hMod;
+    }
 
     // Prepare target process
     auto mode = (flags & NoThreads) ? Worker_UseExisting : Worker_CreateNew;
@@ -293,11 +296,14 @@ call_result_t<ModuleDataPtr> MMap::FindOrMapModule(
         return status;
     }
 
-    // Check if already loaded
-    if (auto hMod = _process.modules().GetModule( path, LdrList, pImage->peImage.mType() ))
+    // Check if already loaded, but only if doesn't explicitly excluded
+    if (!(flags & ForceRemap))
     {
-        pImage->peImage.Release();
-        return hMod;
+        if (auto hMod = _process.modules().GetModule( path, LdrList, pImage->peImage.mType() ))
+        {
+            pImage->peImage.Release();
+            return hMod;
+        }
     }
 
     // Check architecture
@@ -402,8 +408,14 @@ call_result_t<ModuleDataPtr> MMap::FindOrMapModule(
     }
 
     auto mt = ldrEntry.type;
-    auto pMod = _process.modules().AddManualModule( static_cast<ModuleData&>(ldrEntry) );
-    {
+	ModuleDataPtr pMod;
+
+    if (flags & ForceRemap)
+        pMod = std::make_shared<const ModuleData>( _process.modules().Canonicalize( ldrEntry, true ) );
+    else
+        pMod = _process.modules().AddManualModule( ldrEntry );
+
+	{
         // Handle x64 system32 dlls for wow64 process
         bool fsRedirect = !(flags & IsDependency) && mt == mt_mod64 && _process.barrier().sourceWow64;
 
@@ -1242,7 +1254,17 @@ NTSTATUS MMap::CreateActx( const pe::PEImage& image  )
     _pAContext = std::move( mem.result() );
     
     bool switchMode = image.mType() == mt_mod64 && _process.core().isWow64();
-    auto pCreateActx = _process.modules().GetExport( _process.modules().GetModule( L"kernel32.dll" ), "CreateActCtxW" );
+    auto kernel32 = _process.modules().GetModule( L"kernel32.dll" );
+    if (!kernel32)
+    {
+        BLACKBONE_TRACE( 
+            L"ManualMap: Failed to get kernel32 base, error 0x%08x. Possibly LDR is not available yet", 
+            LastNtStatus() 
+        );
+        return LastNtStatus();
+    }
+
+    auto pCreateActx = _process.modules().GetExport( kernel32, "CreateActCtxW" );
     if (!pCreateActx)
     {
         BLACKBONE_TRACE( 
@@ -1389,7 +1411,7 @@ NTSTATUS MMap::ProbeRemoteSxS( std::wstring& path )
     auto memPtr = memBuf->ptr();
     auto fillStr = [&]( auto&& OriginalName )
     {
-        std::remove_reference<decltype(OriginalName)>::type DllName1 = { 0 };
+        std::remove_reference_t<decltype(OriginalName)> DllName1 = { 0 };
 
         OriginalName.Length = static_cast<uint16_t>(path.length() * sizeof( wchar_t ));
         OriginalName.MaximumLength = OriginalName.Length;

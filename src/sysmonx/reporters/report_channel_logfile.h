@@ -9,11 +9,9 @@ public:
 	bool Initialize();
 
 	ReportChannelLogfile() :
-		ReportChannelBase(L"Logfile Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_LOGFILE),
-		m_logger(TraceHelpers::Logger::Instance()),
-		m_config(ConfigManager::Instance()) {}
+		ReportChannelBase(L"Logfile Report Channel", SysmonXTypes::ReportChannelID::REPORT_CHANNEL_LOGFILE) {}
 
 private:
-	TraceHelpers::Logger& m_logger;
-	ConfigManager& m_config;
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 };

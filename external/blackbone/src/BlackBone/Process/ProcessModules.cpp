@@ -217,7 +217,7 @@ call_result_t<exportData> ProcessModules::GetExport( const ModuleDataPtr& hMod, 
 /// <param name="name_ord">Function name or ordinal</param>
 /// <param name="baseModule">Import module name. Only used to resolve ApiSchema during manual map.</param>
 /// <returns>Export info. If failed procAddress field is 0</returns>
-BLACKBONE_API call_result_t<exportData> ProcessModules::GetExport( const ModuleData& hMod, const char* name_ord, const wchar_t* baseModule /*= L"0"*/ )
+call_result_t<exportData> ProcessModules::GetExport( const ModuleData& hMod, const char* name_ord, const wchar_t* baseModule /*= L"0"*/ )
 {
     exportData data;
 
@@ -260,7 +260,8 @@ BLACKBONE_API call_result_t<exportData> ProcessModules::GetExport( const ModuleD
         expData.reset( reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(malloc( expSize )) );
         IMAGE_EXPORT_DIRECTORY* pExpData = expData.get();
 
-        _memory.Read( hMod.baseAddress + expBase, expSize, pExpData );
+        if( auto status = _memory.Read( hMod.baseAddress + expBase, expSize, pExpData ); !NT_SUCCESS( status ) )
+            return status;
 
         // Fix invalid directory size
         if (expSize <= sizeof( IMAGE_EXPORT_DIRECTORY ))
@@ -273,7 +274,8 @@ BLACKBONE_API call_result_t<exportData> ProcessModules::GetExport( const ModuleD
 
             expData.reset( reinterpret_cast<IMAGE_EXPORT_DIRECTORY*>(malloc( expSize )) );
             pExpData = expData.get();
-            _memory.Read( hMod.baseAddress + expBase, expSize, pExpData );
+            if (auto status = _memory.Read( hMod.baseAddress + expBase, expSize, pExpData ); !NT_SUCCESS( status ))
+                return status;
         }
 
         WORD* pAddressOfOrds = reinterpret_cast<WORD*>(
@@ -496,11 +498,14 @@ call_result_t<ModuleDataPtr> ProcessModules::Inject( const std::wstring& path, T
     }
 
     // Retry with LoadLibrary if possible
-    if (!NT_SUCCESS( status ) && pLoadLibrary && sameArch)
-        status = _proc.remote().ExecDirect( pLoadLibrary->procAddress, modName->ptr() + ustrSize );
-
-    if (!NT_SUCCESS( status ))
-        return status;
+    if (!NT_SUCCESS(status) && pLoadLibrary && sameArch)
+    {
+        auto result = _proc.remote().ExecDirect( pLoadLibrary->procAddress, modName->ptr() + ustrSize );
+        if (result == 0)
+        {
+            return status;
+        }
+    }
 
     return GetModule( path, LdrList, img.mType() );
 }
@@ -579,14 +584,32 @@ bool ProcessModules::ValidateModule( module_t base )
 /// </summary>
 /// <param name="mod">Module data</param>
 /// <returns>Module info</returns>
-ModuleDataPtr ProcessModules::AddManualModule( ModuleData mod )
+ModuleDataPtr ProcessModules::AddManualModule( const ModuleData& mod )
 {
-    mod.fullPath = Utils::ToLower( std::move( mod.fullPath ) );
-    mod.name = Utils::ToLower( std::move( mod.name ) );
-    mod.manual = true;
+    auto canonicalized = Canonicalize( mod, true );
+    auto key = std::make_pair( canonicalized.name, canonicalized.type );
+    return _modules.emplace( key, std::make_shared<const ModuleData>( canonicalized ) ).first->second;
+}
 
-    auto key = std::make_pair( mod.name, mod.type );
-    return _modules.emplace( key, std::make_shared<const ModuleData>( mod ) ).first->second;
+/// <summary>
+/// Canonicalize paths and set module type to manual if requested
+/// </summary>
+/// <param name="mod">Module data</param>
+/// <param name="manual">Value to set ModuleData::manual to</param>
+/// <returns>Module data</returns>
+ModuleData ProcessModules::Canonicalize( const ModuleData& mod, bool manual )
+{
+    ModuleData result = {};
+
+    result.baseAddress = mod.baseAddress;
+    result.ldrPtr = mod.ldrPtr;
+    result.size = mod.size;
+    result.type = mod.type;
+    result.fullPath = Utils::ToLower( mod.fullPath );
+    result.name = Utils::ToLower( mod.name );
+    result.manual = manual;
+
+    return result;
 }
 
 /// <summary>

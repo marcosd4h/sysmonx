@@ -16,7 +16,7 @@ namespace TraceHelpers
 			std::string outputBuff;
 			outputBuff.append(CommonDefs::UPMARK);
 			//outputBuff.append(CommonDefs::DEFAULT_SEP);
-			outputBuff.append(CommonDefs::SEPARATOR);
+			//outputBuff.append(CommonDefs::SEPARATOR);
 			outputBuff.append(formattedBuff);
 			outputBuff.append(CommonDefs::ENDLINE);
 
@@ -38,7 +38,7 @@ namespace TraceHelpers
 			std::string outputBuff;
 			outputBuff.append(CommonDefs::DOWNMARK);
 			//outputBuff.append(CommonDefs::DEFAULT_SEP);
-			outputBuff.append(CommonDefs::SEPARATOR);
+			//outputBuff.append(CommonDefs::SEPARATOR);
 			outputBuff.append(formattedBuff);
 			outputBuff.append(CommonDefs::ENDLINE);
 
@@ -2007,8 +2007,8 @@ namespace GeneralHelpers
 	{
 		bool ret = false;
 		DWORD flags = 0;
-		static const std::size_t BUFFERSIZE = 2048;
-		static const std::size_t MAX_ITERATIONS = 2048;
+		constexpr std::size_t BUFFERSIZE = 2048;
+		constexpr std::size_t MAX_ITERATIONS = 2048;
 		HANDLE stdOutRead = INVALID_HANDLE_VALUE;
 		HANDLE stdOutWrite = INVALID_HANDLE_VALUE;
 		SECURITY_ATTRIBUTES securityAttributes = { 0 };
@@ -2190,7 +2190,7 @@ return ret;
 	{
 		bool ret = false;
 		static CHAR rgbDigits[] = "0123456789abcdef";
-		static const DWORD BUFSIZE = 16;
+		constexpr DWORD BUFSIZE = 16;
 
 		DWORD readCounter = 0;
 		DWORD hashCounter = 0;
@@ -3061,6 +3061,19 @@ namespace RegistryHelpers
 			}
 
 			RegCloseKey(hKey);
+		}
+
+		return ret;
+	}
+
+	bool PlaceRegMonitoringEvent(const HKEY& hKey, HANDLE& hEvent, DWORD flags)
+	{
+		bool ret = false;
+
+		if ((hKey != INVALID_HANDLE_VALUE) &&			
+			(RegNotifyChangeKeyValue(hKey, true, flags, hEvent, true) == ERROR_SUCCESS))
+		{
+			ret = true;
 		}
 
 		return ret;

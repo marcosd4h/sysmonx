@@ -4,16 +4,16 @@
 
 namespace SysmonXDefs
 {
+	constexpr int SYSMONX_SERIALIZED_CONFIG_VERSION = 1;
+	constexpr unsigned int SYSMONX_MIN_NUMBER_OF_ARGS = 2;
+	constexpr unsigned int SYSMONX_DEFAULT_WORKER_THREADS = 8;
+	constexpr unsigned int SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS = 500;
+	constexpr bool DEFAULT_DISSOLVABLE_MODE = false;
+	constexpr bool DEFAULT_FP_MITIGATIONS_MODE = true;
 	static const std::string SYSMONX_VERSION = "v0.3.1";
-	static const int SYSMONX_SERIALIZED_CONFIG_VERSION = 1;
-	static const unsigned int SYSMONX_MIN_NUMBER_OF_ARGS = 2;
-	static const unsigned int SYSMONX_DEFAULT_WORKER_THREADS = 8;
-	static const unsigned int SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS = 500;
 	static const std::wstring SYSMONX_APPNAME = L"SysmonX";
 	static const std::wstring SYSMONX_KERNEL_TRACE_NAME = L"SysmonXKernelTraceSession";
 	static const std::wstring SYSMONX_USERSPACE_TRACE_NAME = L"SysmonXUserTraceSession";
-	static const bool DEFAULT_DISSOLVABLE_MODE = false;
-	static const bool DEFAULT_FP_MITIGATIONS_MODE = true;
 	static const std::wstring DEFAULT_REPORT_MODE = L"regular";
 	static const std::wstring DEFAULT_REPORT_OUTPUT = L"console";
 	static const std::wstring SERVICE_NAME = L"sysmonxcollect";
@@ -36,10 +36,10 @@ namespace SysmonXDefs
 	static const std::wstring SYSMON_DEFAULT_HASH_ALGORITHM = L"sha256";
 
 	//Sysmon Exit Codes
-	static const DWORD SYSMON_EXIT_CODE_ALREADY_INSTALLED = 1242;
-	static const DWORD SYSMON_EXIT_CODE_ALREADY_RUNNING = 259;
-	static const DWORD SYSMON_EXIT_CODE_ALREADY_UNINSTALLED = 87;
-	static const DWORD SYSMON_EXIT_CODE_OK = EXIT_SUCCESS;
+	constexpr DWORD SYSMON_EXIT_CODE_ALREADY_INSTALLED = 1242;
+	constexpr DWORD SYSMON_EXIT_CODE_ALREADY_RUNNING = 259;
+	constexpr DWORD SYSMON_EXIT_CODE_ALREADY_UNINSTALLED = 87;
+	constexpr DWORD SYSMON_EXIT_CODE_OK = EXIT_SUCCESS;
 
 	//Default Config File Header
 	static const std::wstring DEFAULT_SYSMON_CONFIG_FILE_HEADER =

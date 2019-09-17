@@ -170,9 +170,9 @@ namespace MatchHelpers
 			{
 				ret = EventPropertyID::EVENT_PROPERTY_COMMON_EventCreationTimestamp;
 			}
-			else if (boost::algorithm::equals(propertyName, L"EventETWProviderPID"))
+			else if (boost::algorithm::equals(propertyName, L"EventETWProviderID"))
 			{
-				ret = EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderPID;
+				ret = EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderID;
 			}
 			else if (boost::algorithm::equals(propertyName, L"EventETWProviderName"))
 			{
@@ -535,9 +535,9 @@ namespace MatchHelpers
 			{
 				return eventData->EventCreationTimestamp.GetWString();
 			}
-			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderPID)
+			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderID)
 			{
-				return eventData->EventETWProviderPID.GetWString();
+				return eventData->EventCommonProcessID.GetWString();
 			}
 			else if (eventID == EventPropertyID::EVENT_PROPERTY_COMMON_EventETWProviderName)
 			{

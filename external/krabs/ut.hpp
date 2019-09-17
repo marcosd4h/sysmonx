@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <set>
+
 #include "compiler_check.hpp"
 #include "trace.hpp"
 #include "provider.hpp"
@@ -19,7 +21,20 @@ namespace krabs { namespace details {
     struct ut {
 
         typedef krabs::provider<> provider_type;
+        
+        struct filter_flags {
+            UCHAR level_;
+            ULONGLONG any_;
+            ULONGLONG all_;
+            UCHAR trace_flags_;
+        };
 
+        struct filter_settings{
+            std::set<unsigned short> provider_filter_event_ids_;
+            filter_flags filter_flags_{};
+        };
+
+        typedef std::map<krabs::guid, filter_settings> provider_filter_settings;
         /**
          * <summary>
          *   Used to assign a name to the trace instance that is being
@@ -99,40 +114,73 @@ namespace krabs { namespace details {
     inline void ut::enable_providers(
         const krabs::trace<krabs::details::ut> &trace)
     {
-        std::map<krabs::guid, std::tuple<UCHAR, ULONGLONG, ULONGLONG, UCHAR>> providerFlags;
+        provider_filter_settings provider_flags;
 
         // This function essentially takes the union of all the provider flags
         // for a given provider GUID. This comes about when multiple providers
         // for the same GUID are provided and request different provider flags.
         // TODO: Only forward the calls that are requested to each provider.
         for (auto &provider : trace.providers_) {
-            if (providerFlags.find(provider.get().guid_) != providerFlags.end()) {
-                providerFlags[provider.get().guid_] = std::make_tuple<UCHAR, ULONGLONG, ULONGLONG, UCHAR> (0, 0, 0, 0);
-            }
+            auto& settings = provider_flags[provider.get().guid_];
+            settings.filter_flags_.level_       |= provider.get().level_;
+            settings.filter_flags_.any_         |= provider.get().any_;
+            settings.filter_flags_.all_         |= provider.get().all_;
+            settings.filter_flags_.trace_flags_ |= provider.get().trace_flags_;
 
-            std::get<0>(providerFlags[provider.get().guid_]) |= provider.get().level_;
-            std::get<1>(providerFlags[provider.get().guid_]) |= provider.get().any_;
-            std::get<2>(providerFlags[provider.get().guid_]) |= provider.get().all_;
-            std::get<3>(providerFlags[provider.get().guid_]) |= provider.get().trace_flags_;
+            for (const auto& filter : provider.get().filters_) {
+                settings.provider_filter_event_ids_.insert(
+                    filter.provider_filter_event_ids().begin(),
+                    filter.provider_filter_event_ids().end());
+            }
         }
 
-        for (auto &provider : providerFlags) {
-            GUID guid = provider.first;
-
+        for (auto &provider : provider_flags) {
             ENABLE_TRACE_PARAMETERS parameters;
+            parameters.ControlFlags = 0;
             parameters.Version = ENABLE_TRACE_PARAMETERS_VERSION_2;
             parameters.SourceId = provider.first;
-            parameters.EnableProperty = std::get<3>(provider.second);
-            parameters.ControlFlags = 0;
+            
+            GUID guid = provider.first;
+            auto& settings = provider.second;
+
+            parameters.EnableProperty = settings.filter_flags_.trace_flags_;
             parameters.EnableFilterDesc = nullptr;
             parameters.FilterDescCount = 0;
+            EVENT_FILTER_DESCRIPTOR filterDesc{};
+            std::vector<BYTE> filterEventIdBuffer;
+            auto filterEventIdCount = settings.provider_filter_event_ids_.size();
+
+            if (filterEventIdCount > 0) {
+                //event filters existing, set native filters using API
+                parameters.FilterDescCount = 1;
+                filterDesc.Type = EVENT_FILTER_TYPE_EVENT_ID;
+
+                //allocate + size of expected events in filter
+                DWORD size = FIELD_OFFSET(EVENT_FILTER_EVENT_ID, Events[filterEventIdCount]);
+                filterEventIdBuffer.resize(size, 0);
+
+                auto filterEventIds = reinterpret_cast<PEVENT_FILTER_EVENT_ID>(&(filterEventIdBuffer[0]));
+                filterEventIds->FilterIn = TRUE;
+                filterEventIds->Count = static_cast<USHORT>(filterEventIdCount);
+
+                auto index = 0;
+                for (auto filter : settings.provider_filter_event_ids_) {
+                    filterEventIds->Events[index] = filter;
+                    index++;
+                }
+
+                filterDesc.Ptr = reinterpret_cast<ULONGLONG>(filterEventIds);
+                filterDesc.Size = size;
+
+                parameters.EnableFilterDesc = &filterDesc;
+            }
 
             ULONG status = EnableTraceEx2(trace.registrationHandle_,
                                           &guid,
                                           EVENT_CONTROL_CODE_ENABLE_PROVIDER,
-                                          std::get<0>(provider.second),
-                                          std::get<1>(provider.second),
-                                          std::get<2>(provider.second),
+                                          settings.filter_flags_.level_,
+                                          settings.filter_flags_.any_,
+                                          settings.filter_flags_.all_,
                                           0,
                                           &parameters);
             UNREFERENCED_PARAMETER(status);

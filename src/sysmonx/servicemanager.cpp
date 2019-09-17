@@ -59,7 +59,9 @@ bool CollectorService::Shutdown()
 		if (UpdateServiceStatus(SERVICE_STOP_PENDING))
 		{
 			SetEvent(service.ServiceStopEvent);
+			IsShuttingDown = true;
 
+			WaitForSingleObject(service.ServiceUnitializedEvent, INFINITE);
 			if (UpdateServiceStatus(SERVICE_STOPPED))
 			{
 				ret = true;
@@ -88,23 +90,22 @@ bool CollectorService::Run(DWORD dwArgc, PWSTR *pszArgv)
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 	CollectorService &service = CollectorService::Instance();
 
-	logger.TraceUp("About to run CollectorService::Run()");
+	logger.TraceUp("About to run CollectorService::Run");
 
 	try
 	{
 		if (pszArgv)
 		{
-			if (UpdateServiceStatus(SERVICE_START_PENDING))
+			//Checking first it config data key is available for monitoring
+			if (RegistryHelpers::OpenKey(HKEY_LOCAL_MACHINE, SysmonXDefs::SYSMONX_REGISTRY_KEY_LOCATION.c_str(), ConfigDataKey) &&
+				(ConfigDataKey != NULL) &&
+				(UpdateServiceStatus(SERVICE_START_PENDING)))
 			{
-				//Service is registered, now initialize stop event
-				service.ServiceStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-				if (service.ServiceStopEvent)
+				//Event is ready, now creating the worker thread
+				HANDLE hThread = CreateThread(NULL, 0, CollectorService::WorkerThread, NULL, 0, NULL);
+				if ((hThread != INVALID_HANDLE_VALUE) && UpdateServiceStatus(SERVICE_RUNNING))
 				{
-					HANDLE hThread = CreateThread(NULL, 0, CollectorService::WorkerThread, NULL, 0, NULL);
-					if ((hThread != INVALID_HANDLE_VALUE) && UpdateServiceStatus(SERVICE_RUNNING))
-					{
-						ret = true;
-					}
+					ret = true;
 				}
 			}
 		}
@@ -152,6 +153,22 @@ bool WINAPI CollectorService::UpdateServiceStatus(DWORD updateState, DWORD exitC
 	return ret;
 }
 
+
+bool CollectorService::PlaceMonitoringHook()
+{
+	bool ret = false;
+
+	if ((ConfigDataKey != NULL) &&
+		(IsShuttingDown == false) &&
+		(ServiceStopEvent != INVALID_HANDLE_VALUE) &&
+		RegistryHelpers::PlaceRegMonitoringEvent(ConfigDataKey, ServiceStopEvent))
+	{
+		ret = true;
+	}
+
+	return ret;
+}
+
 void WINAPI CollectorService::ServiceControlHandler(DWORD ctrlCode)
 {
 	CollectorService &service = CollectorService::Instance();
@@ -188,9 +205,16 @@ void WINAPI CollectorService::ServiceMain(DWORD argc, LPWSTR *argv)
 	service.ServiceStatusHandle = RegisterServiceCtrlHandler(workingName.c_str(), ServiceControlHandler);
 	if (service.ServiceStatusHandle != NULL)
 	{
-		if (!service.Run(argc, argv))
+		//Service is registered, now initialize working events
+		service.ServiceStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+		service.ServiceUnitializedEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+		if ((service.ServiceStopEvent != INVALID_HANDLE_VALUE) &&
+			(service.ServiceUnitializedEvent != INVALID_HANDLE_VALUE))
 		{
-			logger.TraceDown("CollectorService::ServiceMain - There was a problem starting sysmonx collector service");
+			if (!service.Run(argc, argv))
+			{
+				logger.TraceDown("CollectorService::ServiceMain - There was a problem starting sysmonx collector service");
+			}
 		}
 	}
 }
@@ -244,28 +268,40 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 	CollectorService &collectorService = CollectorService::Instance();
 	TraceHelpers::Logger &logger = TraceHelpers::Logger::Instance();
 
-	logger.TraceUp("About to run CollectorService::WorkerThread()");
+	logger.TraceUp("About to run CollectorService::WorkerThread to setup main service logic");
 
 	if (collectorService.ServiceStopEvent != INVALID_HANDLE_VALUE)
 	{
 		//Initializing Service Work Environment
 		logger.TraceUp("CollectorService::WorkerThread - About to setup working environment");
-
-#ifdef SERVICE_DEBUG
-		while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
-		{
-			Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
-		}
-#else
-		if (SysmonXServiceFlows::IsServiceWorkEnvironmentReady())
+		if (SysmonXServiceFlows::PrepareServiceWorkEnvironment())
 		{
 			logger.TraceUp("CollectorService::WorkerThread - Working environment is ready, about to enable processing");
-			if (SysmonXServiceFlows::EnableServiceProcessing())
+			if (SysmonXServiceFlows::EnableServiceProcessing() && collectorService.PlaceMonitoringHook())
 			{
-				//Checking periodically if we need to stop
-				while (WaitForSingleObject(collectorService.ServiceStopEvent, 0) != WAIT_OBJECT_0)
+				logger.TraceUp("CollectorService::WorkerThread - Service is ready to run!");
+
+				//waiting for event to happen (service stop or configuration change)
+				while (WaitForSingleObject(collectorService.ServiceStopEvent, INFINITE) != WAIT_FAILED)
 				{
-					Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
+					if (collectorService.IsShuttingDown)
+					{
+						//service should teardown
+						break;
+					}
+					else
+					{
+						//Configuration update just happens, update the config and continue
+						if (SysmonXServiceFlows::UpdateConfigLive() && collectorService.PlaceMonitoringHook())
+						{
+							logger.TraceUp("CollectorService::WorkerThread - Configuration data was just updated");
+						}
+						else
+						{
+							logger.TraceDown("CollectorService::WorkerThread - There was a problem updating new configuration data.");
+							break;
+						}
+					}	
 				}
 
 				logger.TraceUp("CollectorService::WorkerThread - Processing requested to be stopped. About to Disable processing");
@@ -277,7 +313,6 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 				{
 					logger.TraceDown("CollectorService::WorkerThread - There was a problem stopping service processing");
 				}
-
 				ret = ERROR_SUCCESS;
 			}
 			else
@@ -292,7 +327,6 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 			logger.TraceDown("CollectorService::WorkerThread - There was a problem enabling service work environment");
 			ret = ERROR_NOT_READY;
 		}
-#endif // SERVICE_DEBUG
 	}
 	else
 	{
@@ -300,26 +334,34 @@ DWORD WINAPI CollectorService::WorkerThread(LPVOID lpParam)
 	}
 
 	Sleep(SysmonXDefs::SYSMONX_DEFAULT_SERVICE_OP_TIMEOUT_IN_MS);
+	SetEvent(collectorService.ServiceUnitializedEvent);
 
 	return ret;
 }
 
 
-void CollectorService::RunFakeLogic()
+void CollectorService::RunDebugLogic()
 {	
 	CollectorService &collectorService = CollectorService::Instance();
+	TraceHelpers::Logger& logger = TraceHelpers::Logger::Instance();
+
+	logger.Info("CollectorService::RunDebugLogic - About to run Debug Mode Logic");
 
 	//Initializing Collection Workers
-	if (SysmonXServiceFlows::IsServiceWorkEnvironmentReady())
+	logger.Trace("CollectorService::RunDebugLogic - Setting up working environment");
+	if (SysmonXServiceFlows::PrepareServiceWorkEnvironment())
 	{
+		logger.Trace("CollectorService::RunDebugLogic - Working environment ready. About to start events processing");
 		if (SysmonXServiceFlows::EnableServiceProcessing())
 		{
+			//Pause for debugging/behavior logic analysis
+			logger.Info("CollectorService::RunDebugLogic - Ready to process events");
 			system("pause");
+			logger.Info("CollectorService::RunDebugLogic - Stop processing events was requested");
 
 			if (SysmonXServiceFlows::DisableServiceProcessing())
 			{
-				int a = 0;
-				a++;
+				logger.Info("CollectorService::RunDebugLogic - Event Processing was stopped. Quitting now");
 			}
 		}
 	}	

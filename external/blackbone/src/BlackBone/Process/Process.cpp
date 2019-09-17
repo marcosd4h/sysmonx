@@ -130,7 +130,6 @@ NTSTATUS Process::Detach()
     _modules.reset();
     _remote.reset();
     _mmap.reset();
-    _threads.reset();
     _hooks.reset();
     _core.Close();
 
@@ -225,7 +224,7 @@ call_result_t<std::vector<HandleInfo>> Process::EnumHandles()
     for (ULONG i = 0; i < handleInfo->HandleCount; i++)
     {
         HandleInfo info;
-        Handle hLocal;
+        ProcessHandle hLocal;
         OBJECT_TYPE_INFORMATION_T* pTypeInfo = nullptr;
         PVOID pNameInfo = nullptr;
         UNICODE_STRING objectName = { 0 };
@@ -324,7 +323,7 @@ call_result_t<std::vector<HandleInfo>> Process::EnumHandles()
 std::vector<DWORD> Process::EnumByName( const std::wstring& name )
 {
     std::vector<DWORD> found;
-    auto hProcSnap = SnapHandle( CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) );
+    auto hProcSnap = Handle( CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 ) );
     if (!hProcSnap)
         return found;
 

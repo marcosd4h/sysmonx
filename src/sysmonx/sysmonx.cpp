@@ -104,25 +104,22 @@ int wmain(int argc, wchar_t *argv[])
 
 	//Same binary supports two running modes (mgmt app mode and service mode)
 	//Checking if main thread needs to run as a service 
+
 	if (config.IsServiceMode())
 	{
-
-#ifdef SERVICE_DEBUG
-		if (config.WereStandaloneActionsRequested())
+		//Running as a standalone application in debug mode
+		if (config.IsDebugMode())
 		{
 			CollectorService &collectorService = CollectorService::Instance();
-			collectorService.RunFakeLogic();
+			collectorService.RunDebugLogic();
 			return EXIT_FAILURE;
-		}
-#endif // SERVICE_DEBUG
-				
+		}				
 		//Running as a service
-		if (!SysmonXAppFlows::RunCollectionService())
+		else if (!SysmonXAppFlows::RunCollectionService())
 		{
 			logger.Error("There was a problem running collector service.");
 			return EXIT_FAILURE;
-		}
-		
+		}		
 	}
 	else
 	{

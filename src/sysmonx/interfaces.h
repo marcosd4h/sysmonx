@@ -41,18 +41,19 @@ public:
 	}
 
 	ReportChannelBase(const std::wstring &channelDescription, const SysmonXTypes::ReportChannelID &channelID) :
-		m_description(channelDescription), m_channelID(channelID), m_enabledStatus(false), m_isInitialized(false) {}
+		m_description(channelDescription), m_channelID(channelID) {}
 
-	ReportChannelBase(): m_channelID(SysmonXTypes::ReportChannelID::REPORT_CHANNEL_NA) {}
+	ReportChannelBase() = default;
 
 	virtual ~ReportChannelBase() = default;
 
 private:
 	std::wstring m_description;
-	SysmonXTypes::ReportChannelID m_channelID;
-	bool m_enabledStatus;
-	bool m_isInitialized;
+	SysmonXTypes::ReportChannelID m_channelID = SysmonXTypes::ReportChannelID::REPORT_CHANNEL_NA;
+	bool m_enabledStatus = false;
+	bool m_isInitialized = false;
 };
+
 typedef std::shared_ptr<ReportChannelBase> ReporterChannelObject;
 
 
@@ -81,7 +82,7 @@ public:
 	EventCollectorBase(const std::wstring &channelDescription, const SysmonXTypes::EventCollectorTechID &collectorID) :
 		m_description(channelDescription), m_collectorID(collectorID) {}
 
-	EventCollectorBase() : m_collectorID(SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_NA) {}
+	EventCollectorBase() = default;
 
 	virtual ~EventCollectorBase() = default;
 
@@ -89,7 +90,7 @@ private:
 
 	// Private vars
 	std::wstring m_description;
-	SysmonXTypes::EventCollectorTechID m_collectorID;
+	SysmonXTypes::EventCollectorTechID m_collectorID = SysmonXTypes::EventCollectorTechID::EVENT_COLLECTOR_TECH_NA;
 };
 typedef std::shared_ptr<EventCollectorBase> EventCollectorObject;
 

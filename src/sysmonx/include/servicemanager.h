@@ -12,33 +12,45 @@ public:
 		return instance;
 	}
 
-	//TODO: mjo delete this
-	void RunFakeLogic();
+	//Helpers functions
+	void RunDebugLogic();
+	bool PlaceMonitoringHook();
 
 	//Control functions
 	bool RunService();
 	bool StopService();
 
 	//Public Methods needed by static SCM-reachable members
-	SERVICE_STATUS ServiceStatus;
-	HANDLE ServiceStopEvent;
-	SERVICE_STATUS_HANDLE ServiceStatusHandle;
-	
+	SERVICE_STATUS ServiceStatus = { 0 };
+	HANDLE ServiceStopEvent = INVALID_HANDLE_VALUE;
+	HANDLE ServiceUnitializedEvent = INVALID_HANDLE_VALUE;
+	SERVICE_STATUS_HANDLE ServiceStatusHandle = NULL;
+	std::atomic<bool> IsShuttingDown = false;
+	HKEY ConfigDataKey = NULL;
+
 private:
 
-	CollectorService()
-	{
-		ServiceStopEvent = INVALID_HANDLE_VALUE;
-		ServiceStatusHandle = NULL;
-		memset(&ServiceStatus, 0, sizeof(ServiceStatus));
-	};
+	CollectorService() = default;
 
 	~CollectorService()
 	{
-		if (ServiceStopEvent)
+		IsShuttingDown = true;
+
+		if (ServiceStopEvent != INVALID_HANDLE_VALUE)
 		{
 			CloseHandle(ServiceStopEvent);
 			ServiceStopEvent = NULL;
+		}
+
+		if (ServiceUnitializedEvent != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(ServiceUnitializedEvent);
+			ServiceUnitializedEvent = NULL;
+		}
+
+		if (ConfigDataKey != NULL)
+		{
+			RegistryHelpers::CloseKey(ConfigDataKey);
 		}
 	}
 

@@ -6,6 +6,7 @@
 #include <evntcons.h>
 #include <functional>
 #include <deque>
+#include <vector>
 
 #include "../compiler_check.hpp"
 
@@ -51,6 +52,26 @@ namespace krabs {
 
         /**
          * <summary>
+         *   Constructs an event_filter that applies event id filtering by event_id
+         *   which will be added to list of filtered event ids in ETW API.
+         *   This way is more effective from performance point of view.
+         *   Given optional predicate will be applied to ETW API filtered results
+         * </summary>
+         */
+        event_filter(unsigned short event_id, filter_predicate predicate=nullptr);
+
+        /**
+         * <summary>
+         *   Constructs an event_filter that applies event id filtering by event_id
+         *   which will be added to list of filtered event ids in ETW API.
+         *   This way is more effective from performance point of view.
+         *   Given optional predicate will be applied to ETW API filtered results
+         * </summary>
+         */
+        event_filter(std::vector<unsigned short> event_ids, filter_predicate predicate = nullptr);
+
+        /**
+         * <summary>
          * Adds a function to call when an event for this filter is fired.
          * </summary>
          */
@@ -61,6 +82,11 @@ namespace krabs {
 
         template <typename U>
         void add_on_event_callback(const U &callback);
+
+        const std::vector<unsigned short>& provider_filter_event_ids() const
+        {
+            return provider_filter_event_ids_;
+        }
 
     private:
 
@@ -74,7 +100,8 @@ namespace krabs {
 
     private:
         std::deque<provider_callback> callbacks_;
-        filter_predicate predicate_;
+        filter_predicate predicate_{ nullptr };
+        std::vector<unsigned short> provider_filter_event_ids_;
 
     private:
         template <typename T>
@@ -88,6 +115,16 @@ namespace krabs {
 
     inline event_filter::event_filter(filter_predicate predicate)
     : predicate_(predicate)
+    {}
+
+    inline event_filter::event_filter(std::vector<unsigned short> event_ids, filter_predicate predicate/*=nullptr*/)
+    : provider_filter_event_ids_{ event_ids },
+      predicate_(predicate)
+    {}
+
+    inline event_filter::event_filter(unsigned short event_id, filter_predicate predicate/*=nullptr*/)
+    : provider_filter_event_ids_{ event_id },
+      predicate_(predicate)
     {}
 
     inline void event_filter::add_on_event_callback(c_provider_callback callback)
@@ -123,7 +160,7 @@ namespace krabs {
             return;
         }
 
-        if (!predicate_(record)) {
+        if (predicate_ != nullptr && !predicate_(record)) {
             return;
         }
 

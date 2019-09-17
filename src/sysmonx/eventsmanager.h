@@ -47,9 +47,7 @@ private:
 	}
 
 	//Lifecycle management
-	EventsManager(): 
-		m_isInitialized(false), m_logger(TraceHelpers::Logger::Instance()),
-		m_config(ConfigManager::Instance()) {};
+	EventsManager() = default;
 
 	virtual ~EventsManager() 
 	{
@@ -76,9 +74,9 @@ private:
 	EventsManager& operator=(EventsManager&&) = delete;
 
 	// Private vars
-	bool m_isInitialized;
-	TraceHelpers::Logger &m_logger;
-	ConfigManager &m_config;
+	bool m_isInitialized = false;
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 	boost::mutex m_mutex;
 	SysmonXTypes::EventCollectorsContainer m_collectors;
 };

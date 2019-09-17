@@ -1,57 +1,6 @@
 #include "common.h"
 
 
-void PerformProcessHollowingScan(SysmonXTypes::EventObject &data) 
-{
-	//Performing Process Hollowing checks here
-	blackbone::Process process;
-	blackbone::pe::PEImage mainModuleMemory;
-	blackbone::pe::PEImage mainModuleDisk;
-	WindowsTypes::BytePTR buffer = nullptr;
-	DWORD processIDtoInspect = data->ProcessId;
-
-	//Grabbing main module from memory and disk
-	if (WindowsHelpers::GetBBProcessFromPID(processIDtoInspect, process) &&
-		WindowsHelpers::GetMainModuleFromMemory(process, buffer, mainModuleMemory) &&
-		WindowsHelpers::GetMainModuleFromDisk(process, mainModuleDisk))
-	{
-		const IMAGE_DOS_HEADER *pMainModuleMemoryDosHdr = nullptr;
-		const IMAGE_DOS_HEADER *pMainModuleDiskDosHdr = nullptr;
-		const IMAGE_SECTION_HEADER *pMainModuleMemorySection = nullptr;
-		const IMAGE_SECTION_HEADER *pMainModuleDiskSection = nullptr;
-
-		pMainModuleMemoryDosHdr = reinterpret_cast<const IMAGE_DOS_HEADER*>(mainModuleDisk.base());
-		pMainModuleDiskDosHdr = reinterpret_cast<const IMAGE_DOS_HEADER*>((void *)buffer.get());
-
-		//Cross checking PE fields of modules on memory vs counterpart on disk
-		if (pMainModuleMemoryDosHdr &&	pMainModuleDiskDosHdr)
-		{
-			if ((pMainModuleMemoryDosHdr->e_magic == IMAGE_DOS_SIGNATURE) &&
-				(pMainModuleDiskDosHdr->e_magic == IMAGE_DOS_SIGNATURE) &&
-				(pMainModuleDiskDosHdr->e_oemid == pMainModuleMemoryDosHdr->e_oemid) &&
-				(mainModuleMemory.imageSize() == mainModuleDisk.imageSize()) &&
-				(mainModuleMemory.DirectorySize(0) == mainModuleDisk.DirectorySize(0)) &&
-				(mainModuleMemory.mType() == mainModuleDisk.mType()) &&
-				(mainModuleMemory.headersSize() == mainModuleDisk.headersSize()) &&
-				(mainModuleMemory.subsystem() == mainModuleDisk.subsystem()) &&
-				(mainModuleMemory.DllCharacteristics() == mainModuleDisk.DllCharacteristics()) &&
-				(mainModuleMemory.GetImports().size() == mainModuleDisk.GetImports().size()) &&
-				(mainModuleMemory.sections().size() == mainModuleDisk.sections().size()))
-			{
-				data->ScannerResult.append(L" module_not_hollowed ");
-			}
-			else
-			{
-				data->ScannerResult.append(L" module_hollowed ");
-			}
-		}
-	}
-	else
-	{
-		data->ScannerResult.append(L" module_not_hollowed ");
-	}
-
-}
 
 
 bool MatchingEngine::Initialize()
@@ -110,7 +59,7 @@ bool MatchingEngine::EventPreProcessor(SysmonXTypes::EventObject &data)
 		{
 			MatchEventBaseObject &matchEventHandler = matcherIT->second;
 			if (matchEventHandler &&
-				matchEventHandler->ShouldFilterEvent(data))
+				matchEventHandler->AreMatchingFiltersForThisEvent(data))
 			{
 				ret = true;
 			}
@@ -121,6 +70,7 @@ bool MatchingEngine::EventPreProcessor(SysmonXTypes::EventObject &data)
 }
 
 //Events Post filters calls - Filters are called in a serialized fashion
+//TODO: Update this with better security scan logic
 bool MatchingEngine::EventPostProcessor(SysmonXTypes::EventObject &data)
 {
 	bool ret = true;
@@ -129,7 +79,7 @@ bool MatchingEngine::EventPostProcessor(SysmonXTypes::EventObject &data)
 	{
 		if (data->EventID == EventID::SECURITY_EVENT_ID_SYSMON_CREATE_PROCESS)
 		{
-			PerformProcessHollowingScan(data);
+
 		}
 		ret = true;
 	}
@@ -180,4 +130,15 @@ bool MatchingEngine::AddNewEventFilterCondition(
 	}
 
 	return ret;
+}
+
+//Clearing previous filters before forcing new policy
+void MatchingEngine::ClearEventFilters()
+{
+	boost::lock_guard<boost::mutex> lk(m_mutex);
+
+	for (auto& matchEventEntry : m_matchers) 
+	{
+		matchEventEntry.second->ClearFilters();
+	}
 }

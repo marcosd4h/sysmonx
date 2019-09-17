@@ -11,11 +11,11 @@ using boost::asio::yield_context;
 class ReportManager
 {
 public:
-		static ReportManager& Instance()
-		{
-			static ReportManager instance;
-			return instance;
-		}
+	static ReportManager& Instance()
+	{
+		static ReportManager instance;
+		return instance;
+	}
 
 	bool IsInitialized() { return m_isInitialized; };
 	bool Initialize();
@@ -65,10 +65,8 @@ private:
 	}
 
 	//m_service is initialized first and then passed to m_work as parameter
-	ReportManager(const size_t nrThreads = SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS) :
-		m_isInitialized(false), m_foundReportersEnabledByConfig(false),
-		m_pool(nrThreads), m_dispatchStrand(m_pool.get_executor()),
-		m_logger(TraceHelpers::Logger::Instance()), m_config(ConfigManager::Instance()) {}
+	ReportManager(const size_t nrThreads = SysmonXDefs::SYSMONX_DEFAULT_WORKER_THREADS) : 
+		m_pool(nrThreads), m_dispatchStrand(m_pool.get_executor()) {}
 
 	~ReportManager() 	
 	{
@@ -93,12 +91,12 @@ private:
 	ReportManager& operator=(ReportManager&&) = delete;
 
 	// Private vars
-	bool m_isInitialized;
-	bool m_foundReportersEnabledByConfig;
+	bool m_isInitialized = false;
+	bool m_foundReportersEnabledByConfig = false;
 	thread_pool m_pool;
 	strand<thread_pool::executor_type> m_dispatchStrand;
-	TraceHelpers::Logger& m_logger;
-	ConfigManager& m_config;
+	TraceHelpers::Logger& m_logger = TraceHelpers::Logger::Instance();
+	ConfigManager& m_config = ConfigManager::Instance();
 	boost::mutex m_mutex;
 	SysmonXTypes::ReportersContainer m_reporters;
 	SysmonXTypes::ReportOutputList m_targetConfigurationReporters;

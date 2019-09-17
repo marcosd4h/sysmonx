@@ -2,28 +2,28 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="configmanager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="localhelpers.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="servicemanager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="sysmonx.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="executionflows.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="eventsmanager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="reportmanager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="rulesmanager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="reporters\report_channel_debug_events.cpp">
       <Filter>Reporters</Filter>
@@ -53,7 +53,7 @@
       <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
     </ClCompile>
     <ClCompile Include="matchingengine.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
     </ClCompile>
     <ClCompile Include="matchers\filter_property_processor.cpp">
       <Filter>Matchers</Filter>
@@ -65,42 +65,45 @@
       <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
     </ClCompile>
     <ClCompile Include="matchhelpers.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>SourceFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="cachemanager.cpp">
+      <Filter>SourceFiles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\common.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="include\configmanager.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="include\localhelpers.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="include\servicemanager.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="include\localdefs.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="executionflows.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="reportmanager.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="eventsmanager.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="rulesmanager.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="localtypes.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="interfaces.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="reporters\report_channel_debug_events.h">
       <Filter>Reporters</Filter>
@@ -121,10 +124,7 @@
       <Filter>EventCollectors</Filter>
     </ClInclude>
     <ClInclude Include="matchingengine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="securityevents.h">
-      <Filter>Header Files</Filter>
+      <Filter>HeaderFiles</Filter>
     </ClInclude>
     <ClInclude Include="matchers\filter_property_processor.h">
       <Filter>Matchers</Filter>
@@ -138,9 +138,6 @@
     <ClInclude Include="matchers\match_event_sysmox_powershell.h">
       <Filter>Matchers\Events</Filter>
     </ClInclude>
-    <ClInclude Include="include\matchhelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="eventhelpers\event_sysmon_create_process.h">
       <Filter>EventHelpers</Filter>
     </ClInclude>
@@ -150,14 +147,14 @@
     <ClInclude Include="collectors\etwcollectorcallbacks\callbacks_etw_event_ids.h">
       <Filter>EventCollectors\ETWCollectorCallbacks</Filter>
     </ClInclude>
+    <ClInclude Include="cachemanager.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="securitytypes.h">
+      <Filter>HeaderFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{7e9a3541-c131-44a4-b5e0-7d4f2be124ef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{997a00db-f0c6-4355-9d4c-6035de35e40d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scanners">
       <UniqueIdentifier>{3daedb9c-c6c5-4e17-957d-9467a23f25bc}</UniqueIdentifier>
     </Filter>
@@ -178,6 +175,12 @@
     </Filter>
     <Filter Include="EventHelpers">
       <UniqueIdentifier>{7479b88b-cc41-4fe8-826f-6ab1aa4d78b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HeaderFiles">
+      <UniqueIdentifier>{7e9a3541-c131-44a4-b5e0-7d4f2be124ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SourceFiles">
+      <UniqueIdentifier>{997a00db-f0c6-4355-9d4c-6035de35e40d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
